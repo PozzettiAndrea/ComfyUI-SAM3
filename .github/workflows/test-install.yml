@@ -56,52 +56,13 @@ jobs:
           pip install pycocotools || echo "Warning: pycocotools installation failed (not critical for testing)"
         shell: bash
 
-      - name: Verify imports
+      - name: Install test dependencies
         run: |
-          python -c "import torch; print(f'PyTorch version: {torch.__version__}')"
-          python -c "from nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS; print(f'Loaded {len(NODE_CLASS_MAPPINGS)} nodes')"
+          pip install pytest pytest-cov
 
-      - name: Verify node registration
+      - name: Run tests
         run: |
-          python -c "
-          from nodes import NODE_CLASS_MAPPINGS
-          required_nodes = [
-              'LoadSAM3Model',
-              'SAM3Segmentation',
-              'SAM3VideoModelLoader',
-              'SAM3InitVideoSession',
-              'SAM3InitVideoSessionAdvanced',
-              'SAM3AddVideoPrompt',
-              'SAM3PropagateVideo',
-              'SAM3VideoOutput',
-              'SAM3CloseVideoSession',
-          ]
-          for node in required_nodes:
-              assert node in NODE_CLASS_MAPPINGS, f'Missing node: {node}'
-          print('✓ All required nodes registered successfully')
-          "
-
-      - name: Check package structure
-        run: |
-          python -c "
-          import os
-          from pathlib import Path
-
-          required_files = [
-              '__init__.py',
-              'nodes/__init__.py',
-              'nodes/load_model.py',
-              'nodes/segmentation.py',
-              'nodes/sam3_video_nodes.py',
-              'sam3_lib/model_builder.py',
-          ]
-
-          for file in required_files:
-              path = Path(file)
-              assert path.exists(), f'Missing required file: {file}'
-
-          print('✓ Package structure is valid')
-          "
+          pytest tests/ -v --tb=short -m unit
 
       - name: Test install script (skip CUDA compilation)
         if: matrix.os != 'windows-latest'  # Skip on Windows due to compiler requirements
