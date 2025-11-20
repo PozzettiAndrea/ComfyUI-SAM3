@@ -1,19 +1,19 @@
 {
   "id": "0b04cdef-0fe9-494a-baa9-ca11511022b9",
   "revision": 0,
-  "last_node_id": 7,
-  "last_link_id": 5,
+  "last_node_id": 29,
+  "last_link_id": 47,
   "nodes": [
     {
-      "id": 1,
-      "type": "LoadSAM3Model",
+      "id": 4,
+      "type": "LoadImage",
       "pos": [
-        530.73828125,
-        128.45703125
+        720.7491930551824,
+        325.65793973839186
       ],
       "size": [
-        270,
-        106
+        274.080078125,
+        314
       ],
       "flags": {},
       "order": 0,
@@ -21,45 +21,10 @@
       "inputs": [],
       "outputs": [
         {
-          "name": "sam3_model",
-          "type": "SAM3_MODEL",
-          "links": [
-            1
-          ]
-        }
-      ],
-      "properties": {
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3",
-        "ver": "307654744fa45de98017f92710d4a9cc1b4d63de",
-        "Node name for S&R": "LoadSAM3Model"
-      },
-      "widgets_values": [
-        "auto",
-        "",
-        "YOUR_HF_TOKEN_HERE"
-      ]
-    },
-    {
-      "id": 4,
-      "type": "LoadImage",
-      "pos": [
-        535.57421875,
-        284.2890625
-      ],
-      "size": [
-        274.080078125,
-        314
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            2
+            25
           ]
         },
         {
@@ -79,102 +44,15 @@
       ]
     },
     {
-      "id": 6,
-      "type": "PreviewAny",
-      "pos": [
-        1288.6306959649387,
-        433.58804390045407
-      ],
-      "size": [
-        233.69546594584722,
-        164.65461903779413
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "source",
-          "type": "*",
-          "link": 4
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.70",
-        "Node name for S&R": "PreviewAny"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 5,
-      "type": "PreviewImage",
-      "pos": [
-        1440.5702852043821,
-        140.22824547046324
-      ],
-      "size": [
-        140,
-        246
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 3
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.70",
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 7,
-      "type": "MaskPreview",
-      "pos": [
-        1285.1917567959822,
-        -164.2376998289703
-      ],
-      "size": [
-        140,
-        246
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "mask",
-          "type": "MASK",
-          "link": 5
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.70",
-        "Node name for S&R": "MaskPreview"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 2,
+      "id": 18,
       "type": "SAM3Segmentation",
       "pos": [
-        938.59765625,
-        187.87109375
+        1309.4661214302075,
+        206.671144627115
       ],
       "size": [
         278.08203125,
-        186
+        226
       ],
       "flags": {},
       "order": 2,
@@ -183,21 +61,33 @@
         {
           "name": "sam3_model",
           "type": "SAM3_MODEL",
-          "link": 1
+          "link": 26
         },
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 2
+          "link": 25
         },
         {
-          "name": "boxes_prompt",
+          "name": "positive_boxes",
           "shape": 7,
           "type": "SAM3_BOXES_PROMPT",
           "link": null
         },
         {
-          "name": "points_prompt",
+          "name": "negative_boxes",
+          "shape": 7,
+          "type": "SAM3_BOXES_PROMPT",
+          "link": null
+        },
+        {
+          "name": "positive_points",
+          "shape": 7,
+          "type": "SAM3_POINTS_PROMPT",
+          "link": null
+        },
+        {
+          "name": "negative_points",
           "shape": 7,
           "type": "SAM3_POINTS_PROMPT",
           "link": null
@@ -213,23 +103,19 @@
         {
           "name": "masks",
           "type": "MASK",
-          "links": [
-            5
-          ]
+          "links": null
         },
         {
           "name": "visualization",
           "type": "IMAGE",
           "links": [
-            3
+            24
           ]
         },
         {
           "name": "boxes",
           "type": "STRING",
-          "links": [
-            4
-          ]
+          "links": null
         },
         {
           "name": "scores",
@@ -239,66 +125,115 @@
       ],
       "properties": {
         "aux_id": "PozzettiAndrea/ComfyUI-SAM3",
-        "ver": "307654744fa45de98017f92710d4a9cc1b4d63de",
+        "ver": "64c86b0bf97593007c32df5dbc544a566d9efd9f",
         "Node name for S&R": "SAM3Segmentation"
       },
       "widgets_values": [
-        0.21,
+        0.2,
         "person",
         -1
+      ]
+    },
+    {
+      "id": 17,
+      "type": "PreviewImage",
+      "pos": [
+        1648.8953137727447,
+        219.4458276661956
+      ],
+      "size": [
+        395.6990602639653,
+        274.17023545280983
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 24
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.70",
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 1,
+      "type": "LoadSAM3Model",
+      "pos": [
+        714.9282822876021,
+        89.05810054676962
+      ],
+      "size": [
+        270,
+        130
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "sam3_model",
+          "type": "SAM3_MODEL",
+          "links": [
+            26
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3",
+        "ver": "307654744fa45de98017f92710d4a9cc1b4d63de",
+        "Node name for S&R": "LoadSAM3Model"
+      },
+      "widgets_values": [
+        "auto",
+        true,
+        "",
+        "YOUR_HF_TOKEN_HERE"
       ]
     }
   ],
   "links": [
     [
+      24,
+      18,
       1,
+      17,
+      0,
+      "IMAGE"
+    ],
+    [
+      25,
+      4,
+      0,
+      18,
+      1,
+      "IMAGE"
+    ],
+    [
+      26,
       1,
       0,
-      2,
+      18,
       0,
       "SAM3_MODEL"
-    ],
-    [
-      2,
-      4,
-      0,
-      2,
-      1,
-      "IMAGE"
-    ],
-    [
-      3,
-      2,
-      1,
-      5,
-      0,
-      "IMAGE"
-    ],
-    [
-      4,
-      2,
-      2,
-      6,
-      0,
-      "*"
-    ],
-    [
-      5,
-      2,
-      0,
-      7,
-      0,
-      "MASK"
     ]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.2284597357367242,
+      "scale": 1.0152559799477074,
       "offset": [
-        -290.4506990145121,
-        55.05631342239494
+        -477.84258481692046,
+        -0.7367579498853374
       ]
     },
     "frontendVersion": "1.28.8"

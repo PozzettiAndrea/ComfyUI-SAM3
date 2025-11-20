@@ -23,7 +23,10 @@ class LoadSAM3Model:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "device": (["auto", "cuda", "cpu"], {"default": "auto"}),
+                "device": (["auto", "cuda", "cpu"], {
+                    "default": "auto",
+                    "tooltip": "Device to run the model on. 'auto' selects CUDA if available, otherwise CPU. GPU highly recommended for performance."
+                }),
                 "use_gpu_cache": ("BOOLEAN", {
                     "default": True,
                     "tooltip": "Keep model on GPU between inferences (faster but uses more VRAM). Set to False to offload to CPU after each inference."
@@ -33,12 +36,14 @@ class LoadSAM3Model:
                 "model_path": ("STRING", {
                     "default": "",
                     "multiline": False,
-                    "placeholder": "Leave empty to auto-download from HuggingFace"
+                    "placeholder": "Leave empty to auto-download from HuggingFace",
+                    "tooltip": "Optional path to local SAM3 checkpoint file (sam3.pt). Leave empty to auto-download from HuggingFace. Model will be cached in ComfyUI/models/sam3/"
                 }),
                 "hf_token": ("STRING", {
                     "default": "",
                     "multiline": False,
-                    "placeholder": "HuggingFace token (get from https://huggingface.co/settings/tokens)"
+                    "placeholder": "HuggingFace token (get from https://huggingface.co/settings/tokens)",
+                    "tooltip": "HuggingFace authentication token required for downloading SAM3 model. Get token from https://huggingface.co/settings/tokens and request access at https://huggingface.co/facebook/sam3"
                 }),
             }
         }

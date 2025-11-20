@@ -35,7 +35,9 @@ class SAM3PointCollector:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "image": ("IMAGE",),
+                "image": ("IMAGE", {
+                    "tooltip": "Image to display in interactive canvas. Left-click to add positive points (green), Shift+Left-click or Right-click to add negative points (red). Points are automatically normalized to image dimensions."
+                }),
                 "points_store": ("STRING", {"multiline": False, "default": "{}"}),
                 "coordinates": ("STRING", {"multiline": False, "default": "[]"}),
                 "neg_coordinates": ("STRING", {"multiline": False, "default": "[]"}),

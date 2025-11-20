@@ -22,26 +22,17 @@ class SAM3VideoModelLoader:
             "required": {
                 "checkpoint_path": ("STRING", {
                     "default": "",
-                    "multiline": False
-                }),
-                "bpe_path": ("STRING", {
-                    "default": "",
-                    "multiline": False
+                    "multiline": False,
+                    "tooltip": "Path to SAM3 video checkpoint file (sam3.pt). Leave empty to auto-download from HuggingFace (requires hf_token)."
                 }),
                 "hf_token": ("STRING", {
                     "default": "",
-                    "multiline": False
+                    "multiline": False,
+                    "tooltip": "HuggingFace authentication token for downloading gated models. Get from https://huggingface.co/settings/tokens. Required if checkpoint_path is empty."
                 }),
                 "use_gpu_cache": ("BOOLEAN", {
                     "default": True,
                     "tooltip": "Keep model on GPU between inferences (faster but uses more VRAM). Set to False to offload to CPU after each inference."
-                }),
-            },
-            "optional": {
-                "use_multi_gpu": ("BOOLEAN", {"default": False}),
-                "gpu_ids": ("STRING", {
-                    "default": "0",
-                    "multiline": False
                 }),
             }
         }
@@ -51,25 +42,26 @@ class SAM3VideoModelLoader:
     FUNCTION = "load_model"
     CATEGORY = "SAM3/video"
 
-    def load_model(self, checkpoint_path, bpe_path, hf_token, use_gpu_cache=True, use_multi_gpu=False, gpu_ids="0"):
+    def load_model(self, checkpoint_path, hf_token, use_gpu_cache=True):
         """Load the SAM3 video model"""
         import os
         if hf_token:
             os.environ["HF_TOKEN"] = hf_token
 
-        # Parse GPU IDs if using multi-GPU
-        gpus_to_use = None
-        if use_multi_gpu:
-            gpus_to_use = [int(x.strip()) for x in gpu_ids.split(",")]
+        # Hardcoded BPE path - using vendored tokenizer vocabulary
+        bpe_path = Path(__file__).parent.parent / "sam3_lib" / "bpe_simple_vocab_16e6.txt.gz"
+        bpe_path = str(bpe_path)
 
-        print(f"[SAM3 Video] Loading video model from {checkpoint_path}")
+        print(f"[SAM3 Video] Loading video model from {checkpoint_path if checkpoint_path else 'HuggingFace'}")
+        print(f"[SAM3 Video] Using BPE tokenizer: {bpe_path}")
         print(f"[SAM3 Video] GPU cache: {'enabled' if use_gpu_cache else 'disabled (will offload to CPU after inference)'}")
 
-        # Build the video predictor
+        # Build the video predictor (single GPU only)
         predictor = build_sam3_video_predictor(
             checkpoint_path=checkpoint_path if checkpoint_path else None,
-            bpe_path=bpe_path if bpe_path else None,
-            gpus_to_use=gpus_to_use,
+            bpe_path=bpe_path,
+            hf_token=hf_token if hf_token else None,
+            gpus_to_use=None,  # Single GPU mode
         )
 
         print(f"[SAM3 Video] Model loaded successfully")
@@ -87,13 +79,18 @@ class SAM3InitVideoSession:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "video_model": ("SAM3_VIDEO_MODEL",),
-                "video_frames": ("IMAGE",),  # ComfyUI video frames [B, H, W, C]
+                "video_model": ("SAM3_VIDEO_MODEL", {
+                    "tooltip": "SAM3 video model loaded from SAM3VideoModelLoader node"
+                }),
+                "video_frames": ("IMAGE", {
+                    "tooltip": "Video frames as a batch of images (e.g., from LoadVideo node). Frames will be temporarily saved to disk for processing."
+                }),
             },
             "optional": {
                 "session_id": ("STRING", {
                     "default": "",
-                    "multiline": False
+                    "multiline": False,
+                    "tooltip": "Optional custom session identifier. Leave empty to auto-generate. Useful for managing multiple video tracking sessions."
                 }),
             }
         }
@@ -153,27 +150,36 @@ class SAM3AddVideoPrompt:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "session": ("SAM3_VIDEO_SESSION",),
+                "session": ("SAM3_VIDEO_SESSION", {
+                    "tooltip": "Active video tracking session from SAM3InitVideoSession node"
+                }),
                 "frame_index": ("INT", {
                     "default": 0,
                     "min": 0,
                     "max": 10000,
-                    "step": 1
+                    "step": 1,
+                    "tooltip": "Frame number (0-based) to add the prompt to. The prompt will be used as the starting point for tracking through the video."
                 }),
             },
             "optional": {
                 "text_prompt": ("STRING", {
                     "default": "",
-                    "multiline": False
+                    "multiline": False,
+                    "tooltip": "Describe the object to track using natural language (e.g., 'person in red shirt', 'car'). Can be combined with box/point prompts."
                 }),
                 "obj_id": ("INT", {
                     "default": 1,
                     "min": 1,
                     "max": 100,
-                    "step": 1
+                    "step": 1,
+                    "tooltip": "Unique identifier for this tracked object (1-100). Use different IDs to track multiple objects simultaneously in the same video."
                 }),
-                "boxes": ("SAM3_BOXES_PROMPT",),
-                "points": ("SAM3_POINTS_PROMPT",),
+                "boxes": ("SAM3_BOXES_PROMPT", {
+                    "tooltip": "Optional box prompts to specify object location on this frame. Connect from SAM3CombineBoxes node."
+                }),
+                "points": ("SAM3_POINTS_PROMPT", {
+                    "tooltip": "Optional point prompts to specify object location on this frame. Connect from SAM3CombinePoints node."
+                }),
             }
         }
 
@@ -235,27 +241,34 @@ class SAM3PropagateVideo:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "session": ("SAM3_VIDEO_SESSION",),
+                "session": ("SAM3_VIDEO_SESSION", {
+                    "tooltip": "Video session with prompts added via SAM3AddVideoPrompt node"
+                }),
             },
             "optional": {
-                "propagation_direction": (["both", "forward", "backward"], {"default": "both"}),
+                "propagation_direction": (["both", "forward", "backward"], {
+                    "default": "both",
+                    "tooltip": "Direction to propagate masks: 'both' (bidirectional from start frame), 'forward' (from start to end), 'backward' (from start to beginning)"
+                }),
                 "start_frame_index": ("INT", {
                     "default": 0,
                     "min": 0,
                     "max": 10000,
-                    "step": 1
+                    "step": 1,
+                    "tooltip": "Frame index to start propagation from (usually the frame where you added prompts). Default 0."
                 }),
                 "max_frames": ("INT", {
                     "default": -1,
                     "min": -1,
                     "max": 10000,
-                    "step": 1
+                    "step": 1,
+                    "tooltip": "Maximum number of frames to track. -1 to process all frames in the video."
                 }),
             }
         }
 
-    RETURN_TYPES = ("SAM3_VIDEO_MASKS",)
-    RETURN_NAMES = ("video_masks",)
+    RETURN_TYPES = ("SAM3_VIDEO_MASKS", "SAM3_VIDEO_SESSION")
+    RETURN_NAMES = ("video_masks", "session")
     FUNCTION = "propagate"
     CATEGORY = "SAM3/video"
 
@@ -306,7 +319,7 @@ class SAM3PropagateVideo:
             "num_frames": num_frames,
         }
 
-        return (video_masks,)
+        return (video_masks, session)
 
 
 class SAM3VideoOutput:
@@ -316,14 +329,17 @@ class SAM3VideoOutput:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "video_masks": ("SAM3_VIDEO_MASKS",),
+                "video_masks": ("SAM3_VIDEO_MASKS", {
+                    "tooltip": "Video tracking results from SAM3PropagateVideo node"
+                }),
             },
             "optional": {
                 "obj_id_filter": ("INT", {
                     "default": -1,
                     "min": -1,
                     "max": 100,
-                    "step": 1
+                    "step": 1,
+                    "tooltip": "Filter output to specific object ID (1-100). Use -1 to combine all tracked objects into a single mask per frame."
                 }),
             }
         }
@@ -403,11 +419,14 @@ class SAM3CloseVideoSession:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "session": ("SAM3_VIDEO_SESSION",),
+                "session": ("SAM3_VIDEO_SESSION", {
+                    "tooltip": "Video session to close. Cleans up temporary files and releases resources. Always use at the end of video processing workflows."
+                }),
             },
         }
 
-    RETURN_TYPES = ()
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("status",)
     OUTPUT_NODE = True
     FUNCTION = "close_session"
     CATEGORY = "SAM3/video"
@@ -430,7 +449,7 @@ class SAM3CloseVideoSession:
 
         print(f"[SAM3 Video] Closed session {session_id}")
 
-        return ()
+        return (f"Session {session_id} closed",)
 
 
 # Node class mappings

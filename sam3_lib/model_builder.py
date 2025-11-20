@@ -32,11 +32,9 @@ from .model.necks import Sam3DualViTDetNeck
 from .model.position_encoding import PositionEmbeddingSine
 # SAM3InteractiveImagePredictor is only imported when enable_inst_interactivity=True
 # from .model.sam1_task_predictor import SAM3InteractiveImagePredictor
-from .model.sam3_image import Sam3Image
-# Video-related imports removed (not needed for image-only inference)
-# from .model.sam3_image import Sam3ImageOnVideoMultiGPU
-# from .model.sam3_tracking_predictor import Sam3TrackerPredictor
-# from .model.sam3_video_inference import Sam3VideoInferenceWithInstanceInteractivity
+from .model.sam3_image import Sam3Image, Sam3ImageOnVideoMultiGPU
+from .model.sam3_tracking_predictor import Sam3TrackerPredictor
+from .model.sam3_video_inference import Sam3VideoInferenceWithInstanceInteractivity
 from .sam3_video_predictor import Sam3VideoPredictorMultiGPU
 from .model.text_encoder_ve import VETextEncoder
 from .model.tokenizer_ve import SimpleTokenizer
@@ -422,18 +420,57 @@ def _create_tracker_transformer():
 
 def build_tracker(
     apply_temporal_disambiguation: bool, with_backbone: bool = False, compile_mode=None
-):
+) -> Sam3TrackerPredictor:
     """
     Build the SAM3 Tracker module for video tracking.
 
-    NOTE: Video tracking is not supported in this vendored version.
-    This is a stub function to maintain API compatibility.
+    Returns:
+        Sam3TrackerPredictor: Wrapped SAM3 Tracker module
     """
-    raise NotImplementedError(
-        "build_tracker() is not supported in this vendored version. "
-        "Video tracking functionality requires additional dependencies. "
-        "Use build_sam3_image_model() for image segmentation instead."
+
+    # Create model components
+    maskmem_backbone = _create_tracker_maskmem_backbone()
+    transformer = _create_tracker_transformer()
+    backbone = None
+    if with_backbone:
+        vision_backbone = _create_vision_backbone(compile_mode=compile_mode)
+        backbone = SAM3VLBackbone(scalp=1, visual=vision_backbone, text=None)
+    # Create the Tracker module
+    model = Sam3TrackerPredictor(
+        image_size=1008,
+        num_maskmem=7,
+        backbone=backbone,
+        backbone_stride=14,
+        transformer=transformer,
+        maskmem_backbone=maskmem_backbone,
+        # SAM parameters
+        multimask_output_in_sam=True,
+        # Evaluation
+        forward_backbone_per_frame_for_eval=True,
+        trim_past_non_cond_mem_for_eval=False,
+        # Multimask
+        multimask_output_for_tracking=True,
+        multimask_min_pt_num=0,
+        multimask_max_pt_num=1,
+        # Additional settings
+        always_start_from_first_ann_frame=False,
+        # Mask overlap
+        non_overlap_masks_for_mem_enc=False,
+        non_overlap_masks_for_output=False,
+        max_cond_frames_in_attn=4,
+        offload_output_to_cpu_for_eval=False,
+        # SAM decoder settings
+        sam_mask_decoder_extra_args={
+            "dynamic_multimask_via_stability": True,
+            "dynamic_multimask_stability_delta": 0.05,
+            "dynamic_multimask_stability_thresh": 0.98,
+        },
+        clear_non_cond_mem_around_input=True,
+        fill_hole_area=0,
+        use_memory_selection=apply_temporal_disambiguation,
     )
+
+    return model
 
 
 def _create_text_encoder(bpe_path: str) -> VETextEncoder:
@@ -536,10 +573,9 @@ def build_sam3_image_model(
         A SAM3 image model
     """
     if bpe_path is None:
-        # Path from sam3_lib/model_builder.py to assets/bpe_simple_vocab_16e6.txt.gz
-        # sam3_lib/ -> ComfyUI-SAM3/ -> assets/
+        # Path to bundled BPE tokenizer vocabulary in sam3_lib/
         bpe_path = os.path.join(
-            os.path.dirname(__file__), "..", "assets", "bpe_simple_vocab_16e6.txt.gz"
+            os.path.dirname(__file__), "bpe_simple_vocab_16e6.txt.gz"
         )
     # Create visual components
     compile_mode = "default" if compile else None
@@ -637,6 +673,7 @@ def build_sam3_video_model(
     apply_temporal_disambiguation: bool = True,
     device="cuda" if torch.cuda.is_available() else "cpu",
     compile=False,
+    hf_token: Optional[str] = None,
 ):
     """
     Build SAM3 dense tracking model.
@@ -649,10 +686,9 @@ def build_sam3_video_model(
         Sam3VideoInferenceWithInstanceInteractivity: The instantiated dense tracking model
     """
     if bpe_path is None:
-        # Path from sam3_lib/model_builder.py to assets/bpe_simple_vocab_16e6.txt.gz
-        # sam3_lib/ -> ComfyUI-SAM3/ -> assets/
+        # Path to bundled BPE tokenizer vocabulary in sam3_lib/
         bpe_path = os.path.join(
-            os.path.dirname(__file__), "..", "assets", "bpe_simple_vocab_16e6.txt.gz"
+            os.path.dirname(__file__), "bpe_simple_vocab_16e6.txt.gz"
         )
 
     # Build Tracker module
