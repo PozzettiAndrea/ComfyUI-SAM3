@@ -6,6 +6,12 @@ ComfyUI integration for Meta's SAM3 (Segment Anything Model 3) - enabling open-v
 
 ![bbox](docs/bbox.png)
 
+![point](docs/point.png)
+
+![text_prompt](docs/text_prompt.png)
+
+![video](docs/video.png)
+
 ## Nodes
 
 ### LoadSAM3Model
