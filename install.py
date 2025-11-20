@@ -5,6 +5,10 @@ Called by ComfyUI Manager during installation/update.
 import os
 import subprocess
 import sys
+import argparse
+
+# Global flag for compile-only mode
+COMPILE_ONLY = False
 
 
 def install_requirements():
@@ -503,10 +507,17 @@ def try_install_torch_generic_nms():
     # Check if CUDA is available in PyTorch
     try:
         import torch
-        if not torch.cuda.is_available():
+        if not COMPILE_ONLY and not torch.cuda.is_available():
             print("[ComfyUI-SAM3] [INFO] CUDA not available, skipping GPU NMS compilation")
             print("[ComfyUI-SAM3] Video tracking will use CPU fallback (slower but functional)")
             return False
+        elif COMPILE_ONLY:
+            print("[ComfyUI-SAM3] [INFO] Compile-only mode: checking PyTorch CUDA support...")
+            if not torch.version.cuda:
+                print("[ComfyUI-SAM3] [ERROR] PyTorch was not built with CUDA support")
+                print("[ComfyUI-SAM3] Cannot compile CUDA extensions without CUDA-enabled PyTorch")
+                return False
+            print(f"[ComfyUI-SAM3] [OK] PyTorch built with CUDA {torch.version.cuda}")
     except ImportError:
         print("[ComfyUI-SAM3] [WARNING] PyTorch not found, cannot install torch_generic_nms")
         return False
@@ -605,10 +616,17 @@ def try_install_cc_torch():
     # Check if CUDA is available in PyTorch
     try:
         import torch
-        if not torch.cuda.is_available():
+        if not COMPILE_ONLY and not torch.cuda.is_available():
             print("[ComfyUI-SAM3] [INFO] CUDA not available, skipping GPU connected components")
             print("[ComfyUI-SAM3] Video tracking will use CPU fallback (slower but functional)")
             return False
+        elif COMPILE_ONLY:
+            print("[ComfyUI-SAM3] [INFO] Compile-only mode: checking PyTorch CUDA support...")
+            if not torch.version.cuda:
+                print("[ComfyUI-SAM3] [ERROR] PyTorch was not built with CUDA support")
+                print("[ComfyUI-SAM3] Cannot compile CUDA extensions without CUDA-enabled PyTorch")
+                return False
+            print(f"[ComfyUI-SAM3] [OK] PyTorch built with CUDA {torch.version.cuda}")
     except ImportError:
         print("[ComfyUI-SAM3] [WARNING] PyTorch not found, cannot install cc_torch")
         return False
@@ -689,6 +707,21 @@ def try_install_cc_torch():
 
 
 if __name__ == "__main__":
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="Install ComfyUI-SAM3 dependencies")
+    parser.add_argument(
+        "--compile-only",
+        action="store_true",
+        help="Compile CUDA extensions even without GPU present (for CI testing)"
+    )
+    args = parser.parse_args()
+
+    # Set global flag
+    COMPILE_ONLY = args.compile_only
+
+    if COMPILE_ONLY:
+        print("[ComfyUI-SAM3] Running in COMPILE-ONLY mode (will skip GPU runtime checks)")
+
     print("[ComfyUI-SAM3] Running installation script...")
     print("="*80)
 
