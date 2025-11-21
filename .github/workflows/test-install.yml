@@ -144,9 +144,13 @@ jobs:
           " || echo "cc_torch compilation verification failed (non-critical)"
 
   test-cpu-inference:
-    name: Test SAM3 CPU Inference (Linux Python 3.10)
-    runs-on: ubuntu-latest
+    name: Test SAM3 CPU Inference (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Checkout repository
