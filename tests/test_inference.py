@@ -74,13 +74,9 @@ def test_sam3_cpu_inference():
         outputs = segmenter.segment(
             sam3_model=sam3_model,
             image=image_tensor,
-            text_input="person",
-            box_threshold=0.25,
-            iou_threshold=0.5,
-            visualize=True,
-            individual_masks=False,
-            fill_holes=False,
-            fill_holes_kernel_size=5
+            text_prompt="person",
+            confidence_threshold=0.2,
+            max_detections=-1
         )
     except Exception as e:
         pytest.fail(f"Segmentation failed: {e}")
