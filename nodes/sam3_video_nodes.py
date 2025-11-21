@@ -37,6 +37,12 @@ class SAM3VideoModelLoader:
             }
         }
 
+    @classmethod
+    def IS_CHANGED(cls, **kwargs):
+        # Always reload model fresh to avoid dtype/state issues - return unique value each time
+        import random
+        return random.random()
+
     RETURN_TYPES = ("SAM3_VIDEO_MODEL",)
     RETURN_NAMES = ("video_model",)
     FUNCTION = "load_model"
@@ -108,6 +114,12 @@ class SAM3InitVideoSession:
                 }),
             }
         }
+
+    @classmethod
+    def IS_CHANGED(cls, **kwargs):
+        # Always reinitialize session - return unique value each time to prevent caching
+        import random
+        return random.random()
 
     RETURN_TYPES = ("SAM3_VIDEO_SESSION", "STRING")
     RETURN_NAMES = ("session", "session_id")
@@ -281,6 +293,12 @@ class SAM3InitVideoSessionAdvanced:
                 }),
             }
         }
+
+    @classmethod
+    def IS_CHANGED(cls, **kwargs):
+        # Always reinitialize session - return unique value each time to prevent caching
+        import random
+        return random.random()
 
     RETURN_TYPES = ("SAM3_VIDEO_SESSION", "STRING")
     RETURN_NAMES = ("session", "session_id")
