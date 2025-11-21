@@ -26,6 +26,23 @@ This is **optional** and only benefits video tracking performance. Image segment
 
 **Requirements:** NVIDIA GPU, conda/micromamba environment recommended.
 
+## Troubleshooting
+
+### SAM3 nodes not appearing in ComfyUI
+
+If SAM3 doesn't load and you see "running in pytest mode - skipping initialization" in the logs, this is a false positive detection.
+
+**Solution:** Set the environment variable before starting ComfyUI:
+```bash
+# Linux/Mac
+export SAM3_FORCE_INIT=1
+
+# Windows
+set SAM3_FORCE_INIT=1
+```
+
+This forces SAM3 to initialize even if pytest is detected in your environment.
+
 ### Examples
 
 ![bbox](docs/bbox.png)

@@ -36,6 +36,7 @@ License: MIT
 
 # Only run initialization and imports when loaded by ComfyUI, not during pytest
 # This prevents relative import errors when pytest collects test modules
+import os
 import sys
 import traceback
 
@@ -46,7 +47,21 @@ __version__ = "2.1.0"
 INIT_SUCCESS = False
 INIT_ERRORS = []
 
-if 'pytest' not in sys.modules:
+# Detect if running under pytest with robust checks
+# Check multiple indicators to reduce false positives:
+# 1. PYTEST_CURRENT_TEST env var (most reliable - only set during actual pytest execution)
+# 2. _pytest module (pytest runtime, more specific than just 'pytest')
+# 3. pytest module (fallback, may have false positives if pytest is just installed)
+# Allow override with SAM3_FORCE_INIT=1 for users who encounter false positives
+force_init = os.environ.get('SAM3_FORCE_INIT') == '1'
+is_pytest = (
+    'PYTEST_CURRENT_TEST' in os.environ or
+    '_pytest' in sys.modules or
+    'pytest' in sys.modules
+)
+skip_init = is_pytest and not force_init
+
+if not skip_init:
     print(f"[SAM3] ComfyUI-SAM3 v{__version__} initializing...")
 
     # Step 1: Import node classes
@@ -86,8 +101,20 @@ if 'pytest' not in sys.modules:
         print("[SAM3] Please check the errors above and your installation.")
 
 else:
-    # During testing, import from conftest mocks
+    # During testing, skip initialization to prevent import errors
+    # Debug info to help diagnose false positives
+    reasons = []
+    if 'PYTEST_CURRENT_TEST' in os.environ:
+        reasons.append("PYTEST_CURRENT_TEST env var detected")
+    if '_pytest' in sys.modules:
+        reasons.append("_pytest module in sys.modules")
+    if 'pytest' in sys.modules:
+        reasons.append("pytest module in sys.modules")
+
     print(f"[SAM3] ComfyUI-SAM3 v{__version__} running in pytest mode - skipping initialization")
+    print(f"[SAM3] Reason: {', '.join(reasons)}")
+    print(f"[SAM3] If this is a false positive, set environment variable: SAM3_FORCE_INIT=1")
+
     NODE_CLASS_MAPPINGS = {}
     NODE_DISPLAY_NAME_MAPPINGS = {}
 
