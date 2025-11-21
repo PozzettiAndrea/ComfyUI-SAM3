@@ -444,6 +444,21 @@ class SAM3AddVideoPrompt:
             point_coords = points["points"]
             point_labels = points["labels"]
 
+        # Validate that at least one type of prompt is provided
+        has_text = text_prompt and len(text_prompt.strip()) > 0
+        has_points = point_coords is not None and len(point_coords) > 0
+        has_boxes = bounding_boxes is not None and len(bounding_boxes) > 0
+
+        if not (has_text or has_points or has_boxes):
+            raise ValueError(
+                "[SAM3 Video] No prompt provided! Please provide at least one of:\n"
+                "  • Text prompt (e.g., 'person', 'car', etc.)\n"
+                "  • Points (use SAM3 Point Collector node)\n"
+                "  • Bounding boxes (use SAM3 BBox Collector node)\n"
+                "\n"
+                "Empty prompts cannot be used for tracking."
+            )
+
         print(f"[SAM3 Video] Adding prompt on frame {frame_index}: text='{text_prompt}', obj_id={obj_id}")
 
         # Add the prompt
