@@ -120,7 +120,7 @@ class LoadSAM3Model:
                 hf_token=None,
                 eval_mode=True,
                 enable_segmentation=True,
-                enable_inst_interactivity=False,
+                enable_inst_interactivity=True,  # Enable SAM2-style point/box segmentation
                 compile=False
             )
         except FileNotFoundError as e:
