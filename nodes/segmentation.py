@@ -49,8 +49,8 @@ class SAM3Segmentation:
                 "text_prompt": ("STRING", {
                     "default": "",
                     "multiline": False,
-                    "placeholder": "e.g., 'cat', 'person in red', 'car'",
-                    "tooltip": "Describe what to segment using natural language (e.g., 'person', 'cat', 'red car', 'shoes')"
+                    "placeholder": "e.g., 'cat' or 'child, forefront' or 'person. car. dog'",
+                    "tooltip": "Text description(s) of objects to segment. Use period (.) or semicolon (;) to separate multiple objects. Use comma (,) within a prompt for modifiers (e.g., 'person, left side')."
                 }),
                 "positive_boxes": ("SAM3_BOXES_PROMPT", {
                     "tooltip": "Optional box prompts to include specific regions. Connect from SAM3CombineBoxes node."
@@ -68,6 +68,13 @@ class SAM3Segmentation:
                     "step": 1,
                     "tooltip": "Maximum number of detections to return (-1 for all)"
                 }),
+                "mask_output_mode": (
+                    ["separate", "combined", "separate_by_prompt"],
+                    {
+                        "default": "separate",
+                        "tooltip": "separate: All masks as individual layers. combined: Single merged mask. separate_by_prompt: One mask per prompt."
+                    }
+                ),
             }
         }
 
@@ -78,7 +85,7 @@ class SAM3Segmentation:
 
     def segment(self, sam3_model, image, confidence_threshold=0.2,
                 text_prompt="", positive_boxes=None, negative_boxes=None,
-                mask_prompt=None, max_detections=-1):
+                mask_prompt=None, max_detections=-1, mask_output_mode="separate"):
         """
         Perform SAM3 segmentation with text and box prompts
 
@@ -118,10 +125,266 @@ class SAM3Segmentation:
         img_w, img_h = pil_image.size
         print(f"[SAM3] Image size: {pil_image.size}")
 
-        return self._segment_grounding(
-            sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
-            positive_boxes, negative_boxes, mask_prompt, max_detections
+        # Parse text prompts
+        text_prompts = self._parse_text_prompts(text_prompt) if text_prompt else []
+
+        # Route to appropriate handler
+        if len(text_prompts) <= 1:
+            # Single prompt or no text - use existing path for backward compatibility
+            return self._segment_grounding(
+                sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
+                positive_boxes, negative_boxes, mask_prompt, max_detections
+            )
+        else:
+            # Multiple prompts - use new multi-prompt path
+            return self._segment_multi_prompt(
+                sam3_model, pil_image, img_w, img_h, confidence_threshold,
+                text_prompts, positive_boxes, negative_boxes, mask_prompt,
+                max_detections, mask_output_mode
+            )
+
+    def _parse_text_prompts(self, text_prompt):
+        """
+        Parse text prompts with semantic separators.
+
+        - Period (.) or semicolon (;) = separate detections
+        - Comma (,) = part of natural language prompt (modifier)
+
+        Examples:
+            "child, forefront" → ["child, forefront"]  # Single prompt
+            "child. forefront" → ["child", "forefront"]  # Two prompts
+            "person, left. car, red" → ["person, left", "car, red"]  # Two prompts with modifiers
+        """
+        if not text_prompt or not text_prompt.strip():
+            return []
+
+        import re
+        # Split ONLY on period or semicolon (NOT comma)
+        prompts = re.split(r'[;.]', text_prompt)
+        # Strip whitespace and filter empty strings
+        prompts = [p.strip() for p in prompts if p.strip()]
+        return prompts
+
+    def _add_geometric_prompts(self, processor, state, positive_boxes, negative_boxes, mask_prompt):
+        """Add geometric prompts (boxes, points, masks) to state."""
+        device = processor.device
+        all_boxes = []
+        all_box_labels = []
+
+        if positive_boxes is not None and len(positive_boxes['boxes']) > 0:
+            all_boxes.extend(positive_boxes['boxes'])
+            all_box_labels.extend(positive_boxes['labels'])
+
+        if negative_boxes is not None and len(negative_boxes['boxes']) > 0:
+            all_boxes.extend(negative_boxes['boxes'])
+            all_box_labels.extend(negative_boxes['labels'])
+
+        if len(all_boxes) > 0:
+            print(f"[SAM3] Adding {len(all_boxes)} box prompts...")
+            state = processor.add_multiple_box_prompts(all_boxes, all_box_labels, state)
+
+        if mask_prompt is not None:
+            print(f"[SAM3] Adding mask prompt...")
+            if not isinstance(mask_prompt, torch.Tensor):
+                mask_prompt = torch.from_numpy(mask_prompt)
+            mask_prompt = mask_prompt.to(device)
+            state = processor.add_mask_prompt(mask_prompt, state)
+
+        return state
+
+    def _compute_bbox_from_mask(self, mask):
+        """Compute bounding box from binary mask tensor [H, W]."""
+        mask_coords = torch.where(mask > 0.5)
+        if len(mask_coords[0]) > 0:
+            y1 = mask_coords[0].min().float()
+            y2 = mask_coords[0].max().float()
+            x1 = mask_coords[1].min().float()
+            x2 = mask_coords[1].max().float()
+            return torch.tensor([x1, y1, x2, y2], device=mask.device)
+        else:
+            return torch.zeros(4, device=mask.device)
+
+    def _combine_separate(self, all_masks, all_boxes, all_scores, max_detections):
+        """Stack all masks from all prompts, sorted by confidence."""
+        if len(all_masks) == 0:
+            return None, None, None
+
+        combined_masks = torch.cat(all_masks, dim=0)
+        combined_boxes = torch.cat(all_boxes, dim=0) if all_boxes[0] is not None else None
+        combined_scores = torch.cat(all_scores, dim=0) if all_scores[0] is not None else None
+
+        # Sort by score descending
+        if combined_scores is not None and len(combined_scores) > 0:
+            sorted_indices = torch.argsort(combined_scores, descending=True)
+            combined_masks = combined_masks[sorted_indices]
+            if combined_boxes is not None:
+                combined_boxes = combined_boxes[sorted_indices]
+            combined_scores = combined_scores[sorted_indices]
+
+        # Apply max_detections limit
+        if max_detections > 0 and len(combined_masks) > max_detections:
+            combined_masks = combined_masks[:max_detections]
+            if combined_boxes is not None:
+                combined_boxes = combined_boxes[:max_detections]
+            if combined_scores is not None:
+                combined_scores = combined_scores[:max_detections]
+
+        return combined_masks, combined_boxes, combined_scores
+
+    def _combine_merged(self, all_masks, all_boxes, all_scores):
+        """Merge all masks into a single binary mask using logical OR."""
+        if len(all_masks) == 0:
+            return None, None, None
+
+        all_masks_stacked = torch.cat(all_masks, dim=0)
+        merged_mask = torch.any(all_masks_stacked > 0.5, dim=0, keepdim=True).float()
+
+        merged_box = self._compute_bbox_from_mask(merged_mask[0]).unsqueeze(0)
+
+        all_scores_cat = torch.cat(all_scores, dim=0)
+        merged_score = torch.max(all_scores_cat).unsqueeze(0)
+
+        return merged_mask, merged_box, merged_score
+
+    def _combine_by_prompt(self, all_masks, all_boxes, all_scores, text_prompts):
+        """Return one merged mask per prompt (N_prompts masks total)."""
+        if len(all_masks) == 0:
+            return None, None, None
+
+        prompt_masks = []
+        prompt_boxes = []
+        prompt_scores = []
+
+        for masks, boxes, scores in zip(all_masks, all_boxes, all_scores):
+            if masks is None or len(masks) == 0:
+                continue
+
+            merged = torch.any(masks > 0.5, dim=0, keepdim=True).float()
+            prompt_masks.append(merged)
+
+            bbox = self._compute_bbox_from_mask(merged[0])
+            prompt_boxes.append(bbox)
+
+            prompt_scores.append(torch.max(scores))
+
+        if len(prompt_masks) == 0:
+            return None, None, None
+
+        return (
+            torch.cat(prompt_masks, dim=0),
+            torch.stack(prompt_boxes, dim=0),
+            torch.stack(prompt_scores, dim=0)
         )
+
+    def _segment_multi_prompt(self, sam3_model, pil_image, img_w, img_h,
+                              confidence_threshold, text_prompts,
+                              positive_boxes, negative_boxes, mask_prompt,
+                              max_detections, mask_output_mode):
+        """
+        Perform segmentation with multiple text prompts efficiently.
+        Key optimization: Extract image features once, reuse for all prompts.
+        """
+        import json
+
+        processor = sam3_model.processor
+
+        print(f"[SAM3] Running multi-prompt segmentation with {len(text_prompts)} prompts")
+        print(f"[SAM3]   Text prompts: {text_prompts}")
+        print(f"[SAM3]   Output mode: {mask_output_mode}")
+
+        # Update confidence threshold
+        processor.set_confidence_threshold(confidence_threshold)
+
+        # Step 1: Extract image features ONCE (most expensive operation)
+        state = processor.set_image(pil_image)
+
+        # Step 2: Add geometric prompts ONCE (shared across all text prompts)
+        state = self._add_geometric_prompts(processor, state, positive_boxes,
+                                           negative_boxes, mask_prompt)
+
+        # Step 3: Run inference for each text prompt
+        all_masks = []
+        all_boxes = []
+        all_scores = []
+
+        for prompt_idx, prompt in enumerate(text_prompts):
+            print(f"[SAM3] Processing prompt {prompt_idx + 1}/{len(text_prompts)}: '{prompt}'")
+
+            # Set text prompt (overwrites previous text features in state)
+            state = processor.set_text_prompt(prompt.strip(), state)
+
+            # Extract results
+            masks = state.get("masks", None)
+            boxes = state.get("boxes", None)
+            scores = state.get("scores", None)
+
+            if masks is None or len(masks) == 0:
+                print(f"[SAM3]   No detections for prompt '{prompt}' at threshold {confidence_threshold}")
+                continue
+
+            print(f"[SAM3]   Found {len(masks)} detections for prompt '{prompt}'")
+
+            # Sort by score within this prompt
+            if scores is not None and len(scores) > 0:
+                sorted_indices = torch.argsort(scores, descending=True)
+                masks = masks[sorted_indices]
+                boxes = boxes[sorted_indices] if boxes is not None else None
+                scores = scores[sorted_indices] if scores is not None else None
+
+            all_masks.append(masks)
+            all_boxes.append(boxes)
+            all_scores.append(scores)
+
+        # Step 4: Combine results based on output mode
+        if len(all_masks) == 0:
+            print(f"[SAM3] No detections found for any prompt at threshold {confidence_threshold}")
+            empty_mask = torch.zeros(1, img_h, img_w)
+            del state
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
+
+        # Combine based on mode
+        if mask_output_mode == "separate":
+            final_masks, final_boxes, final_scores = self._combine_separate(
+                all_masks, all_boxes, all_scores, max_detections
+            )
+        elif mask_output_mode == "combined":
+            final_masks, final_boxes, final_scores = self._combine_merged(
+                all_masks, all_boxes, all_scores
+            )
+        else:  # "separate_by_prompt"
+            final_masks, final_boxes, final_scores = self._combine_by_prompt(
+                all_masks, all_boxes, all_scores, text_prompts
+            )
+
+        # Convert to ComfyUI format
+        comfy_masks = masks_to_comfy_mask(final_masks)
+
+        # Create visualization
+        print(f"[SAM3] Creating visualization...")
+        vis_image = visualize_masks_on_image(
+            pil_image, final_masks, final_boxes, final_scores, alpha=0.5
+        )
+        vis_tensor = pil_to_comfy_image(vis_image)
+
+        # Convert to JSON
+        boxes_list = tensor_to_list(final_boxes) if final_boxes is not None else []
+        scores_list = tensor_to_list(final_scores) if final_scores is not None else []
+        boxes_json = json.dumps(boxes_list, indent=2)
+        scores_json = json.dumps(scores_list, indent=2)
+
+        print(f"[SAM3] Multi-prompt segmentation complete")
+        print(f"[SAM3] Output: {len(comfy_masks)} masks in '{mask_output_mode}' mode")
+
+        # Cleanup
+        del state
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        return (comfy_masks, vis_tensor, boxes_json, scores_json)
 
     def _segment_grounding(self, sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
                            positive_boxes, negative_boxes, mask_prompt, max_detections):
@@ -144,32 +407,9 @@ class SAM3Segmentation:
             print(f"[SAM3] Adding text prompt...")
             state = processor.set_text_prompt(text_prompt.strip(), state)
 
-        # Add geometric prompts - combine positive and negative
-        all_boxes = []
-        all_box_labels = []
-
-        if positive_boxes is not None and len(positive_boxes['boxes']) > 0:
-            all_boxes.extend(positive_boxes['boxes'])
-            all_box_labels.extend(positive_boxes['labels'])
-
-        if negative_boxes is not None and len(negative_boxes['boxes']) > 0:
-            all_boxes.extend(negative_boxes['boxes'])
-            all_box_labels.extend(negative_boxes['labels'])
-
-        if len(all_boxes) > 0:
-            print(f"[SAM3] Adding {len(all_boxes)} box prompts...")
-            state = processor.add_multiple_box_prompts(
-                all_boxes,
-                all_box_labels,
-                state
-            )
-
-        if mask_prompt is not None:
-            print(f"[SAM3] Adding mask prompt...")
-            if not isinstance(mask_prompt, torch.Tensor):
-                mask_prompt = torch.from_numpy(mask_prompt)
-            mask_prompt = mask_prompt.to(device)
-            state = processor.add_mask_prompt(mask_prompt, state)
+        # Add geometric prompts using extracted helper
+        state = self._add_geometric_prompts(processor, state, positive_boxes,
+                                           negative_boxes, mask_prompt)
 
         # Extract results
         masks = state.get("masks", None)
@@ -722,10 +962,294 @@ class SAM3InteractiveSegmentation:
         return (comfy_masks, vis_tensor, boxes_json, scores_json)
 
 
+class SAM3InteractiveSegmentationV2:
+    """
+    SAM2-style interactive segmentation with multi-mask output.
+
+    Returns all 3 mask candidates with IoU scores for selection,
+    plus low-res mask logits for iterative refinement.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "sam3_model": ("SAM3_MODEL", {
+                    "tooltip": "SAM3 model loaded from LoadSAM3Model node"
+                }),
+                "image": ("IMAGE", {
+                    "tooltip": "Input image to perform segmentation on"
+                }),
+            },
+            "optional": {
+                "positive_points": ("SAM3_POINTS_PROMPT", {
+                    "tooltip": "Foreground points - segment objects at these locations"
+                }),
+                "negative_points": ("SAM3_POINTS_PROMPT", {
+                    "tooltip": "Background points - exclude these areas from segmentation"
+                }),
+                "box": ("SAM3_BOXES_PROMPT", {
+                    "tooltip": "Box prompt to constrain segmentation region"
+                }),
+                "mask_input": ("MASK", {
+                    "tooltip": "Low-res mask from previous iteration for refinement"
+                }),
+                "multimask_output": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "Return 3 mask candidates with different quality scores"
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("MASK", "MASK", "MASK", "STRING", "IMAGE")
+    RETURN_NAMES = ("mask_1", "mask_2", "mask_3", "scores", "visualization")
+    FUNCTION = "segment"
+    CATEGORY = "SAM3"
+
+    def segment(self, sam3_model, image, positive_points=None, negative_points=None,
+                box=None, mask_input=None, multimask_output=True):
+        """
+        Perform SAM2-style interactive segmentation with proper multi-mask output.
+        """
+        import json
+
+        comfy.model_management.load_models_gpu([sam3_model])
+
+        processor = sam3_model.processor
+        model = processor.model
+
+        # Check if interactive predictor is available
+        if model.inst_interactive_predictor is None:
+            print("[SAM3 Interactive V2] ERROR: inst_interactive_predictor not available")
+            pil_image = comfy_image_to_pil(image)
+            img_w, img_h = pil_image.size
+            empty_mask = torch.zeros(1, img_h, img_w)
+            return (empty_mask, empty_mask, empty_mask, "[]", pil_to_comfy_image(pil_image))
+
+        pil_image = comfy_image_to_pil(image)
+        img_w, img_h = pil_image.size
+        print(f"[SAM3 Interactive V2] Image size: {pil_image.size}")
+
+        # Set image and get backbone features
+        state = processor.set_image(pil_image)
+
+        # Collect all points
+        all_points = []
+        all_point_labels = []
+
+        if positive_points is not None and len(positive_points.get('points', [])) > 0:
+            for pt in positive_points['points']:
+                px = pt[0] * img_w
+                py = pt[1] * img_h
+                all_points.append([px, py])
+                all_point_labels.append(1)
+            print(f"[SAM3 Interactive V2] Added {len(positive_points['points'])} positive points")
+
+        if negative_points is not None and len(negative_points.get('points', [])) > 0:
+            for pt in negative_points['points']:
+                px = pt[0] * img_w
+                py = pt[1] * img_h
+                all_points.append([px, py])
+                all_point_labels.append(0)
+            print(f"[SAM3 Interactive V2] Added {len(negative_points['points'])} negative points")
+
+        # Collect box
+        box_array = None
+        if box is not None and len(box.get('boxes', [])) > 0:
+            b = box['boxes'][0]
+            cx, cy, w, h = b
+            x1 = (cx - w/2) * img_w
+            y1 = (cy - h/2) * img_h
+            x2 = (cx + w/2) * img_w
+            y2 = (cy + h/2) * img_h
+            box_array = np.array([x1, y1, x2, y2])
+            print(f"[SAM3 Interactive V2] Box: [{x1:.1f}, {y1:.1f}, {x2:.1f}, {y2:.1f}]")
+
+        point_coords = np.array(all_points) if all_points else None
+        point_labels = np.array(all_point_labels) if all_point_labels else None
+
+        if point_coords is None and box_array is None:
+            print("[SAM3 Interactive V2] ERROR: No points or box provided")
+            empty_mask = torch.zeros(1, img_h, img_w)
+            return (empty_mask, empty_mask, empty_mask, "[]", pil_to_comfy_image(pil_image))
+
+        # Convert mask_input if provided
+        mask_input_np = None
+        if mask_input is not None:
+            if isinstance(mask_input, torch.Tensor):
+                mask_input_np = mask_input.cpu().numpy()
+            else:
+                mask_input_np = mask_input
+            print(f"[SAM3 Interactive V2] Using mask input for refinement")
+
+        # Call predict_inst with mask_input support
+        masks_np, scores_np, low_res_masks = model.predict_inst(
+            state,
+            point_coords=point_coords,
+            point_labels=point_labels,
+            box=box_array,
+            mask_input=mask_input_np,
+            multimask_output=multimask_output,
+            normalize_coords=False,
+        )
+
+        print(f"[SAM3 Interactive V2] Prediction returned {masks_np.shape[0]} masks")
+        print(f"[SAM3 Interactive V2]   Scores: {scores_np.tolist()}")
+
+        # Convert to torch tensors
+        masks = torch.from_numpy(masks_np).float()  # [3, H, W] or [1, H, W]
+        scores = torch.from_numpy(scores_np)
+
+        # Ensure we have 3 masks for output consistency
+        if masks.shape[0] == 1:
+            # Pad to 3 masks
+            masks = torch.cat([masks, torch.zeros_like(masks), torch.zeros_like(masks)], dim=0)
+            scores = torch.cat([scores, torch.zeros_like(scores), torch.zeros_like(scores)], dim=0)
+        elif masks.shape[0] < 3:
+            # Pad to 3 if needed
+            padding_needed = 3 - masks.shape[0]
+            masks = torch.cat([masks] + [torch.zeros_like(masks[0:1])] * padding_needed, dim=0)
+            scores = torch.cat([scores] + [torch.zeros_like(scores[0:1])] * padding_needed, dim=0)
+
+        # Convert to ComfyUI format
+        mask_1 = masks_to_comfy_mask(masks[0:1])
+        mask_2 = masks_to_comfy_mask(masks[1:2])
+        mask_3 = masks_to_comfy_mask(masks[2:3])
+
+        # Compute bounding boxes from masks
+        boxes_list = []
+        for mask in masks:
+            mask_coords = torch.where(mask > 0.5)
+            if len(mask_coords[0]) > 0:
+                y1 = mask_coords[0].min().item()
+                y2 = mask_coords[0].max().item()
+                x1 = mask_coords[1].min().item()
+                x2 = mask_coords[1].max().item()
+                boxes_list.append([x1, y1, x2, y2])
+            else:
+                boxes_list.append([0, 0, 0, 0])
+
+        boxes = torch.tensor(boxes_list).float()
+
+        # Create visualization (show best mask)
+        best_idx = np.argmax(scores_np)
+        vis_image = visualize_masks_on_image(
+            pil_image, masks[best_idx:best_idx+1], boxes[best_idx:best_idx+1],
+            scores[best_idx:best_idx+1], alpha=0.5
+        )
+        vis_tensor = pil_to_comfy_image(vis_image)
+
+        # Format scores as JSON
+        scores_json = json.dumps(scores_np.tolist(), indent=2)
+
+        print(f"[SAM3 Interactive V2] Segmentation complete")
+
+        # Cleanup
+        del state
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        return (mask_1, mask_2, mask_3, scores_json, vis_tensor)
+
+
+class SAM3SelectBestMask:
+    """Select best mask from multi-mask output based on IoU scores."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "mask_1": ("MASK", {}),
+                "mask_2": ("MASK", {}),
+                "mask_3": ("MASK", {}),
+                "scores": ("STRING", {
+                    "tooltip": "JSON array of scores from SAM3InteractiveSegmentationV2"
+                }),
+            },
+            "optional": {
+                "selection_mode": (["highest_score", "manual"], {
+                    "default": "highest_score",
+                    "tooltip": "highest_score: Auto-select best. manual: Choose by index."
+                }),
+                "manual_index": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": 2,
+                    "tooltip": "Mask index to select in manual mode (0, 1, or 2)"
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("MASK", "FLOAT")
+    RETURN_NAMES = ("best_mask", "best_score")
+    FUNCTION = "select_best"
+    CATEGORY = "SAM3"
+
+    def select_best(self, mask_1, mask_2, mask_3, scores, selection_mode="highest_score", manual_index=0):
+        import json
+        scores_list = json.loads(scores)
+
+        if selection_mode == "highest_score":
+            best_idx = scores_list.index(max(scores_list))
+            print(f"[SAM3 Select] Auto-selected mask {best_idx} with score {scores_list[best_idx]:.4f}")
+        else:
+            best_idx = manual_index
+            print(f"[SAM3 Select] Manually selected mask {best_idx} with score {scores_list[best_idx]:.4f}")
+
+        masks = [mask_1, mask_2, mask_3]
+        return (masks[best_idx], float(scores_list[best_idx]))
+
+
+class SAM3RefinementPrepare:
+    """Prepare mask for refinement iteration (converts high-res mask to low-res)."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "mask": ("MASK", {
+                    "tooltip": "High-resolution mask to use for refinement"
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("mask_input",)
+    FUNCTION = "prepare"
+    CATEGORY = "SAM3"
+
+    def prepare(self, mask):
+        """
+        Prepare mask for refinement by downsampling to 256x256.
+        This matches SAM2's expected low-res mask input format.
+        """
+        import torch.nn.functional as F
+
+        # Ensure mask has correct shape [B, H, W]
+        if len(mask.shape) == 2:
+            mask = mask.unsqueeze(0)
+
+        # Downsample to 256x256 (SAM2's low-res format)
+        mask_lowres = F.interpolate(
+            mask.unsqueeze(1),  # Add channel dim [B, 1, H, W]
+            size=(256, 256),
+            mode='bilinear',
+            align_corners=False
+        ).squeeze(1)  # Remove channel dim [B, H, W]
+
+        print(f"[SAM3 Refinement] Prepared mask for refinement: {mask.shape} -> {mask_lowres.shape}")
+
+        return (mask_lowres,)
+
+
 # Register the nodes
 NODE_CLASS_MAPPINGS = {
     "SAM3Segmentation": SAM3Segmentation,
     "SAM3InteractiveSegmentation": SAM3InteractiveSegmentation,
+    "SAM3InteractiveSegmentationV2": SAM3InteractiveSegmentationV2,
+    "SAM3SelectBestMask": SAM3SelectBestMask,
+    "SAM3RefinementPrepare": SAM3RefinementPrepare,
     "SAM3CreateBox": SAM3CreateBox,
     "SAM3CreatePoint": SAM3CreatePoint,
     "SAM3CombineBoxes": SAM3CombineBoxes,
@@ -735,6 +1259,9 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3Segmentation": "SAM3 Segmentation",
     "SAM3InteractiveSegmentation": "SAM3 Interactive Segmentation (Experimental)",
+    "SAM3InteractiveSegmentationV2": "SAM3 Interactive Segmentation V2",
+    "SAM3SelectBestMask": "SAM3 Select Best Mask",
+    "SAM3RefinementPrepare": "SAM3 Refinement Prepare",
     "SAM3CreateBox": "SAM3 Create Box",
     "SAM3CreatePoint": "SAM3 Create Point",
     "SAM3CombineBoxes": "SAM3 Combine Boxes",
