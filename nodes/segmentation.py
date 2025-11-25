@@ -1,17 +1,22 @@
 """
 SAM3Segmentation node - Performs segmentation using text prompts
+
+This node uses ComfyUI's model_management for GPU/CPU handling.
 """
 import torch
 import numpy as np
+import gc
+
+import comfy.model_management
+
 from .utils import (
     comfy_image_to_pil,
     pil_to_comfy_image,
     masks_to_comfy_mask,
     visualize_masks_on_image,
     tensor_to_list,
-    ensure_model_on_device,
-    offload_model_if_needed
 )
+from .sam3_model_patcher import SAM3ModelPatcher
 
 
 class SAM3Segmentation:
@@ -85,7 +90,7 @@ class SAM3Segmentation:
         Perform SAM3 segmentation with optional geometric prompts
 
         Args:
-            sam3_model: Model dict from LoadSAM3Model node
+            sam3_model: SAM3ModelPatcher from LoadSAM3Model node
             image: ComfyUI image tensor [B, H, W, C]
             confidence_threshold: Minimum confidence score for detections
             text_prompt: Optional text description of objects to segment
@@ -99,13 +104,12 @@ class SAM3Segmentation:
         Returns:
             Tuple of (masks, visualization, boxes_json, scores_json)
         """
-        # Extract processor from model dict
-        processor = sam3_model["processor"]
-        device = sam3_model["device"]
+        # Use ComfyUI's model management to load model to GPU
+        comfy.model_management.load_models_gpu([sam3_model])
 
-        # Ensure model is on GPU if use_gpu_cache is False (model may have been offloaded)
-        ensure_model_on_device(sam3_model)
-        device = sam3_model["device"]  # Update device in case it changed
+        # Access processor from the patcher
+        processor = sam3_model.processor
+        device = sam3_model.sam3_wrapper.device
 
         print(f"[SAM3] Running segmentation")
         if text_prompt:
@@ -227,8 +231,11 @@ class SAM3Segmentation:
             print(f"[SAM3] TIP: Try lowering the confidence_threshold or check if the object is in the image")
             h, w = pil_image.size[1], pil_image.size[0]
             empty_mask = torch.zeros(1, h, w)
-            # Offload model to CPU if use_gpu_cache is False
-            offload_model_if_needed(sam3_model)
+            # Clean up state
+            del state
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
 
         print(f"[SAM3] Found {len(masks)} detections above threshold {confidence_threshold}")
@@ -285,8 +292,11 @@ class SAM3Segmentation:
         print(f"[SAM3 DEBUG] Final scores: {scores_list}")
         print(f"[SAM3 DEBUG] Mask output shape: {comfy_masks.shape}")
 
-        # Offload model to CPU if use_gpu_cache is False
-        offload_model_if_needed(sam3_model)
+        # Clean up state to free GPU memory
+        del state
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
         return (comfy_masks, vis_tensor, boxes_json, scores_json)
 

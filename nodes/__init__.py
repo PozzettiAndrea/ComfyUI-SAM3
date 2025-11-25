@@ -1,5 +1,10 @@
 """
-ComfyUI-SAM3 Nodes
+ComfyUI-SAM3 Nodes - Stateless Architecture
+
+Version 3.0.0 refactoring:
+- ComfyUI model management integration (ModelPatcher, load_models_gpu)
+- Immutable video state (no global mutable state)
+- Automatic cleanup (no manual SAM3CloseVideoSession needed)
 """
 
 from .load_model import NODE_CLASS_MAPPINGS as LOAD_MODEL_MAPPINGS
