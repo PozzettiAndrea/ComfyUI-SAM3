@@ -580,7 +580,9 @@ class SAM3Propagate:
         # SAM3 requires bf16 - wrap reconstruction AND propagation
         masks_dict = {}
         scores_dict = {}  # Store confidence scores per frame
-        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+        # Only use autocast on CUDA
+        autocast_context = torch.autocast(device_type="cuda", dtype=torch.bfloat16) if torch.cuda.is_available() else torch.no_grad()
+        with autocast_context:
             print_vram("Before reconstruction (in autocast)")
             # Reconstruct inference state from immutable state
             inference_state = get_inference_state(video_model, video_state)
