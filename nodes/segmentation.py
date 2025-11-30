@@ -563,6 +563,12 @@ class SAM3Segmentation:
                 "box": ("SAM3_BOXES_PROMPT", {
                     "tooltip": "Box prompt to constrain segmentation region. Only first box is used. Connect from SAM3CombineBoxes."
                 }),
+                "refinement_iterations": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": 10,
+                    "tooltip": "Number of refinement passes. Each pass feeds the mask back for cleaner edges."
+                }),
                 "use_multimask": ("BOOLEAN", {
                     "default": True,
                     "tooltip": "If True, generates 3 mask candidates at different granularities (subpart/part/whole). Better for ambiguous single clicks. If False, generates single mask directly - faster, good for multiple points."
@@ -578,13 +584,13 @@ class SAM3Segmentation:
             }
         }
 
-    RETURN_TYPES = ("MASK", "IMAGE", "STRING", "STRING")
-    RETURN_NAMES = ("masks", "visualization", "boxes", "scores")
+    RETURN_TYPES = ("MASK", "MASK", "IMAGE", "STRING", "STRING")
+    RETURN_NAMES = ("mask", "mask_logits", "visualization", "boxes", "scores")
     FUNCTION = "segment"
     CATEGORY = "SAM3"
 
     def segment(self, sam3_model, image, positive_points=None, negative_points=None,
-                box=None, use_multimask=True, output_best_mask=True, offload_model=False):
+                box=None, refinement_iterations=0, use_multimask=True, output_best_mask=True, offload_model=False):
         """
         Perform SAM2-style interactive segmentation at point/box locations.
 
@@ -618,7 +624,8 @@ class SAM3Segmentation:
             pil_image = comfy_image_to_pil(image)
             img_w, img_h = pil_image.size
             empty_mask = torch.zeros(1, img_h, img_w)
-            return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
+            empty_logits = torch.zeros(1, 256, 256)  # low-res placeholder
+            return (empty_mask, empty_logits, pil_to_comfy_image(pil_image), "[]", "[]")
 
         print("[SAM3 Segmentation] Using click-based interactive segmentation")
 
@@ -682,23 +689,10 @@ class SAM3Segmentation:
             print(f"[SAM3 Segmentation]   Labels: {point_labels.tolist()}")
 
         if point_coords is None and box_array is None:
-            print("[SAM3 Segmentation] ERROR: No points or box provided. At least one prompt is required.")
+            print("[SAM3 Segmentation] ERROR: No prompts provided. Provide points or box.")
             empty_mask = torch.zeros(1, img_h, img_w)
-            return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
-
-        # DEBUG: Log inputs before predict_inst call
-        print(f"[SAM3 SEG DEBUG] ========== PREDICT_INST INPUTS ==========")
-        if positive_points is not None:
-            print(f"[SAM3 SEG DEBUG] Input positive_points (normalized 0-1): {positive_points.get('points', [])}")
-        if negative_points is not None:
-            print(f"[SAM3 SEG DEBUG] Input negative_points (normalized 0-1): {negative_points.get('points', [])}")
-        print(f"[SAM3 SEG DEBUG] Converted point_coords (pixels): {point_coords.tolist() if point_coords is not None else None}")
-        print(f"[SAM3 SEG DEBUG] Point labels: {point_labels.tolist() if point_labels is not None else None}")
-        print(f"[SAM3 SEG DEBUG] Original image size: {img_h}x{img_w}")
-        print(f"[SAM3 SEG DEBUG] Box input: {box_array.tolist() if box_array is not None else None}")
-        print(f"[SAM3 SEG DEBUG] normalize_coords=True (pixel coords → model space)")
-        print(f"[SAM3 SEG DEBUG] use_multimask={use_multimask}")
-        print(f"[SAM3 SEG DEBUG] ==========================================")
+            empty_logits = torch.zeros(1, 256, 256)
+            return (empty_mask, empty_logits, pil_to_comfy_image(pil_image), "[]", "[]")
 
         # Call predict_inst which uses inst_interactive_predictor
         masks_np, scores_np, low_res_masks = model.predict_inst(
@@ -706,12 +700,28 @@ class SAM3Segmentation:
             point_coords=point_coords,
             point_labels=point_labels,
             box=box_array,
+            mask_input=None,
             multimask_output=use_multimask,
             normalize_coords=True,  # Input is pixel coords, transform to model space
         )
 
+        # Refinement iterations - feed mask back for cleaner edges
+        for i in range(refinement_iterations):
+            best_idx = np.argmax(scores_np)
+            masks_np, scores_np, low_res_masks = model.predict_inst(
+                state,
+                point_coords=point_coords,
+                point_labels=point_labels,
+                box=box_array,
+                mask_input=low_res_masks[best_idx:best_idx+1],
+                multimask_output=use_multimask,
+                normalize_coords=True,
+            )
+            print(f"[SAM3 Segmentation] Refinement {i+1}/{refinement_iterations}, best score: {scores_np.max():.4f}")
+
         print(f"[SAM3 Segmentation] Prediction returned {masks_np.shape[0]} masks")
         print(f"[SAM3 Segmentation]   Mask shape: {masks_np.shape}")
+        print(f"[SAM3 Segmentation]   Low-res shape: {low_res_masks.shape}")
         print(f"[SAM3 Segmentation]   Scores: {scores_np.tolist()}")
 
         if output_best_mask:
@@ -719,17 +729,20 @@ class SAM3Segmentation:
             best_idx = np.argmax(scores_np)
             best_mask = masks_np[best_idx]
             best_score = scores_np[best_idx]
+            best_low_res = low_res_masks[best_idx]
 
             print(f"[SAM3 Segmentation] Selected mask {best_idx} with score {best_score:.4f}")
 
             # Convert to torch tensors
             masks = torch.from_numpy(best_mask).unsqueeze(0).float()  # [1, H, W]
             scores = torch.tensor([best_score])
+            low_res_tensor = torch.from_numpy(best_low_res).unsqueeze(0).float()  # [1, H, W]
         else:
             # Output all mask candidates
             print(f"[SAM3 Segmentation] Outputting all {masks_np.shape[0]} mask candidates")
             masks = torch.from_numpy(masks_np).float()  # [N, H, W]
             scores = torch.from_numpy(scores_np).float()
+            low_res_tensor = torch.from_numpy(low_res_masks).float()  # [N, H, W]
 
         # Compute bounding boxes from masks
         boxes_list = []
@@ -776,7 +789,7 @@ class SAM3Segmentation:
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 
-        return (comfy_masks, vis_tensor, boxes_json, scores_json)
+        return (comfy_masks, low_res_tensor, vis_tensor, boxes_json, scores_json)
 
 
 # Register the nodes
