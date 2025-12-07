@@ -154,11 +154,24 @@ jobs:
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install CUDA Toolkit
-        uses: Jimver/cuda-toolkit@v0.2.18
-        with:
-          cuda: '12.4.0'
-          method: 'network'
+      - name: Install CUDA Toolkit (Official NVIDIA)
+        run: |
+          # Download official NVIDIA CUDA installer
+          $cudaUrl = "https://developer.download.nvidia.com/compute/cuda/12.4.0/network_installers/cuda_12.4.0_windows_network.exe"
+          $installerPath = "$env:TEMP\cuda_installer.exe"
+
+          Write-Host "Downloading CUDA 12.4 from NVIDIA..."
+          Invoke-WebRequest -Uri $cudaUrl -OutFile $installerPath -UseBasicParsing
+
+          Write-Host "Installing CUDA Toolkit (this may take a few minutes)..."
+          # Silent install with just the compiler and libraries needed for extension compilation
+          Start-Process -FilePath $installerPath -ArgumentList "-s", "nvcc_12.4", "cudart_12.4", "visual_studio_integration_12.4" -Wait -NoNewWindow
+
+          # Add to PATH
+          $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
+          echo "CUDA_PATH=$cudaPath" >> $env:GITHUB_ENV
+          echo "$cudaPath\bin" >> $env:GITHUB_PATH
+        shell: pwsh
 
       - name: Check CUDA installation
         run: |
@@ -195,8 +208,6 @@ jobs:
         run: |
           python speedup.py --compile-only
         shell: pwsh
-        env:
-          CUDA_HOME: ${{ env.CUDA_PATH }}
 
       - name: Verify compiled extensions
         run: |
