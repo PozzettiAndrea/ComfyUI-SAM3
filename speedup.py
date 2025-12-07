@@ -540,7 +540,29 @@ def try_install_cc_torch():
     return success
 
 
+def check_python_version():
+    """Check Python version compatibility."""
+    major, minor = sys.version_info[:2]
+
+    if major < 3 or (major == 3 and minor < 10):
+        print(f"[ComfyUI-SAM3] [ERROR] Python {major}.{minor} is too old")
+        print("[ComfyUI-SAM3] Minimum required: Python 3.10")
+        return False
+
+    if major == 3 and minor >= 13:
+        print(f"[ComfyUI-SAM3] [WARNING] Python {major}.{minor} detected")
+        print("[ComfyUI-SAM3] Python 3.13+ may have compatibility issues with CUDA extensions")
+        print("[ComfyUI-SAM3] Recommended: Python 3.10, 3.11, or 3.12")
+        # Continue anyway, just warn
+
+    return True
+
+
 if __name__ == "__main__":
+    # Check Python version first
+    if not check_python_version():
+        sys.exit(1)
+
     # Parse command line arguments
     parser = argparse.ArgumentParser(
         description="Install GPU acceleration for ComfyUI-SAM3",

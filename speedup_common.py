@@ -108,6 +108,47 @@ def find_cuda_home():
     return None
 
 
+def check_msvc_available():
+    """
+    Check if MSVC compiler (cl.exe) is available on Windows.
+    Returns True if found or not on Windows, False if missing on Windows.
+    """
+    if sys.platform != "win32":
+        return True  # Not needed on non-Windows
+
+    import shutil
+
+    # Check if cl.exe is in PATH
+    if shutil.which("cl"):
+        print("[ComfyUI-SAM3] [OK] MSVC compiler (cl.exe) found in PATH")
+        return True
+
+    # Check common Visual Studio installation paths
+    vs_paths = [
+        r"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC",
+        r"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC",
+        r"C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC",
+        r"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC",
+    ]
+
+    for vs_path in vs_paths:
+        if os.path.exists(vs_path):
+            print(f"[ComfyUI-SAM3] [OK] Visual Studio found at: {vs_path}")
+            print("[ComfyUI-SAM3] [WARNING] cl.exe not in PATH - run from Developer Command Prompt")
+            return True
+
+    print("[ComfyUI-SAM3] [ERROR] MSVC compiler not found")
+    print("[ComfyUI-SAM3]")
+    print("[ComfyUI-SAM3] GPU acceleration requires Visual Studio Build Tools on Windows.")
+    print("[ComfyUI-SAM3] Download from: https://visualstudio.microsoft.com/visual-cpp-build-tools/")
+    print("[ComfyUI-SAM3] During installation, select 'Desktop development with C++'")
+    print("[ComfyUI-SAM3]")
+    print("[ComfyUI-SAM3] After installing, run speedup.py from 'Developer Command Prompt for VS'")
+    return False
+
+
 def check_nvcc_available():
     """
     Check if CUDA compiler (nvcc) is available.
@@ -449,16 +490,35 @@ def install_extension(name, repo_url, cuda_arch_list, compile_only=False, timeou
 
     # Set C/C++ compiler paths explicitly
     import shutil
-    gcc_path = shutil.which("gcc-11") or shutil.which("gcc")
-    gxx_path = shutil.which("g++-11") or shutil.which("g++")
-    if gcc_path:
-        cuda_env["CC"] = gcc_path
-        os.environ["CC"] = gcc_path
-        print(f"[ComfyUI-SAM3] Set CC={gcc_path}")
-    if gxx_path:
-        cuda_env["CXX"] = gxx_path
-        os.environ["CXX"] = gxx_path
-        print(f"[ComfyUI-SAM3] Set CXX={gxx_path}")
+
+    if sys.platform == "win32":
+        # Windows: Check MSVC availability and set flags
+        if not check_msvc_available():
+            return False
+
+        # MSVC flags to fix C2872 'std' ambiguous symbol error (PyTorch 2.8+)
+        # /permissive- enables stricter C++ conformance
+        # /Zc:__cplusplus reports correct C++ standard version
+        msvc_flags = "/permissive- /Zc:__cplusplus"
+        existing_cflags = cuda_env.get("CFLAGS", "")
+        existing_cxxflags = cuda_env.get("CXXFLAGS", "")
+        cuda_env["CFLAGS"] = f"{existing_cflags} {msvc_flags}".strip()
+        cuda_env["CXXFLAGS"] = f"{existing_cxxflags} {msvc_flags}".strip()
+        os.environ["CFLAGS"] = cuda_env["CFLAGS"]
+        os.environ["CXXFLAGS"] = cuda_env["CXXFLAGS"]
+        print(f"[ComfyUI-SAM3] Set MSVC flags: {msvc_flags}")
+    else:
+        # Linux/Mac: Use GCC
+        gcc_path = shutil.which("gcc-11") or shutil.which("gcc")
+        gxx_path = shutil.which("g++-11") or shutil.which("g++")
+        if gcc_path:
+            cuda_env["CC"] = gcc_path
+            os.environ["CC"] = gcc_path
+            print(f"[ComfyUI-SAM3] Set CC={gcc_path}")
+        if gxx_path:
+            cuda_env["CXX"] = gxx_path
+            os.environ["CXX"] = gxx_path
+            print(f"[ComfyUI-SAM3] Set CXX={gxx_path}")
 
     # Install extension from GitHub
     print(f"[ComfyUI-SAM3] Compiling {name} from source (estimated time: ~60 seconds per architecture)...")

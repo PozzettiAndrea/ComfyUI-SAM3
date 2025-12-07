@@ -17,12 +17,15 @@ sys.path.insert(0, str(custom_nodes_dir))
 
 # Mock folder_paths module (ComfyUI path management)
 test_models_dir = os.environ.get("TEST_MODELS_DIR", str(Path.home() / ".cache" / "test_models"))
+test_base_path = os.environ.get("TEST_BASE_PATH", str(Path.home() / ".cache" / "comfy_test"))
 mock_folder_paths = type("folder_paths", (), {})()
 mock_folder_paths.models_dir = test_models_dir
+mock_folder_paths.base_path = test_base_path
 mock_folder_paths.get_folder_paths = lambda x: [test_models_dir]
 mock_folder_paths.get_temp_directory = lambda: "/tmp/comfy_temp"
 mock_folder_paths.get_output_directory = lambda: "/tmp/comfy_output"
 mock_folder_paths.get_input_directory = lambda: "/tmp/comfy_input"
+mock_folder_paths.add_model_folder_path = lambda name, path: None
 sys.modules["folder_paths"] = mock_folder_paths
 
 # Mock comfy modules
@@ -40,11 +43,36 @@ mock_comfy_mm.load_models_gpu = lambda x: None
 mock_comfy_mm.unet_offload_device = lambda: "cpu"
 mock_comfy_mm.is_device_mps = lambda x: False
 mock_comfy_mm.get_autocast_device = lambda x: "cpu"
+mock_comfy_mm.module_size = lambda x: 1000000  # 1MB mock size
 mock_comfy.model_management = mock_comfy_mm
+
+# Mock model_patcher with ModelPatcher base class
+class MockModelPatcher:
+    """Mock ModelPatcher for testing"""
+    def __init__(self, model=None, load_device="cpu", offload_device="cpu", size=0, weight_inplace_update=False):
+        self.model = model
+        self.load_device = load_device
+        self.offload_device = offload_device
+        self.size = size
+        self.weight_inplace_update = weight_inplace_update
+        self.patches = {}
+        self.object_patches = {}
+        self.model_options = {"transformer_options": {}}
+
+    def model_size(self):
+        return self.size
+
+    def cleanup(self):
+        pass
+
+mock_comfy_model_patcher = type("model_patcher", (), {})()
+mock_comfy_model_patcher.ModelPatcher = MockModelPatcher
+mock_comfy.model_patcher = mock_comfy_model_patcher
 
 sys.modules["comfy"] = mock_comfy
 sys.modules["comfy.utils"] = mock_comfy_utils
 sys.modules["comfy.model_management"] = mock_comfy_mm
+sys.modules["comfy.model_patcher"] = mock_comfy_model_patcher
 
 # Mock server module (ComfyUI server)
 mock_prompt_server_instance = MagicMock()
