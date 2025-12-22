@@ -10,7 +10,6 @@ Unified model supports both image segmentation and video tracking workflows.
 """
 from pathlib import Path
 import gc
-import os
 
 import torch
 import comfy.model_management
@@ -142,8 +141,8 @@ class LoadSAM3Model:
     """
     Node to load SAM3 model with ComfyUI memory management integration.
 
-    Specify the path to the model checkpoint. If the model doesn't exist
-    and an HF token is provided, it will be downloaded automatically.
+    Specify the path to the model checkpoint. If the model doesn't exist,
+    it will be automatically downloaded from HuggingFace.
     """
 
     @classmethod
@@ -151,18 +150,10 @@ class LoadSAM3Model:
         return {
             "required": {
                 "model_path": ("STRING", {
-                    "default": "models/sam3/sam3.safetensors",
-                    "tooltip": "Path to SAM3 model checkpoint (relative to ComfyUI root or absolute)"
+                    "default": "models/sam3/sam3.pt",
+                    "tooltip": "Path to SAM3 model checkpoint (relative to ComfyUI root or absolute). Auto-downloads if not found."
                 }),
             },
-            "optional": {
-                "hf_token": ("STRING", {
-                    "default": "",
-                    "multiline": False,
-                    "placeholder": "HuggingFace token (for auto-download)",
-                    "tooltip": "If model doesn't exist at path and token is provided, downloads from HuggingFace"
-                }),
-            }
         }
 
     RETURN_TYPES = ("SAM3_MODEL",)
@@ -170,16 +161,16 @@ class LoadSAM3Model:
     FUNCTION = "load_model"
     CATEGORY = "SAM3"
 
-    def load_model(self, model_path, hf_token=""):
+    def load_model(self, model_path):
         """
         Load SAM3 unified model with ComfyUI integration.
 
         Builds a unified model that supports both image segmentation and video tracking.
         Instance interactivity (SAM2-style points/boxes) is always enabled.
+        Auto-downloads from HuggingFace if model not found.
 
         Args:
             model_path: Path to model checkpoint (relative or absolute)
-            hf_token: Optional HuggingFace token for auto-download if model missing
 
         Returns:
             Tuple containing SAM3UnifiedModel for ComfyUI memory management
@@ -209,16 +200,10 @@ class LoadSAM3Model:
             # Always resolve relative paths against the ComfyUI root directory
             checkpoint_path = Path(comfy_base_path) / checkpoint_path
 
-        # Check if model exists, download if needed
+        # Check if model exists, download if needed (public repo, no token required)
         if not checkpoint_path.exists():
-            if hf_token and hf_token.strip():
-                print(f"[SAM3] Model not found at {checkpoint_path}, downloading...")
-                self._download_from_huggingface(hf_token, checkpoint_path)
-            else:
-                raise FileNotFoundError(
-                    f"[SAM3] Model file not found: {checkpoint_path}\n"
-                    f"Either place the model at this path, or provide an hf_token to download it."
-                )
+            print(f"[SAM3] Model not found at {checkpoint_path}, downloading from HuggingFace...")
+            self._download_from_huggingface(checkpoint_path)
 
         checkpoint_path_str = str(checkpoint_path)
 
@@ -232,14 +217,9 @@ class LoadSAM3Model:
         # Build video predictor (contains both image and video capabilities)
         print(f"[SAM3] Building SAM3 unified model...")
         try:
-            # Set HF token if provided (for potential downloads)
-            if hf_token:
-                os.environ["HF_TOKEN"] = hf_token
-
             video_predictor = Sam3VideoPredictor(
                 checkpoint_path=checkpoint_path_str,
                 bpe_path=bpe_path_str,
-                hf_token=hf_token if hf_token else None,
                 enable_inst_interactivity=enable_inst_interactivity,
             )
         except FileNotFoundError as e:
@@ -290,11 +270,11 @@ class LoadSAM3Model:
 
         return (unified_model,)
 
-    def _download_from_huggingface(self, hf_token, target_path):
-        """Download SAM3 model from HuggingFace to the specified path."""
+    def _download_from_huggingface(self, target_path):
+        """Download SAM3 model from HuggingFace (public repo, no token needed)."""
         if not HF_HUB_AVAILABLE:
             raise ImportError(
-                "[SAM3] huggingface_hub is required to download models from HuggingFace.\n"
+                "[SAM3] huggingface_hub is required to download models.\n"
                 "Please install it with: pip install huggingface_hub"
             )
 
@@ -302,30 +282,19 @@ class LoadSAM3Model:
         target_path = Path(target_path)
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
-        print(f"[SAM3] Downloading SAM3 model from HuggingFace...")
+        SAM3_MODEL_ID = "1038lab/sam3"
+        SAM3_CKPT_NAME = "sam3.pt"
+
+        print(f"[SAM3] Downloading from {SAM3_MODEL_ID}...")
         print(f"[SAM3] Target: {target_path}")
 
         try:
-            SAM3_MODEL_ID = "1038lab/sam3"
-            SAM3_CKPT_NAME = "sam3.safetensors"
-
-            # Token is optional for public repo
-            token = hf_token.strip() if hf_token else None
-
             hf_hub_download(
                 repo_id=SAM3_MODEL_ID,
                 filename=SAM3_CKPT_NAME,
-                token=token,
                 local_dir=str(target_path.parent),
-                local_dir_use_symlinks=False
             )
-
-            # hf_hub_download saves as filename, rename if needed
-            downloaded_file = target_path.parent / SAM3_CKPT_NAME
-            if downloaded_file != target_path and downloaded_file.exists():
-                downloaded_file.rename(target_path)
-
-            print(f"[SAM3] Model downloaded successfully to: {target_path}")
+            print(f"[SAM3] Model downloaded successfully to: {target_path.parent / SAM3_CKPT_NAME}")
 
         except Exception as e:
             raise RuntimeError(

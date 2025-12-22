@@ -560,17 +560,28 @@ def _load_checkpoint(model, checkpoint_path):
     ckpt = _load_checkpoint_file(checkpoint_path)
     if "model" in ckpt and isinstance(ckpt["model"], dict):
         ckpt = ckpt["model"]
-    sam3_image_ckpt = {
-        k.replace("detector.", ""): v for k, v in ckpt.items() if "detector" in k
-    }
+
+    # Handle both .pt format (detector./tracker.) and safetensors format (detector_model./tracker_model.)
+    sam3_image_ckpt = {}
+    for k, v in ckpt.items():
+        if k.startswith("detector_model."):
+            # safetensors format: detector_model.* -> *
+            sam3_image_ckpt[k.replace("detector_model.", "")] = v
+        elif k.startswith("detector."):
+            # .pt format: detector.* -> *
+            sam3_image_ckpt[k.replace("detector.", "")] = v
+
     if model.inst_interactive_predictor is not None:
-        sam3_image_ckpt.update(
-            {
-                k.replace("tracker.", "inst_interactive_predictor.model."): v
-                for k, v in ckpt.items()
-                if "tracker" in k
-            }
-        )
+        for k, v in ckpt.items():
+            if k.startswith("tracker_model."):
+                # safetensors format: tracker_model.* -> inst_interactive_predictor.model.*
+                sam3_image_ckpt[k.replace("tracker_model.", "inst_interactive_predictor.model.")] = v
+            elif k.startswith("tracker_neck."):
+                # safetensors format: tracker_neck.* -> inst_interactive_predictor.model.*
+                sam3_image_ckpt[k.replace("tracker_neck.", "inst_interactive_predictor.model.")] = v
+            elif k.startswith("tracker."):
+                # .pt format: tracker.* -> inst_interactive_predictor.model.*
+                sam3_image_ckpt[k.replace("tracker.", "inst_interactive_predictor.model.")] = v
     # Debug: show what we're loading
     inst_keys = [k for k in sam3_image_ckpt.keys() if 'inst_interactive_predictor' in k]
     print(f"[SAM3] Loading checkpoint with {len(sam3_image_ckpt)} keys ({len(inst_keys)} for inst_interactive_predictor)")
@@ -613,7 +624,6 @@ def build_sam3_image_model(
     eval_mode=True,
     checkpoint_path=None,
     load_from_HF=True,
-    hf_token=None,
     enable_segmentation=True,
     enable_inst_interactivity=False,
     compile=False,
@@ -627,7 +637,6 @@ def build_sam3_image_model(
         eval_mode: Whether to set the model to evaluation mode
         checkpoint_path: Optional path to model checkpoint
         load_from_HF: Whether to download from HuggingFace if checkpoint not found
-        hf_token: HuggingFace authentication token for gated models
         enable_segmentation: Whether to enable segmentation head
         enable_inst_interactivity: Whether to enable instance interactivity (SAM 1 task)
         compile: Whether to enable torch compilation for speed
@@ -684,7 +693,7 @@ def build_sam3_image_model(
         eval_mode,
     )
     if load_from_HF and checkpoint_path is None:
-        checkpoint_path = download_ckpt_from_hf(hf_token=hf_token)
+        checkpoint_path = download_ckpt_from_hf()
     # Load checkpoint if provided
     if checkpoint_path is not None:
         _load_checkpoint(model, checkpoint_path)
@@ -695,24 +704,19 @@ def build_sam3_image_model(
     return model
 
 
-def download_ckpt_from_hf(hf_token=None):
+def download_ckpt_from_hf():
     """
-    Download SAM3 checkpoint from HuggingFace
-
-    Args:
-        hf_token: Optional HuggingFace authentication token (not needed for public repo)
+    Download SAM3 checkpoint from HuggingFace (public repo, no token needed).
 
     Returns:
         Path to downloaded checkpoint
     """
     SAM3_MODEL_ID = "1038lab/sam3"
-    SAM3_CKPT_NAME = "sam3.safetensors"
+    SAM3_CKPT_NAME = "sam3.pt"
 
-    # Download checkpoint (public repo, no token needed)
     checkpoint_path = hf_hub_download(
         repo_id=SAM3_MODEL_ID,
         filename=SAM3_CKPT_NAME,
-        token=hf_token  # kept for compatibility but not required
     )
     return checkpoint_path
 
@@ -727,7 +731,6 @@ def build_sam3_video_model(
     apply_temporal_disambiguation: bool = True,
     device="cuda" if torch.cuda.is_available() else "cpu",
     compile=False,
-    hf_token: Optional[str] = None,
     enable_inst_interactivity: bool = False,
 ):
     """
@@ -850,30 +853,45 @@ def build_sam3_video_model(
 
     # Load checkpoint if provided (supports .pt and .safetensors)
     if load_from_HF and checkpoint_path is None:
-        checkpoint_path = download_ckpt_from_hf(hf_token=hf_token)
+        checkpoint_path = download_ckpt_from_hf()
     if checkpoint_path is not None:
         ckpt = _load_checkpoint_file(checkpoint_path)
         if "model" in ckpt and isinstance(ckpt["model"], dict):
             ckpt = ckpt["model"]
 
+        # Remap keys: handle both .pt format and safetensors format
+        # safetensors uses detector_model.*/tracker_model.*, .pt uses detector.*/tracker.*
+        remapped_ckpt = {}
+        for k, v in ckpt.items():
+            if k.startswith("detector_model."):
+                # safetensors: detector_model.* -> detector.*
+                remapped_ckpt[k.replace("detector_model.", "detector.")] = v
+            elif k.startswith("tracker_model."):
+                # safetensors: tracker_model.* -> tracker.*
+                remapped_ckpt[k.replace("tracker_model.", "tracker.")] = v
+            elif k.startswith("tracker_neck."):
+                # safetensors: tracker_neck.* -> tracker.*
+                remapped_ckpt[k.replace("tracker_neck.", "tracker.")] = v
+            else:
+                remapped_ckpt[k] = v
+
         # If inst_interactive_predictor is enabled, remap tracker weights for it
-        # The checkpoint has tracker.* keys, but detector.inst_interactive_predictor.model.* is expected
         if enable_inst_interactivity and inst_predictor is not None:
             inst_predictor_keys = {
                 k.replace("tracker.", "detector.inst_interactive_predictor.model."): v
-                for k, v in ckpt.items()
+                for k, v in remapped_ckpt.items()
                 if k.startswith("tracker.")
             }
-            ckpt.update(inst_predictor_keys)
+            remapped_ckpt.update(inst_predictor_keys)
             print(f"[SAM3] Added {len(inst_predictor_keys)} keys for detector.inst_interactive_predictor")
 
         missing_keys, unexpected_keys = model.load_state_dict(
-            ckpt, strict=strict_state_dict_loading
+            remapped_ckpt, strict=strict_state_dict_loading
         )
         if missing_keys:
-            print(f"Missing keys: {missing_keys}")
+            print(f"Missing keys: {len(missing_keys)}")
         if unexpected_keys:
-            print(f"Unexpected keys: {unexpected_keys}")
+            print(f"Unexpected keys: {len(unexpected_keys)}")
 
     # Keep model in float32; autocast will convert activations to bfloat16 dynamically
     model.to(device=device)
