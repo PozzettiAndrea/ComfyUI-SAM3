@@ -756,10 +756,241 @@ class SAM3Segmentation:
         return (comfy_masks, low_res_tensor, vis_tensor, boxes_json, scores_json)
 
 
+class SAM3MultipromptSegmentation:
+    """
+    Multi-region segmentation using SAM3.
+
+    Use this node to segment multiple separate objects/regions in one pass.
+    Connect from SAM3MultiRegionCollector which provides multiple prompt regions.
+
+    Each prompt region (with its own points and boxes) produces a separate mask.
+    Output masks are batched - one mask per prompt region.
+
+    Requires model loaded with enable_inst_interactivity=True.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "sam3_model": ("SAM3_MODEL", {
+                    "tooltip": "SAM3 model loaded from LoadSAM3Model node"
+                }),
+                "image": ("IMAGE", {
+                    "tooltip": "Input image to perform segmentation on"
+                }),
+                "multi_prompts": ("SAM3_MULTI_PROMPTS", {
+                    "tooltip": "Multi-region prompts from SAM3MultiRegionCollector. Each prompt region produces a separate mask."
+                }),
+            },
+            "optional": {
+                "refinement_iterations": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": 10,
+                    "tooltip": "Number of refinement passes per region. Each pass feeds the mask back for cleaner edges."
+                }),
+                "use_multimask": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "If True, generates 3 mask candidates at different granularities for each prompt. If False, generates single mask directly."
+                }),
+                "offload_model": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Move model to CPU after segmentation to free VRAM (slower next run)"
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("MASK", "IMAGE")
+    RETURN_NAMES = ("masks", "visualization")
+    FUNCTION = "segment"
+    CATEGORY = "SAM3"
+
+    def segment(self, sam3_model, image, multi_prompts, refinement_iterations=0,
+                use_multimask=False, offload_model=False):
+        """
+        Perform multi-region segmentation.
+
+        Args:
+            sam3_model: SAM3ModelPatcher from LoadSAM3Model node
+            image: ComfyUI image tensor [B, H, W, C]
+            multi_prompts: List of prompt dicts from SAM3MultiRegionCollector
+
+        Returns:
+            Tuple of (masks batch, visualization)
+        """
+        import json
+
+        # Use ComfyUI's model management to load model to GPU
+        comfy.model_management.load_models_gpu([sam3_model])
+
+        processor = sam3_model.processor
+        model = processor.model
+
+        # Sync processor device after model load
+        if hasattr(processor, 'sync_device_with_model'):
+            processor.sync_device_with_model()
+
+        # Check if interactive predictor is available
+        if model.inst_interactive_predictor is None:
+            print("[SAM3 Multiprompt] ERROR: inst_interactive_predictor not available")
+            print("[SAM3 Multiprompt] Make sure LoadSAM3Model was loaded with enable_inst_interactivity=True")
+            pil_image = comfy_image_to_pil(image)
+            img_w, img_h = pil_image.size
+            empty_mask = torch.zeros(1, img_h, img_w)
+            return (empty_mask, pil_to_comfy_image(pil_image))
+
+        # Convert ComfyUI image to PIL
+        pil_image = comfy_image_to_pil(image)
+        img_w, img_h = pil_image.size
+        print(f"[SAM3 Multiprompt] Image size: {pil_image.size}")
+        print(f"[SAM3 Multiprompt] Processing {len(multi_prompts)} prompt regions")
+
+        if len(multi_prompts) == 0:
+            print("[SAM3 Multiprompt] No prompts provided")
+            empty_mask = torch.zeros(1, img_h, img_w)
+            return (empty_mask, pil_to_comfy_image(pil_image))
+
+        # Set image once (feature extraction)
+        state = processor.set_image(pil_image)
+
+        all_masks = []
+        all_scores = []
+
+        # Process each prompt region
+        for prompt_idx, prompt in enumerate(multi_prompts):
+            print(f"[SAM3 Multiprompt] Processing prompt region {prompt_idx + 1}/{len(multi_prompts)}")
+
+            # Collect points for this prompt
+            all_points = []
+            all_point_labels = []
+
+            # Positive points
+            pos_points = prompt.get("positive_points", {}).get("points", [])
+            for pt in pos_points:
+                px = pt[0] * img_w
+                py = pt[1] * img_h
+                all_points.append([px, py])
+                all_point_labels.append(1)
+
+            # Negative points
+            neg_points = prompt.get("negative_points", {}).get("points", [])
+            for pt in neg_points:
+                px = pt[0] * img_w
+                py = pt[1] * img_h
+                all_points.append([px, py])
+                all_point_labels.append(0)
+
+            # Collect boxes for this prompt (use first box if any)
+            box_array = None
+            pos_boxes = prompt.get("positive_boxes", {}).get("boxes", [])
+            if len(pos_boxes) > 0:
+                b = pos_boxes[0]  # Use first positive box
+                cx, cy, w, h = b
+                x1 = (cx - w/2) * img_w
+                y1 = (cy - h/2) * img_h
+                x2 = (cx + w/2) * img_w
+                y2 = (cy + h/2) * img_h
+                box_array = np.array([x1, y1, x2, y2])
+
+            point_coords = np.array(all_points) if all_points else None
+            point_labels = np.array(all_point_labels) if all_point_labels else None
+
+            print(f"[SAM3 Multiprompt]   Points: {len(all_points)}, Box: {'Yes' if box_array is not None else 'No'}")
+
+            if point_coords is None and box_array is None:
+                print(f"[SAM3 Multiprompt]   Skipping empty prompt region {prompt_idx}")
+                continue
+
+            # Run prediction for this prompt
+            masks_np, scores_np, low_res_masks = model.predict_inst(
+                state,
+                point_coords=point_coords,
+                point_labels=point_labels,
+                box=box_array,
+                mask_input=None,
+                multimask_output=use_multimask,
+                normalize_coords=True,
+            )
+
+            # Refinement iterations
+            for i in range(refinement_iterations):
+                best_idx = np.argmax(scores_np)
+                masks_np, scores_np, low_res_masks = model.predict_inst(
+                    state,
+                    point_coords=point_coords,
+                    point_labels=point_labels,
+                    box=box_array,
+                    mask_input=low_res_masks[best_idx:best_idx+1],
+                    multimask_output=use_multimask,
+                    normalize_coords=True,
+                )
+
+            # Select best mask for this prompt
+            best_idx = np.argmax(scores_np)
+            best_mask = masks_np[best_idx]
+            best_score = scores_np[best_idx]
+
+            all_masks.append(torch.from_numpy(best_mask).float())
+            all_scores.append(best_score)
+            print(f"[SAM3 Multiprompt]   Mask score: {best_score:.4f}")
+
+        if len(all_masks) == 0:
+            print("[SAM3 Multiprompt] No valid masks generated")
+            empty_mask = torch.zeros(1, img_h, img_w)
+            return (empty_mask, pil_to_comfy_image(pil_image))
+
+        # Stack all masks into batch
+        masks = torch.stack(all_masks, dim=0)  # [N, H, W]
+        scores = torch.tensor(all_scores)
+
+        print(f"[SAM3 Multiprompt] Generated {masks.shape[0]} masks")
+
+        # Compute bounding boxes for visualization
+        boxes_list = []
+        for i in range(masks.shape[0]):
+            mask_coords = torch.where(masks[i] > 0)
+            if len(mask_coords[0]) > 0:
+                y1 = mask_coords[0].min().item()
+                y2 = mask_coords[0].max().item()
+                x1 = mask_coords[1].min().item()
+                x2 = mask_coords[1].max().item()
+                boxes_list.append([x1, y1, x2, y2])
+            else:
+                boxes_list.append([0, 0, 0, 0])
+        boxes = torch.tensor(boxes_list).float()
+
+        # Convert to ComfyUI format
+        comfy_masks = masks_to_comfy_mask(masks)
+
+        # Create visualization with all masks
+        vis_image = visualize_masks_on_image(
+            pil_image, masks, boxes, scores, alpha=0.5
+        )
+        vis_tensor = pil_to_comfy_image(vis_image)
+
+        # Cleanup
+        del state
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        # Offload model if requested
+        if offload_model:
+            print("[SAM3 Multiprompt] Offloading model to CPU to free VRAM...")
+            sam3_model.unpatch_model()
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+        return (comfy_masks, vis_tensor)
+
+
 # Register the nodes
 NODE_CLASS_MAPPINGS = {
     "SAM3Grounding": SAM3Grounding,
     "SAM3Segmentation": SAM3Segmentation,
+    "SAM3MultipromptSegmentation": SAM3MultipromptSegmentation,
     "SAM3CreateBox": SAM3CreateBox,
     "SAM3CreatePoint": SAM3CreatePoint,
     "SAM3CombineBoxes": SAM3CombineBoxes,
@@ -769,6 +1000,7 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3Grounding": "SAM3 Text Segmentation",
     "SAM3Segmentation": "SAM3 Point Segmentation",
+    "SAM3MultipromptSegmentation": "SAM3 Multiprompt Segmentation",
     "SAM3CreateBox": "SAM3 Create Box",
     "SAM3CreatePoint": "SAM3 Create Point",
     "SAM3CombineBoxes": "SAM3 Combine Boxes",
