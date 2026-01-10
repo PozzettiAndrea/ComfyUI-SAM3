@@ -25,7 +25,7 @@ def copy_files_skip_existing(src_dir, dst_dir):
             if os.path.exists(dst_path):
                 skipped += 1
             else:
-                shutil.copy2(src_path, dst_path)
+                shutil.copy(src_path, dst_path)
                 copied += 1
         elif os.path.isdir(src_path):
             # Recursively copy directories
@@ -65,7 +65,7 @@ def main():
                     if dst_path.exists():
                         skipped += 1
                     else:
-                        shutil.copy2(str(src_path), str(dst_path))
+                        shutil.copy(str(src_path), str(dst_path))
                         copied += 1
         print(f"[SAM3] Image assets: {copied} copied, {skipped} skipped")
     else:
