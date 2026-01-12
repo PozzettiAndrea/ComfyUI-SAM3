@@ -154,7 +154,7 @@ async def sam3_detect(request):
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model = model.to(device).eval()
             if context:
-                model = model.half()
+                model.half()
 
             processor = Sam3Processor(model, device=device)
 
