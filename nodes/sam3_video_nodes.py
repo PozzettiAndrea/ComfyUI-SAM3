@@ -502,6 +502,7 @@ class SAM3Propagate:
             print("[SAM3 Video] Offloading model to CPU to free VRAM...")
             if hasattr(sam3_model, 'model'):
                 sam3_model.model.cpu()
+                sam3_model.clear_caches(sam3_model.model)
             # Clear inference state cache to free GPU memory
             from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
             Sam3VideoPredictor._ALL_INFERENCE_STATES.clear()

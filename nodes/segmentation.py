@@ -150,6 +150,7 @@ class SAM3Grounding:
         if offload_model:
             print("[SAM3 Grounding] Offloading model to CPU to free VRAM...")
             sam3_model.unpatch_model()
+            sam3_model.clear_caches(sam3_model.model)
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
@@ -760,6 +761,7 @@ class SAM3Segmentation:
         if offload_model:
             print("[SAM3 Segmentation] Offloading model to CPU to free VRAM...")
             sam3_model.unpatch_model()
+            sam3_model.clear_caches(sam3_model.model)
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
