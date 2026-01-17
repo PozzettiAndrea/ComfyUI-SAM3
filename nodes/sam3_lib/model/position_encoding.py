@@ -124,3 +124,6 @@ class PositionEmbeddingSine(nn.Module):
         if cache_key is not None:
             self.cache[cache_key] = pos[0]
         return pos
+
+    def clear_cache(self):
+        self.cache.clear()

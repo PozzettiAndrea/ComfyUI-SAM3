@@ -22,16 +22,18 @@ class SAM3ModelWrapper:
     of diffusion models (no patches, hooks, etc. needed for SAM3).
     """
 
-    def __init__(self, model, processor, load_device, offload_device):
+    def __init__(self, model, processor, dtype, load_device, offload_device):
         """
         Args:
             model: The SAM3 model (torch.nn.Module)
             processor: Sam3Processor instance
+            dtype: Data type for autocast and tensors
             load_device: Device to load model on for inference (e.g., cuda:0)
             offload_device: Device to offload model to when not in use (e.g., cpu)
         """
         self.model = model
         self.processor = processor
+        self.dtype = dtype
         self.load_device = load_device
         self.offload_device = offload_device
         self.device = offload_device  # Current device
@@ -230,7 +232,7 @@ def create_sam3_model_patcher(model, processor, device="cuda"):
     load_device = comfy.model_management.get_torch_device()
     offload_device = comfy.model_management.unet_offload_device()
 
-    wrapper = SAM3ModelWrapper(model, processor, load_device, offload_device)
+    wrapper = SAM3ModelWrapper(model, processor, dtype, load_device, offload_device)
     patcher = SAM3ModelPatcher(wrapper)
 
     return patcher
