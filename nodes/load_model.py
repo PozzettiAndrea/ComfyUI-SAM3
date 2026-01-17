@@ -160,6 +160,14 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
+    def clear_position_encoding_caches(self, model) -> None:
+        if model is None:
+            return
+        if hasattr(model, 'clear_cache') and callable(model.clear_cache):
+            model.clear_cache()
+        for child_name, child_module in model.named_children():
+            self.clear_position_encoding_caches(child_module)
+
 
 class LoadSAM3Model:
     """
