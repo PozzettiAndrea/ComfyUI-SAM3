@@ -723,6 +723,10 @@ class TransformerEncoderCrossAttention(nn.Module):
             "padding_mask": src_key_padding_mask,
         }
 
+    def clear_cache(self):
+        for l in self.layers:
+            l.self_attn.freqs_cis = l.self_attn.freqs_cis.cpu()
+            l.cross_attn_image.freqs_cis = l.cross_attn_image.freqs_cis.to('cpu')
 
 class TransformerDecoderLayerv1(nn.Module):
     def __init__(
@@ -890,6 +894,9 @@ class TransformerDecoderLayerv2(TransformerDecoderLayerv1):
         self.cross_attention_first = cross_attention_first
 
     def _forward_sa(self, tgt, query_pos):
+        if self.self_attn.freqs_cis.device != tgt.device:
+            print(f"self_attn to gpu")
+            self.self_attn.freqs_cis = self.self_attn.freqs_cis.to(device=tgt.device)
         # Self-Attention
         tgt2 = self.norm1(tgt)
         q = k = tgt2 + query_pos if self.pos_enc_at_attn else tgt2
@@ -901,6 +908,9 @@ class TransformerDecoderLayerv2(TransformerDecoderLayerv1):
         if self.cross_attn_image is None:
             return tgt
 
+        if self.cross_attn_image.freqs_cis.device != tgt.device:
+            print(f"cross_attn_image to gpu")
+            self.cross_attn_image.freqs_cis = self.cross_attn_image.freqs_cis.to(device=tgt.device)
         kwds = {}
         if num_k_exclude_rope > 0:
             assert isinstance(self.cross_attn_image, RoPEAttention)
