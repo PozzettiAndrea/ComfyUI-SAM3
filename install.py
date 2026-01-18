@@ -1,77 +1,38 @@
+#!/usr/bin/env python3
+# Copyright (c) 2025 Andrea Pozzetti
+# SPDX-License-Identifier: MIT
 """
-Installation script for ComfyUI-SAM3 required dependencies.
-Called by ComfyUI Manager during installation/update.
+Installation script for ComfyUI-SAM3.
 
-For GPU acceleration (optional), run speedup.py after installation.
+Uses comfy-env for declarative dependency management via comfy-env.toml.
 """
-import os
-import subprocess
+
 import sys
+from pathlib import Path
 
 
-def install_requirements():
-    """
-    Install dependencies from requirements.txt.
-    """
-    print("[ComfyUI-SAM3] Installing requirements.txt dependencies...")
+def main():
+    print("\n" + "=" * 60)
+    print("ComfyUI-SAM3 Installation")
+    print("=" * 60)
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    requirements_path = os.path.join(script_dir, "requirements.txt")
+    from comfy_env import install
 
-    if not os.path.exists(requirements_path):
-        print("[ComfyUI-SAM3] [WARNING] requirements.txt not found, skipping")
-        return False
+    node_root = Path(__file__).parent.absolute()
 
+    # Run comfy-env install (local mode - installs into ComfyUI's Python)
     try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "-r", requirements_path],
-            capture_output=True,
-            text=True,
-            timeout=600
-        )
-
-        if result.returncode == 0:
-            print("[ComfyUI-SAM3] [OK] Requirements installed successfully")
-        else:
-            print("[ComfyUI-SAM3] [WARNING] Requirements installation had issues")
-            if result.stderr:
-                print(f"[ComfyUI-SAM3] Error details: {result.stderr[:500]}")
-            return False
-
+        install(config=node_root / "comfy-env.toml", mode="local", node_dir=node_root)
     except Exception as e:
-        print(f"[ComfyUI-SAM3] [WARNING] Requirements installation error: {e}")
-        return False
+        print(f"\n[SAM3] Installation FAILED: {e}")
+        print("[SAM3] Report issues at: https://github.com/PozzettiAndrea/ComfyUI-SAM3/issues")
+        return 1
 
-    # Install ninja for faster CUDA compilation (used by speedup.py if run later)
-    print("[ComfyUI-SAM3] Installing ninja build system...")
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "ninja"],
-            capture_output=True,
-            text=True,
-            timeout=300
-        )
-        if result.returncode == 0:
-            print("[ComfyUI-SAM3] [OK] Ninja installed successfully")
-        else:
-            print("[ComfyUI-SAM3] [WARNING] Ninja installation failed (optional, only needed for GPU acceleration)")
-    except Exception as e:
-        print(f"[ComfyUI-SAM3] [WARNING] Ninja installation error: {e}")
-
-    return True
+    print("\n" + "=" * 60)
+    print("[SAM3] Installation completed!")
+    print("=" * 60)
+    return 0
 
 
 if __name__ == "__main__":
-    print("[ComfyUI-SAM3] Running installation script...")
-    print("="*80)
-
-    # Install requirements.txt
-    install_requirements()
-
-    print("="*80)
-    print("[ComfyUI-SAM3] Installation script completed")
-    print("")
-    print("[ComfyUI-SAM3] [INFO] For GPU acceleration (optional, 5-10x faster video tracking):")
-    print("[ComfyUI-SAM3]    python speedup.py")
-    print("[ComfyUI-SAM3]")
-    print("[ComfyUI-SAM3] GPU acceleration is optional. ComfyUI-SAM3 works fine without it.")
+    sys.exit(main())
