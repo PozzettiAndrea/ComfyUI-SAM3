@@ -18,7 +18,7 @@ def main():
 
     # Run comfy-env install
     try:
-        install(config=node_root / "comfy-env.toml", mode="isolated", node_dir=node_root)
+        install(config=node_root / "comfy-env.toml", node_dir=node_root)
     except Exception as e:
         print(f"\n[SAM3] Installation FAILED: {e}")
         print("[SAM3] Report issues at: https://github.com/PozzettiAndrea/ComfyUI-SAM3/issues")
