@@ -22,6 +22,13 @@ from .utils import (
 from .sam3_model_patcher import SAM3ModelPatcher
 
 
+def _get_autocast_context(sam3_model):
+    """Get autocast context manager based on model setting."""
+    dtype = sam3_model.dtype
+    if dtype is not None:
+        return torch.autocast(device_type="cuda", dtype=dtype)
+    return torch.no_grad()
+
 class SAM3Grounding:
     """
     Text-based grounding detection using SAM3.
@@ -143,6 +150,7 @@ class SAM3Grounding:
         if offload_model:
             print("[SAM3 Grounding] Offloading model to CPU to free VRAM...")
             sam3_model.unpatch_model()
+            sam3_model.clear_caches(sam3_model.model)
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
@@ -156,38 +164,40 @@ class SAM3Grounding:
         """
         import json
 
-        processor = sam3_model.processor
+        autocast_context = _get_autocast_context(sam3_model)
+        with autocast_context:
+            processor = sam3_model.processor
 
-        # Update confidence threshold
-        processor.set_confidence_threshold(confidence_threshold)
+            # Update confidence threshold
+            processor.set_confidence_threshold(confidence_threshold)
 
-        # Set image (extracts features)
-        state = processor.set_image(pil_image)
+            # Set image (extracts features)
+            state = processor.set_image(pil_image)
 
-        # Add text prompt if provided
-        if text_prompt and text_prompt.strip():
-            print(f"[SAM3 Grounding] Adding text prompt...")
-            state = processor.set_text_prompt(text_prompt.strip(), state)
+            # Add text prompt if provided
+            if text_prompt and text_prompt.strip():
+                print(f"[SAM3 Grounding] Adding text prompt...")
+                state = processor.set_text_prompt(text_prompt.strip(), state)
 
-        # Add geometric prompts (boxes) for refinement
-        all_boxes = []
-        all_box_labels = []
+            # Add geometric prompts (boxes) for refinement
+            all_boxes = []
+            all_box_labels = []
 
-        if positive_boxes is not None and len(positive_boxes['boxes']) > 0:
-            all_boxes.extend(positive_boxes['boxes'])
-            all_box_labels.extend(positive_boxes['labels'])
+            if positive_boxes is not None and len(positive_boxes['boxes']) > 0:
+                all_boxes.extend(positive_boxes['boxes'])
+                all_box_labels.extend(positive_boxes['labels'])
 
-        if negative_boxes is not None and len(negative_boxes['boxes']) > 0:
-            all_boxes.extend(negative_boxes['boxes'])
-            all_box_labels.extend(negative_boxes['labels'])
+            if negative_boxes is not None and len(negative_boxes['boxes']) > 0:
+                all_boxes.extend(negative_boxes['boxes'])
+                all_box_labels.extend(negative_boxes['labels'])
 
-        if len(all_boxes) > 0:
-            print(f"[SAM3 Grounding] Adding {len(all_boxes)} box prompts...")
-            state = processor.add_multiple_box_prompts(
-                all_boxes,
-                all_box_labels,
-                state
-            )
+            if len(all_boxes) > 0:
+                print(f"[SAM3 Grounding] Adding {len(all_boxes)} box prompts...")
+                state = processor.add_multiple_box_prompts(
+                    all_boxes,
+                    all_box_labels,
+                    state
+                )
 
         # Extract results
         masks = state.get("masks", None)
@@ -658,30 +668,32 @@ class SAM3Segmentation:
             empty_logits = torch.zeros(1, 256, 256)
             return (empty_mask, empty_logits, pil_to_comfy_image(pil_image), "[]", "[]")
 
-        # Call predict_inst which uses inst_interactive_predictor
-        masks_np, scores_np, low_res_masks = model.predict_inst(
-            state,
-            point_coords=point_coords,
-            point_labels=point_labels,
-            box=box_array,
-            mask_input=None,
-            multimask_output=use_multimask,
-            normalize_coords=True,  # Input is pixel coords, transform to model space
-        )
-
-        # Refinement iterations - feed mask back for cleaner edges
-        for i in range(refinement_iterations):
-            best_idx = np.argmax(scores_np)
+        autocast_context = _get_autocast_context(sam3_model)
+        with autocast_context:
+            # Call predict_inst which uses inst_interactive_predictor
             masks_np, scores_np, low_res_masks = model.predict_inst(
                 state,
                 point_coords=point_coords,
                 point_labels=point_labels,
                 box=box_array,
-                mask_input=low_res_masks[best_idx:best_idx+1],
+                mask_input=None,
                 multimask_output=use_multimask,
-                normalize_coords=True,
+                normalize_coords=True,  # Input is pixel coords, transform to model space
             )
-            print(f"[SAM3 Segmentation] Refinement {i+1}/{refinement_iterations}, best score: {scores_np.max():.4f}")
+
+            # Refinement iterations - feed mask back for cleaner edges
+            for i in range(refinement_iterations):
+                best_idx = np.argmax(scores_np)
+                masks_np, scores_np, low_res_masks = model.predict_inst(
+                    state,
+                    point_coords=point_coords,
+                    point_labels=point_labels,
+                    box=box_array,
+                    mask_input=low_res_masks[best_idx:best_idx+1],
+                    multimask_output=use_multimask,
+                    normalize_coords=True,
+                )
+                print(f"[SAM3 Segmentation] Refinement {i+1}/{refinement_iterations}, best score: {scores_np.max():.4f}")
 
         print(f"[SAM3 Segmentation] Prediction returned {masks_np.shape[0]} masks")
         print(f"[SAM3 Segmentation]   Mask shape: {masks_np.shape}")
@@ -749,6 +761,7 @@ class SAM3Segmentation:
         if offload_model:
             print("[SAM3 Segmentation] Offloading model to CPU to free VRAM...")
             sam3_model.unpatch_model()
+            sam3_model.clear_caches(sam3_model.model)
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()

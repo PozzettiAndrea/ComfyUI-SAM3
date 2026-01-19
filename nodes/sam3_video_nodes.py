@@ -35,28 +35,9 @@ from .inference_reconstructor import (
 from .sam3_model_patcher import SAM3ModelWrapper, SAM3ModelPatcher
 
 
-# =============================================================================
-# Autocast dtype detection - handles GPUs without bf16 support
-# =============================================================================
-def _get_autocast_dtype():
-    """
-    Get appropriate autocast dtype based on GPU capability.
-    Returns None if autocast should not be used.
-    """
-    if not torch.cuda.is_available():
-        return None
-    major, _ = torch.cuda.get_device_capability()
-    if major >= 8:  # Ampere+ supports bf16
-        return torch.bfloat16
-    elif major >= 7:  # Volta/Turing use fp16
-        return torch.float16
-    else:
-        return None  # Older GPUs - no autocast
-
-
-def _get_autocast_context():
-    """Get autocast context manager based on GPU capability."""
-    dtype = _get_autocast_dtype()
+def _get_autocast_context(sam3_model):
+    """Get autocast context manager based on model setting."""
+    dtype = sam3_model.dtype
     if dtype is not None:
         return torch.autocast(device_type="cuda", dtype=dtype)
     return torch.no_grad()
@@ -453,7 +434,7 @@ class SAM3Propagate:
         masks_dict = {}
         scores_dict = {}  # Store confidence scores per frame
         # Use autocast with dtype based on GPU capability (bf16 for Ampere+, fp16 for Volta/Turing)
-        autocast_context = _get_autocast_context()
+        autocast_context = _get_autocast_context(sam3_model)
         with autocast_context:
             print_vram("Before reconstruction (in autocast)")
             # Reconstruct inference state from immutable state
@@ -521,6 +502,7 @@ class SAM3Propagate:
             print("[SAM3 Video] Offloading model to CPU to free VRAM...")
             if hasattr(sam3_model, 'model'):
                 sam3_model.model.cpu()
+                sam3_model.clear_caches(sam3_model.model)
             # Clear inference state cache to free GPU memory
             from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
             Sam3VideoPredictor._ALL_INFERENCE_STATES.clear()

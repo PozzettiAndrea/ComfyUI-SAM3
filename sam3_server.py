@@ -134,6 +134,11 @@ async def sam3_detect(request):
         from .nodes.sam3_lib.model_builder import build_sam3_image_model
         from .nodes.sam3_lib.model.sam3_image_processor import Sam3Processor
 
+        context = None
+        if torch.cuda.is_available():
+            major, minor = torch.cuda.get_device_capability()
+            if major < 8 and (major > 5 or (major == 5 and minor >= 2)):
+                context = torch.autocast(device_type="cuda", dtype=torch.float16)
         # Build model (cached globally if possible)
         if "model" not in sam3_predictor:
             print(f"[SAM3 Server] Loading SAM3 model...")
@@ -148,6 +153,8 @@ async def sam3_detect(request):
                 model = build_sam3_image_model()
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model = model.to(device).eval()
+            if context:
+                model.half()
 
             processor = Sam3Processor(model, device=device)
 
@@ -186,7 +193,8 @@ async def sam3_detect(request):
             normalized_points = [[x / img_width, y / img_height] for x, y in all_points]
 
             print(f"[SAM3 Server] Running point prompt detection...")
-            state = processor.add_point_prompt(normalized_points, all_labels, state)
+            with context:
+                state = processor.add_point_prompt(normalized_points, all_labels, state)
 
             # Get masks from state
             masks = state.get("masks", None)

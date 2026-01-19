@@ -35,6 +35,7 @@ class Sam3VideoPredictor:
     def __init__(
         self,
         checkpoint_path=None,
+        dtype=None,
         bpe_path=None,
         has_presence_token=True,
         geo_encoder_use_img_cross_attn=True,
@@ -69,6 +70,10 @@ class Sam3VideoPredictor:
             .to(self.device)
             .eval()
         )
+        if dtype == torch.float16:
+            self.model.half()
+        elif dtype == torch.bfloat16:
+            self.model.bfloat16()
 
     @torch.inference_mode()
     def handle_request(self, request):

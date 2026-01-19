@@ -23,6 +23,24 @@ try:
 except ImportError:
     HF_HUB_AVAILABLE = False
 
+# =============================================================================
+# Autocast dtype detection - handles GPUs without bf16 support
+# =============================================================================
+def _get_autocast_dtype():
+    """
+    Get appropriate autocast dtype based on GPU capability.
+    Returns None if autocast should not be used.
+    """
+    if not torch.cuda.is_available():
+        return None
+    major, minor = torch.cuda.get_device_capability()
+    if major >= 8:  # Ampere+ supports bf16
+        return torch.bfloat16
+    elif major > 5 or (major == 5 and minor >= 2):  # Maxwell use fp16
+        return torch.float16
+    else:
+        return None  # Older GPUs - no autocast
+
 
 class SAM3UnifiedModel(SAM3ModelPatcher):
     """
@@ -33,16 +51,18 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
     (handle_stream_request, model).
     """
 
-    def __init__(self, video_predictor, processor, load_device, offload_device):
+    def __init__(self, video_predictor, processor, dtype, load_device, offload_device):
         """
         Args:
             video_predictor: Sam3VideoPredictor instance (for video tracking)
             processor: Sam3Processor instance (for image segmentation)
+            dtype: Data type for autocast on CUDA devices
             load_device: Device to load model on for inference
             offload_device: Device to offload model to when not in use
         """
         self._video_predictor = video_predictor
         self._processor = processor
+        self._dtype = dtype
         self._load_device = load_device
         self._offload_device = offload_device
         self._model = None  # For parent class compatibility
@@ -50,10 +70,14 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
         # Create wrapper for the detector model (used for image segmentation)
         # The video predictor's model.detector is Sam3ImageOnVideoMultiGPU (inherits from Sam3Image)
         detector_model = video_predictor.model.detector
-        wrapper = SAM3ModelWrapper(detector_model, processor, load_device, offload_device)
+        wrapper = SAM3ModelWrapper(detector_model, processor, dtype, load_device, offload_device)
 
         # Initialize parent SAM3ModelPatcher
         super().__init__(wrapper)
+
+    @property
+    def dtype(self):
+        return self._dtype
 
     # === Image Interface (for SAM3Segmentation, SAM3Grounding, etc.) ===
 
@@ -136,6 +160,14 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
+    def clear_caches(self, model) -> None:
+        if model is None:
+            return
+        if hasattr(model, 'clear_cache') and callable(model.clear_cache):
+            model.clear_cache()
+        for child_name, child_module in model.named_children():
+            self.clear_caches(child_module)
+
 
 class LoadSAM3Model:
     """
@@ -216,9 +248,11 @@ class LoadSAM3Model:
 
         # Build video predictor (contains both image and video capabilities)
         print(f"[SAM3] Building SAM3 unified model...")
+        dtype = _get_autocast_dtype()
         try:
             video_predictor = Sam3VideoPredictor(
                 checkpoint_path=checkpoint_path_str,
+                dtype=dtype,
                 bpe_path=bpe_path_str,
                 enable_inst_interactivity=enable_inst_interactivity,
             )
@@ -262,6 +296,7 @@ class LoadSAM3Model:
         unified_model = SAM3UnifiedModel(
             video_predictor=video_predictor,
             processor=processor,
+            dtype=dtype,
             load_device=load_device,
             offload_device=offload_device
         )
