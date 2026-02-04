@@ -256,6 +256,13 @@ app.registerExtension({
                 hideInput(node, "negative_boxes");
             }
 
+            // Multi mode inputs
+            if (mode === "multi") {
+                showInput(node, "multi_prompts");
+            } else {
+                hideInput(node, "multi_prompts");
+            }
+
             refreshNode(node);
         };
 
