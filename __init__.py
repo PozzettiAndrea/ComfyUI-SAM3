@@ -1,47 +1,6 @@
-"""
-ComfyUI-SAM3: SAM3 Integration for ComfyUI
-
-This custom node package provides integration with Meta's SAM3 (Segment Anything Model 3)
-for open-vocabulary image segmentation using text prompts and visual geometric refinement.
-
-Main Node:
-- LoadSAM3Model: Load SAM3 model (auto-downloads from HuggingFace)
-- SAM3Segmentation: Segment with optional text/boxes/points/masks
-
-Helper Nodes (Visual Prompt Creation):
-- SAM3CreateBox: Visually create a box prompt using sliders
-- SAM3CreatePoint: Visually create a point prompt using sliders
-- SAM3CombineBoxes: Combine multiple box prompts (up to 5)
-- SAM3CombinePoints: Combine multiple point prompts (up to 10)
-
-Interactive Features:
-- Right-click any node with IMAGE/MASK output -> "Open in SAM3 Detector"
-- Interactive point-and-click segmentation (left-click=positive, right-click=negative)
-
-Video Tracking:
-- SAM3VideoModelLoader, SAM3InitVideoSession, SAM3AddVideoPrompt
-- SAM3PropagateVideo, SAM3VideoOutput, SAM3CloseVideoSession
-
-Workflow Example:
-  [SAM3CreateBox] -> [SAM3CombineBoxes] -> [SAM3Segmentation] <- [LoadImage]
-  [SAM3CreatePoint] -> [SAM3CombinePoints] -^
-
-All geometric refinement uses SAM3's grounding model approach.
-No JSON typing required - pure visual node-based workflow!
-
-Author: ComfyUI-SAM3
-Version: 2.1.0
-License: MIT
-"""
-
-# Only run initialization and imports when loaded by ComfyUI, not during pytest
-# This prevents relative import errors when pytest collects test modules
 import os
 import sys
 import traceback
-
-# Version info
-__version__ = "3.0.0"  # Major refactor for memory management
 
 # Track initialization status
 INIT_SUCCESS = False

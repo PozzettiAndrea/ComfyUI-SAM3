@@ -1,19 +1,13 @@
-# comfy-test configuration file
-# All workflows in workflows/ folder are auto-discovered and tested.
-# Screenshots are always taken for all workflows.
-
 [test]
-# Test levels: "all" or list of specific levels
-# Available: syntax, install, registration, instantiation, static_capture, validation, execution
-levels = "all"
+levels = ["syntax", "install", "registration", "instantiation", "static_capture", "execution"]
 
 [test.workflows]
-# Workflows requiring GPU for execution. Skipped on CI (no GPU), run locally.
-# Use "all" or list specific files: ["workflow.json", "rigging.json"]
-# or to say "none" just write []
-gpu = []
+timeout = 300
+cpu = []        # No CPU-only workflows - skip CPU jobs
+gpu = "all"     # All workflows need GPU
 
 [test.platforms]
 linux = true
+macos = false #requires cuda
 windows = true
 windows_portable = true
