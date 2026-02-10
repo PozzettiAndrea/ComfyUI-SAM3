@@ -1,44 +1,9 @@
 {
   "id": "video-point-prompt-example",
   "revision": 0,
-  "last_node_id": 28,
-  "last_link_id": 46,
+  "last_node_id": 34,
+  "last_link_id": 57,
   "nodes": [
-    {
-      "id": 1,
-      "type": "SAM3VideoModelLoader",
-      "pos": [
-        303.7598625779765,
-        109.960349056527
-      ],
-      "size": [
-        400,
-        226
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "video_model",
-          "type": "SAM3_VIDEO_MODEL",
-          "links": [
-            21
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-sam3",
-        "ver": "017c8fc2d12045abdf8c490cc5941bb81e188b1a",
-        "Node name for S&R": "SAM3VideoModelLoader",
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3"
-      },
-      "widgets_values": [
-        "[Download from HuggingFace]",
-        "your_token_here"
-      ]
-    },
     {
       "id": 24,
       "type": "CreateVideo",
@@ -151,43 +116,6 @@
       ]
     },
     {
-      "id": 14,
-      "type": "MaskToImage",
-      "pos": [
-        1638.1615037339054,
-        140.12395161716836
-      ],
-      "size": [
-        184.6236328125,
-        26
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "mask",
-          "type": "MASK",
-          "link": 25
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            12
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.70",
-        "Node name for S&R": "MaskToImage"
-      },
-      "widgets_values": []
-    },
-    {
       "id": 13,
       "type": "CreateVideo",
       "pos": [
@@ -244,7 +172,7 @@
         455.031982421875
       ],
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "inputs": [
         {
@@ -336,18 +264,18 @@
         {
           "name": "masks",
           "type": "SAM3_VIDEO_MASKS",
-          "link": 23
+          "link": 55
         },
         {
           "name": "video_state",
           "type": "SAM3_VIDEO_STATE",
-          "link": 42
+          "link": 53
         },
         {
           "name": "scores",
           "shape": 7,
           "type": "SAM3_VIDEO_SCORES",
-          "link": 43
+          "link": 54
         }
       ],
       "outputs": [
@@ -383,72 +311,45 @@
       ]
     },
     {
-      "id": 20,
-      "type": "SAM3Propagate",
+      "id": 30,
+      "type": "LoadSAM3Model",
       "pos": [
-        1051.98260985266,
-        129.93870180471484
+        309.39497369270185,
+        159.07693103490962
       ],
       "size": [
         270,
-        146
+        82
       ],
       "flags": {},
-      "order": 4,
+      "order": 1,
       "mode": 0,
-      "inputs": [
-        {
-          "name": "video_model",
-          "type": "SAM3_VIDEO_MODEL",
-          "link": 21
-        },
-        {
-          "name": "video_state",
-          "type": "SAM3_VIDEO_STATE",
-          "link": 39
-        }
-      ],
+      "inputs": [],
       "outputs": [
         {
-          "name": "masks",
-          "type": "SAM3_VIDEO_MASKS",
+          "name": "sam3_model",
+          "type": "SAM3_MODEL",
           "links": [
-            23
-          ]
-        },
-        {
-          "name": "scores",
-          "type": "SAM3_VIDEO_SCORES",
-          "links": [
-            43
-          ]
-        },
-        {
-          "name": "video_state",
-          "type": "SAM3_VIDEO_STATE",
-          "links": [
-            42
+            51
           ]
         }
       ],
       "properties": {
         "cnr_id": "comfyui-sam3",
-        "ver": "25e9d9a2d635a95915e88dbda5bb9bd06531eb40",
-        "Node name for S&R": "SAM3Propagate",
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3"
+        "ver": "29ceca1e0692ea84700ccce1aeadadf2eb644322",
+        "Node name for S&R": "LoadSAM3Model"
       },
       "widgets_values": [
-        0,
-        -1,
-        false
+        "models/sam3/sam3.pt",
+        ""
       ]
     },
     {
       "id": 27,
       "type": "SAM3VideoSegmentation",
       "pos": [
-        757.1172214654201,
-        132.80254427752527
+        739.6924503554994,
+        141.46221084596513
       ],
       "size": [
         270,
@@ -481,7 +382,7 @@
           "name": "video_state",
           "type": "SAM3_VIDEO_STATE",
           "links": [
-            39
+            52
           ]
         }
       ],
@@ -494,6 +395,67 @@
         "point",
         0.3,
         0.3
+      ]
+    },
+    {
+      "id": 32,
+      "type": "SAM3Propagate",
+      "pos": [
+        1050.6697857271693,
+        112.09512087626324
+      ],
+      "size": [
+        270,
+        170
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "sam3_model",
+          "type": "SAM3_MODEL",
+          "link": 51
+        },
+        {
+          "name": "video_state",
+          "type": "SAM3_VIDEO_STATE",
+          "link": 52
+        }
+      ],
+      "outputs": [
+        {
+          "name": "masks",
+          "type": "SAM3_VIDEO_MASKS",
+          "links": [
+            55
+          ]
+        },
+        {
+          "name": "scores",
+          "type": "SAM3_VIDEO_SCORES",
+          "links": [
+            54
+          ]
+        },
+        {
+          "name": "video_state",
+          "type": "SAM3_VIDEO_STATE",
+          "links": [
+            53
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "29ceca1e0692ea84700ccce1aeadadf2eb644322",
+        "Node name for S&R": "SAM3Propagate"
+      },
+      "widgets_values": [
+        0,
+        -1,
+        "forward",
+        false
       ]
     },
     {
@@ -537,11 +499,48 @@
         "Node name for S&R": "SAM3PointCollector"
       },
       "widgets_values": [
-        "{\"positive\":[{\"x\":394.06486199155154,\"y\":73.47400999815046},{\"x\":397.0296713922991,\"y\":141.66628212241812}],\"negative\":[]}",
-        "[{\"x\":394.06486199155154,\"y\":73.47400999815046},{\"x\":397.0296713922991,\"y\":141.66628212241812}]",
+        "{\"positive\":[{\"x\":365.8296849641195,\"y\":82.1138596932428},{\"x\":389.5481601701001,\"y\":179.95494578458334},{\"x\":413.26663537608084,\"y\":52.465045726169905}],\"negative\":[]}",
+        "[{\"x\":365.8296849641195,\"y\":82.1138596932428},{\"x\":389.5481601701001,\"y\":179.95494578458334},{\"x\":413.26663537608084,\"y\":52.465045726169905}]",
         "[]",
         ""
       ]
+    },
+    {
+      "id": 14,
+      "type": "MaskToImage",
+      "pos": [
+        1662.517675506336,
+        129.87813119341868
+      ],
+      "size": [
+        184.6236328125,
+        26
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 25
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.70",
+        "Node name for S&R": "MaskToImage"
+      },
+      "widgets_values": []
     }
   ],
   "links": [
@@ -560,22 +559,6 @@
       15,
       0,
       "VIDEO"
-    ],
-    [
-      21,
-      1,
-      0,
-      20,
-      0,
-      "SAM3_VIDEO_MODEL"
-    ],
-    [
-      23,
-      20,
-      0,
-      21,
-      0,
-      "SAM3_VIDEO_MASKS"
     ],
     [
       25,
@@ -602,36 +585,12 @@
       "VIDEO"
     ],
     [
-      39,
-      27,
-      0,
-      20,
-      1,
-      "SAM3_VIDEO_STATE"
-    ],
-    [
       40,
       9,
       0,
       27,
       0,
       "IMAGE"
-    ],
-    [
-      42,
-      20,
-      2,
-      21,
-      1,
-      "SAM3_VIDEO_STATE"
-    ],
-    [
-      43,
-      20,
-      1,
-      21,
-      2,
-      "SAM3_VIDEO_SCORES"
     ],
     [
       45,
@@ -648,24 +607,65 @@
       28,
       0,
       "IMAGE"
+    ],
+    [
+      51,
+      30,
+      0,
+      32,
+      0,
+      "SAM3_MODEL"
+    ],
+    [
+      52,
+      27,
+      0,
+      32,
+      1,
+      "SAM3_VIDEO_STATE"
+    ],
+    [
+      53,
+      32,
+      2,
+      21,
+      1,
+      "SAM3_VIDEO_STATE"
+    ],
+    [
+      54,
+      32,
+      1,
+      21,
+      2,
+      "SAM3_VIDEO_SCORES"
+    ],
+    [
+      55,
+      32,
+      0,
+      21,
+      0,
+      "SAM3_VIDEO_MASKS"
     ]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.8521005042956726,
+      "scale": 0.7746368220869752,
       "offset": [
-        -157.49885021716554,
-        10.24894929970906
+        -224.6852742736016,
+        252.16703738470372
       ]
     },
-    "frontendVersion": "1.30.6",
+    "frontendVersion": "1.32.9",
     "VHS_latentpreview": false,
     "VHS_latentpreviewrate": 0,
     "VHS_MetadataImage": true,
     "VHS_KeepIntermediate": true,
-    "workflow_description": "Example workflow for SAM3 video segmentation using point prompts. This demonstrates using the SAM3CreatePoint node to specify a point location (x=0.5, y=0.5 normalized coordinates) on frame 0. The point prompt is used instead of text prompts to track objects through the video. Adjust the x, y coordinates in the SAM3CreatePoint node to point to your desired object."
+    "workflow_description": "Example workflow for SAM3 video segmentation using point prompts. This demonstrates using the SAM3CreatePoint node to specify a point location (x=0.5, y=0.5 normalized coordinates) on frame 0. The point prompt is used instead of text prompts to track objects through the video. Adjust the x, y coordinates in the SAM3CreatePoint node to point to your desired object.",
+    "workflowRendererVersion": "LG"
   },
   "version": 0.4
 }

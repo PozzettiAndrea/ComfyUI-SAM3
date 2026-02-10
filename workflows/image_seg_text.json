@@ -5,40 +5,6 @@
   "last_link_id": 24,
   "nodes": [
     {
-      "id": 12,
-      "type": "LoadSAM3Model",
-      "pos": [
-        619.424717299163,
-        120.03196674570798
-      ],
-      "size": [
-        270,
-        82
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "sam3_model",
-          "type": "SAM3_MODEL",
-          "links": [
-            21
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-sam3",
-        "ver": "82c8e4f88a6c0a9242712b827e05f5e67c4a90a7",
-        "Node name for S&R": "LoadSAM3Model"
-      },
-      "widgets_values": [
-        "models/sam3/sam3.pt",
-        ""
-      ]
-    },
-    {
       "id": 1,
       "type": "LoadImage",
       "pos": [
@@ -50,7 +16,7 @@
         314
       ],
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -76,6 +42,64 @@
         "example_image.jpg",
         "image"
       ]
+    },
+    {
+      "id": 4,
+      "type": "MaskPreview",
+      "pos": [
+        1589.7307778177144,
+        96.54681627376111
+      ],
+      "size": [
+        210,
+        258
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 24
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.72",
+        "Node name for S&R": "MaskPreview"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 3,
+      "type": "PreviewImage",
+      "pos": [
+        1233.971252285426,
+        223.48707505899935
+      ],
+      "size": [
+        312.1604553633704,
+        258
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 23
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.72",
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
     },
     {
       "id": 13,
@@ -148,68 +172,44 @@
       },
       "widgets_values": [
         0.2,
-        "",
+        "person",
         -1,
         false
       ]
     },
     {
-      "id": 4,
-      "type": "MaskPreview",
+      "id": 12,
+      "type": "LoadSAM3Model",
       "pos": [
-        1589.7307778177144,
-        96.54681627376111
+        619.424717299163,
+        120.03196674570798
       ],
       "size": [
-        210,
-        258
+        270,
+        82
       ],
       "flags": {},
-      "order": 3,
+      "order": 1,
       "mode": 0,
-      "inputs": [
+      "inputs": [],
+      "outputs": [
         {
-          "name": "mask",
-          "type": "MASK",
-          "link": 24
+          "name": "sam3_model",
+          "type": "SAM3_MODEL",
+          "links": [
+            21
+          ]
         }
       ],
-      "outputs": [],
       "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.72",
-        "Node name for S&R": "MaskPreview"
+        "cnr_id": "comfyui-sam3",
+        "ver": "82c8e4f88a6c0a9242712b827e05f5e67c4a90a7",
+        "Node name for S&R": "LoadSAM3Model"
       },
-      "widgets_values": []
-    },
-    {
-      "id": 3,
-      "type": "PreviewImage",
-      "pos": [
-        1233.971252285426,
-        223.48707505899935
-      ],
-      "size": [
-        312.1604553633704,
-        258
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 23
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.72",
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
+      "widgets_values": [
+        "models/sam3/sam3.pt",
+        ""
+      ]
     }
   ],
   "links": [

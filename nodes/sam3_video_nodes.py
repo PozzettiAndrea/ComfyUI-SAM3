@@ -80,263 +80,12 @@ def print_vram(label: str, detailed: bool = False):
             print(f"[VRAM]   Allocated retries: {stats.get('num_alloc_retries', 0)}")
 
 
-def debug_cuda_tensors():
-    """Find all CUDA tensors and their sizes - HACKY but useful for debugging."""
-    if not torch.cuda.is_available():
-        return
-
-    print("[CUDA DEBUG] Scanning for GPU tensors...")
-    tensor_info = {}
-    total_size = 0
-
-    # Scan all objects in memory
-    for obj in gc.get_objects():
-        try:
-            if torch.is_tensor(obj) and obj.is_cuda:
-                size_mb = obj.numel() * obj.element_size() / 1024**2
-                shape_str = str(tuple(obj.shape))
-                dtype_str = str(obj.dtype)
-                key = f"{shape_str}_{dtype_str}"
-                if key not in tensor_info:
-                    tensor_info[key] = {"count": 0, "size_mb": size_mb, "shape": shape_str, "dtype": dtype_str}
-                tensor_info[key]["count"] += 1
-                total_size += size_mb
-        except:
-            pass
-
-    # Sort by size and print top 10
-    sorted_tensors = sorted(tensor_info.values(), key=lambda x: x["size_mb"] * x["count"], reverse=True)
-    print(f"[CUDA DEBUG] Total GPU tensors: {sum(t['count'] for t in tensor_info.values())}, Total size: {total_size/1024:.2f}GB")
-    print("[CUDA DEBUG] Top 10 tensor types by total size:")
-    for i, t in enumerate(sorted_tensors[:10]):
-        total_mb = t["size_mb"] * t["count"]
-        print(f"[CUDA DEBUG]   {i+1}. {t['shape']} {t['dtype']}: {t['count']}x {t['size_mb']:.1f}MB = {total_mb:.1f}MB")
-
-
-def get_sam3_video_models():
-    """Get list of available SAM3 models for video."""
-    try:
-        models = folder_paths.get_filename_list("sam3")
-        return models if models else []
-    except Exception:
-        return []
-
-
 # =============================================================================
-# Video Model Loader
+# Video Segmentation Nodes
 # =============================================================================
-
-class SAM3VideoModelLoader:
-    """
-    Load SAM3 model for video tracking.
-
-    Uses ComfyUI's model management for GPU/CPU handling.
-    """
-
-    # Class variables to track current model state
-    _current_predictor = None
-    _current_model_name = None
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        models = get_sam3_video_models()
-        model_choices = models + ["[Download from HuggingFace]"] if models else ["[Download from HuggingFace]"]
-
-        return {
-            "required": {
-                "model_name": (model_choices, {
-                    "default": model_choices[0] if model_choices else "[Download from HuggingFace]",
-                    "tooltip": "Select SAM3 model from ComfyUI/models/sam3/ folder"
-                }),
-            },
-            "optional": {
-                "hf_token": ("STRING", {
-                    "default": "",
-                    "multiline": False,
-                    "tooltip": "HuggingFace token for downloading gated models"
-                }),
-            }
-        }
-
-    @classmethod
-    def IS_CHANGED(cls, model_name, hf_token=""):
-        # Only reload if model name changes - keeps CUDA caches stable
-        # dtype issues are handled by resetting autocast context in propagate
-        return model_name
-
-    RETURN_TYPES = ("SAM3_VIDEO_MODEL",)
-    RETURN_NAMES = ("video_model",)
-    FUNCTION = "load_model"
-    CATEGORY = "SAM3/video"
-
-    def load_model(self, model_name, hf_token=""):
-        """Load the SAM3 video model."""
-        import os
-        from .sam3_lib.model_builder import build_sam3_video_predictor
-
-        # Check if we already have this model loaded - REUSE IT
-        if (SAM3VideoModelLoader._current_predictor is not None and
-            SAM3VideoModelLoader._current_model_name == model_name and
-            hasattr(SAM3VideoModelLoader._current_predictor, 'model')):
-            print(f"[SAM3 Video] Reusing already-loaded model: {model_name}")
-            print_vram("Reusing model")
-            # Just clear sessions, don't reload
-            from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
-            if Sam3VideoPredictor._ALL_INFERENCE_STATES:
-                print(f"[SAM3 Video] Clearing {len(Sam3VideoPredictor._ALL_INFERENCE_STATES)} sessions")
-                Sam3VideoPredictor._ALL_INFERENCE_STATES.clear()
-            return (SAM3VideoModelLoader._current_predictor,)
-
-        # Set HF token if provided
-        if hf_token:
-            os.environ["HF_TOKEN"] = hf_token
-
-        # BPE path for tokenizer
-        bpe_path = Path(__file__).parent / "sam3_lib" / "bpe_simple_vocab_16e6.txt.gz"
-        bpe_path = str(bpe_path)
-
-        # Determine checkpoint path
-        if model_name == "[Download from HuggingFace]":
-            checkpoint_path = self._download_from_hf(hf_token)
-        else:
-            checkpoint_path = folder_paths.get_full_path("sam3", model_name)
-            if checkpoint_path is None:
-                raise FileNotFoundError(f"Model not found: {model_name}")
-
-        print(f"[SAM3 Video] Loading NEW model from {checkpoint_path}")
-        print(f"[SAM3 Video] Using BPE tokenizer: {bpe_path}")
-        print_vram("Before model load")
-
-        # CRITICAL: Delete old model BEFORE building new one
-        # ComfyUI holds reference to old output tuple, so we can't just del the wrapper.
-        # We must explicitly delete the INTERNAL PyTorch model to free GPU memory.
-        if SAM3VideoModelLoader._current_predictor is not None:
-            print("[SAM3 Video] Deleting previous model to free VRAM")
-            # Move model to CPU first to force GPU memory release
-            # Then delete - this works even if ComfyUI holds a reference
-            if hasattr(SAM3VideoModelLoader._current_predictor, 'model'):
-                model = SAM3VideoModelLoader._current_predictor.model
-                print(f"[SAM3 Video]   Moving model to CPU: {type(model)}")
-                try:
-                    # Clear any internal caches/dicts that might hold GPU tensors
-                    for name in dir(model):
-                        if name.startswith('_'):
-                            continue
-                        try:
-                            attr = getattr(model, name, None)
-                            if isinstance(attr, dict):
-                                attr.clear()
-                            elif isinstance(attr, list):
-                                attr.clear()
-                        except:
-                            pass
-                    print_vram("After clearing model caches")
-                    model.cpu()  # Move all parameters/buffers to CPU
-                    print_vram("After model.cpu()")
-                except Exception as e:
-                    print(f"[SAM3 Video]   Warning: model.cpu() failed: {e}")
-                del SAM3VideoModelLoader._current_predictor.model
-                del model
-                print_vram("After del predictor.model")
-            del SAM3VideoModelLoader._current_predictor
-            SAM3VideoModelLoader._current_predictor = None
-            print_vram("After del _current_predictor")
-
-        # Clear ALL sessions from ALL predictor instances (class variable)
-        from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
-        if Sam3VideoPredictor._ALL_INFERENCE_STATES:
-            print(f"[SAM3 Video] Clearing {len(Sam3VideoPredictor._ALL_INFERENCE_STATES)} orphaned sessions")
-            for sid in list(Sam3VideoPredictor._ALL_INFERENCE_STATES.keys()):
-                session = Sam3VideoPredictor._ALL_INFERENCE_STATES.pop(sid, None)
-                if session:
-                    del session
-            print_vram("After clearing sessions")
-
-        # Reset ALL torch caches aggressively
-        try:
-            import torch._dynamo
-            torch._dynamo.reset()
-            print("[SAM3 Video] Reset torch._dynamo")
-        except Exception as e:
-            print(f"[SAM3 Video] Warning: dynamo reset failed: {e}")
-
-        try:
-            # Reset inductor cache (compiled kernels)
-            import torch._inductor
-            if hasattr(torch._inductor, 'codecache'):
-                torch._inductor.codecache.cache_clear()
-                print("[SAM3 Video] Cleared inductor codecache")
-        except Exception as e:
-            print(f"[SAM3 Video] Warning: inductor clear failed: {e}")
-
-        # Disable cuDNN benchmark to prevent workspace caching
-        torch.backends.cudnn.benchmark = False
-
-        # Force garbage collection and CUDA cleanup
-        gc.collect()
-        gc.collect()  # Run twice for weak refs
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
-            torch.cuda.empty_cache()
-            # Try to reset CUDA caching allocator
-            try:
-                torch.cuda.memory.reset_peak_memory_stats()
-                torch.cuda.memory.reset_accumulated_memory_stats()
-            except:
-                pass
-            # Force cuDNN to release workspace
-            torch.backends.cudnn.benchmark = False
-        print_vram("After cleanup before load", detailed=True)
-
-        # HACKY DEBUG: Scan for lingering GPU tensors
-        debug_cuda_tensors()
-
-        # Build the video predictor
-        predictor = build_sam3_video_predictor(
-            checkpoint_path=checkpoint_path,
-            bpe_path=bpe_path,
-            hf_token=hf_token if hf_token else None,
-            gpus_to_use=None,  # Single GPU mode
-        )
-
-        # Store reference for reuse
-        SAM3VideoModelLoader._current_predictor = predictor
-        SAM3VideoModelLoader._current_model_name = model_name
-
-        print_vram("After model load")
-        print(f"[SAM3 Video] Model loaded successfully")
-
-        return (predictor,)
-
-    def _download_from_hf(self, hf_token):
-        """Download model from HuggingFace if needed."""
-        try:
-            from huggingface_hub import hf_hub_download
-        except ImportError:
-            raise ImportError("huggingface_hub required. Install with: pip install huggingface_hub")
-
-        if not hf_token:
-            raise ValueError("HuggingFace token required to download SAM3 model")
-
-        sam3_paths = folder_paths.get_folder_paths("sam3")
-        if not sam3_paths:
-            raise RuntimeError("sam3 folder not registered")
-
-        models_dir = sam3_paths[0]
-        local_path = Path(models_dir) / "sam3.pt"
-
-        if local_path.exists():
-            return str(local_path)
-
-        print("[SAM3 Video] Downloading from HuggingFace...")
-        hf_hub_download(
-            repo_id="facebook/sam3",
-            filename="sam3.pt",
-            token=hf_token,
-            local_dir=models_dir,
-            local_dir_use_symlinks=False
-        )
-        return str(local_path)
+# NOTE: SAM3VideoModelLoader has been removed.
+# Use LoadSAM3Model instead - it returns a unified model that works for both
+# image segmentation and video tracking.
 
 
 # =============================================================================
@@ -607,8 +356,8 @@ class SAM3Propagate:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "video_model": ("SAM3_VIDEO_MODEL", {
-                    "tooltip": "SAM3 video model"
+                "sam3_model": ("SAM3_MODEL", {
+                    "tooltip": "SAM3 model (from LoadSAM3Model)"
                 }),
                 "video_state": ("SAM3_VIDEO_STATE", {
                     "tooltip": "Video state with prompts"
@@ -642,7 +391,7 @@ class SAM3Propagate:
     CATEGORY = "SAM3/video"
 
     @classmethod
-    def IS_CHANGED(cls, video_model, video_state, start_frame=0, end_frame=-1, direction="forward", offload_model=False):
+    def IS_CHANGED(cls, sam3_model, video_state, start_frame=0, end_frame=-1, direction="forward", offload_model=False):
         # Use object identity for caching - if upstream node is cached,
         # it returns the same object, so id() will match
         # This is more reliable than hashing content since video_state is immutable
@@ -651,7 +400,7 @@ class SAM3Propagate:
         print(f"[IS_CHANGED DEBUG] SAM3Propagate: returning {result}")
         return result
 
-    def propagate(self, video_model, video_state, start_frame=0, end_frame=-1, direction="forward", offload_model=False):
+    def propagate(self, sam3_model, video_state, start_frame=0, end_frame=-1, direction="forward", offload_model=False):
         """Run propagation using reconstructed inference state."""
         # Create cache key using video_state object id (since it's immutable and cached upstream)
         cache_key = (id(video_state), start_frame, end_frame, direction)
@@ -663,8 +412,8 @@ class SAM3Propagate:
             # Still need to handle offload if requested
             if offload_model:
                 print("[SAM3 Video] Offloading model to CPU to free VRAM...")
-                if hasattr(video_model, 'model'):
-                    video_model.model.cpu()
+                if hasattr(sam3_model, 'model'):
+                    sam3_model.model.cpu()
                 gc.collect()
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
@@ -677,9 +426,9 @@ class SAM3Propagate:
             raise ValueError("[SAM3 Video] No prompts added. Add point, box, or text prompts before propagating.")
 
         # Ensure model is on GPU before inference (may have been offloaded)
-        if hasattr(video_model, 'model') and hasattr(video_model.model, 'to'):
+        if hasattr(sam3_model, 'model') and hasattr(sam3_model.model, 'to'):
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            video_model.model.to(device)
+            sam3_model.model.to(device)
 
         print(f"[SAM3 Video] Starting propagation: frames {start_frame} to {end_frame if end_frame >= 0 else 'end'}")
         print(f"[SAM3 Video] Prompts: {len(video_state.prompts)}")
@@ -708,12 +457,12 @@ class SAM3Propagate:
         with autocast_context:
             print_vram("Before reconstruction (in autocast)")
             # Reconstruct inference state from immutable state
-            inference_state = get_inference_state(video_model, video_state)
+            inference_state = get_inference_state(sam3_model, video_state)
             print_vram("After reconstruction")
 
             # Run propagation
             try:
-                for response in video_model.handle_stream_request(request):
+                for response in sam3_model.handle_stream_request(request):
                     frame_idx = response.get("frame_index", response.get("frame_idx"))
                     if frame_idx is None:
                         print(f"[SAM3 Video DEBUG] Response has no frame_idx: {response.keys() if hasattr(response, 'keys') else type(response)}")
@@ -790,8 +539,8 @@ class SAM3Propagate:
         # Offload model to CPU if requested (Issue #28)
         if offload_model:
             print("[SAM3 Video] Offloading model to CPU to free VRAM...")
-            if hasattr(video_model, 'model'):
-                video_model.model.cpu()
+            if hasattr(sam3_model, 'model'):
+                sam3_model.model.cpu()
             # Clear inference state cache to free GPU memory
             from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
             Sam3VideoPredictor._ALL_INFERENCE_STATES.clear()
@@ -1158,14 +907,12 @@ class SAM3VideoOutput:
 # =============================================================================
 
 NODE_CLASS_MAPPINGS = {
-    "SAM3VideoModelLoader": SAM3VideoModelLoader,
     "SAM3VideoSegmentation": SAM3VideoSegmentation,
     "SAM3Propagate": SAM3Propagate,
     "SAM3VideoOutput": SAM3VideoOutput,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "SAM3VideoModelLoader": "SAM3 Video Model Loader",
     "SAM3VideoSegmentation": "SAM3 Video Segmentation",
     "SAM3Propagate": "SAM3 Propagate",
     "SAM3VideoOutput": "SAM3 Video Output",
