@@ -44,7 +44,7 @@ jobs:
       - name: Install package dependencies
         run: |
           # Install core dependencies first
-          pip install timm ftfy regex iopath huggingface_hub opencv-python psutil scikit-image numpy Pillow tqdm typing_extensions
+          pip install timm ftfy regex iopath huggingface_hub einops opencv-python psutil scikit-image numpy Pillow tqdm typing_extensions
 
           # Install platform-specific dependencies
           if [ "${{ matrix.os }}" != "macos-latest" ]; then
@@ -106,7 +106,7 @@ jobs:
 
       - name: Install core dependencies
         run: |
-          pip install timm ftfy regex iopath huggingface_hub opencv-python psutil scikit-image numpy Pillow tqdm typing_extensions
+          pip install timm ftfy regex iopath huggingface_hub einops opencv-python psutil scikit-image numpy Pillow tqdm typing_extensions
           pip install decord || echo "Warning: decord failed"
           pip install pycocotools || echo "Warning: pycocotools failed"
 

@@ -128,7 +128,7 @@ def test_package_structure():
         'nodes/load_model.py',
         'nodes/segmentation.py',
         'nodes/sam3_video_nodes.py',
-        'sam3_lib/model_builder.py',
+        'nodes/sam3_lib/model_builder.py',
     ]
 
     for file in required_files:
