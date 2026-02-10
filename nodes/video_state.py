@@ -117,13 +117,13 @@ class VideoPrompt:
         )
 
     @classmethod
-    def create_box(cls, frame_idx: int, obj_id: int, box: list) -> 'VideoPrompt':
+    def create_box(cls, frame_idx: int, obj_id: int, box: list, is_positive: bool = True) -> 'VideoPrompt':
         """Create a box prompt."""
         return cls(
             frame_idx=frame_idx,
             prompt_type="box",
             obj_id=obj_id,
-            data=tuple(box)
+            data=(tuple(box), is_positive)
         )
 
     @classmethod

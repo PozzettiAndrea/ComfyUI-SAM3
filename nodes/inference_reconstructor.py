@@ -151,29 +151,32 @@ class InferenceReconstructor:
             )
 
         elif prompt.prompt_type == "box":
-            box = list(prompt.data)
-            # Convert from [x1, y1, x2, y2] to [xmin, ymin, w, h] format (normalized 0-1)
+            # Handle both old format (just box coords) and new format (box coords, is_positive)
+            if isinstance(prompt.data[0], (list, tuple)) or (len(prompt.data) == 2 and isinstance(prompt.data[1], bool)):
+                # New format: (box_coords, is_positive)
+                box = list(prompt.data[0])
+                is_positive = prompt.data[1] if len(prompt.data) > 1 else True
+            else:
+                # Old format: just box coords
+                box = list(prompt.data)
+                is_positive = True
+
+            # Convert box to two corner points with special labels (2=top-left, 3=bottom-right)
+            # This is how SAM2/SAM3 tracker handles boxes internally - as two points with labels 2,3
             x1, y1, x2, y2 = box
-            box_xywh = [x1, y1, x2 - x1, y2 - y1]
+            points = [[x1, y1], [x2, y2]]
+            labels = [2, 3]  # Special box corner labels used by SAM tracker
 
-            print(f"[SAM3 Video] Applying box prompt: frame={prompt.frame_idx}, obj={prompt.obj_id}")
-            print(f"[SAM3 Video] Box to model (xywh normalized): {box_xywh}")
+            print(f"[SAM3 Video] Applying box as corner points: frame={prompt.frame_idx}, obj={prompt.obj_id}")
+            print(f"[SAM3 Video] Box [{x1:.3f}, {y1:.3f}, {x2:.3f}, {y2:.3f}] -> points with labels [2, 3]")
 
-            result = model.add_prompt(
+            model.add_prompt(
                 session_id=session_id,
                 frame_idx=prompt.frame_idx,
                 obj_id=prompt.obj_id,
-                bounding_boxes=[box_xywh],
-                bounding_box_labels=[1],  # Positive box
+                points=points,
+                point_labels=labels,
             )
-            print(f"[SAM3 Video] Box prompt result: {result}")
-            if result and 'outputs' in result:
-                outputs = result['outputs']
-                print(f"[SAM3 Video] Box outputs keys: {outputs.keys() if hasattr(outputs, 'keys') else type(outputs)}")
-                if hasattr(outputs, 'get'):
-                    for k, v in outputs.items():
-                        if hasattr(v, 'shape'):
-                            print(f"[SAM3 Video]   {k}: shape={v.shape}, min={v.min()}, max={v.max()}")
 
         elif prompt.prompt_type == "text":
             text = prompt.data[0]
