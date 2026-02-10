@@ -328,6 +328,8 @@ class SAM3VideoSegmentation:
     Note: SAM3 video does NOT support combining different prompt types.
     Each mode is mutually exclusive.
     """
+    # Class-level cache for video state results
+    _cache = {}
 
     PROMPT_MODES = ["text", "point", "box"]
 
@@ -385,10 +387,27 @@ class SAM3VideoSegmentation:
                    positive_points=None, negative_points=None,
                    positive_boxes=None, negative_boxes=None,
                    frame_idx=0, score_threshold=0.3):
-        # Content-based hash
-        return hash((
-            video_frames.shape,
-            float(video_frames.mean()),
+        # Use a stable hash based on video content
+        # Don't use float(mean()) - it has floating point precision issues on GPU
+        import hashlib
+
+        # Create a stable hash from video frame content
+        # Use shape + corner pixels from first and last frame (deterministic bytes, no float issues)
+        h = hashlib.md5()
+        h.update(str(video_frames.shape).encode())
+
+        # Sample corner pixels from first and last frame
+        first_frame = video_frames[0].cpu().numpy()
+        last_frame = video_frames[-1].cpu().numpy()
+        h.update(first_frame[0, 0, :].tobytes())      # top-left
+        h.update(first_frame[-1, -1, :].tobytes())    # bottom-right
+        h.update(last_frame[0, 0, :].tobytes())
+        h.update(last_frame[-1, -1, :].tobytes())
+
+        video_hash = h.hexdigest()
+
+        result = hash((
+            video_hash,
             prompt_mode,
             text_prompt,
             str(positive_points),
@@ -398,6 +417,11 @@ class SAM3VideoSegmentation:
             frame_idx,
             score_threshold,
         ))
+        print(f"[IS_CHANGED DEBUG] SAM3VideoSegmentation: video_hash={video_hash}, prompt_mode={prompt_mode}")
+        print(f"[IS_CHANGED DEBUG] SAM3VideoSegmentation: positive_points={positive_points}")
+        print(f"[IS_CHANGED DEBUG] SAM3VideoSegmentation: negative_points={negative_points}")
+        print(f"[IS_CHANGED DEBUG] SAM3VideoSegmentation: returning hash={result}")
+        return result
 
     RETURN_TYPES = ("SAM3_VIDEO_STATE",)
     RETURN_NAMES = ("video_state",)
@@ -409,6 +433,34 @@ class SAM3VideoSegmentation:
                 positive_boxes=None, negative_boxes=None,
                 frame_idx=0, score_threshold=0.3):
         """Initialize video state and add prompts based on selected mode."""
+        # Create cache key from inputs
+        import hashlib
+        h = hashlib.md5()
+        h.update(str(video_frames.shape).encode())
+        # Sample corner pixels for video identity
+        first_frame = video_frames[0].cpu().numpy()
+        last_frame = video_frames[-1].cpu().numpy()
+        h.update(first_frame[0, 0, :].tobytes())
+        h.update(first_frame[-1, -1, :].tobytes())
+        h.update(last_frame[0, 0, :].tobytes())
+        h.update(last_frame[-1, -1, :].tobytes())
+        h.update(prompt_mode.encode())
+        h.update(text_prompt.encode())
+        h.update(str(id(positive_points)).encode() if positive_points else b"none")
+        h.update(str(id(negative_points)).encode() if negative_points else b"none")
+        h.update(str(id(positive_boxes)).encode() if positive_boxes else b"none")
+        h.update(str(id(negative_boxes)).encode() if negative_boxes else b"none")
+        h.update(str(frame_idx).encode())
+        h.update(str(score_threshold).encode())
+        cache_key = h.hexdigest()
+
+        # Check if we have cached result
+        if cache_key in SAM3VideoSegmentation._cache:
+            cached = SAM3VideoSegmentation._cache[cache_key]
+            print(f"[SAM3 Video] CACHE HIT - returning cached video_state for key={cache_key[:8]}, session={cached.session_uuid[:8]}")
+            return (cached,)
+
+        print(f"[SAM3 Video] CACHE MISS - computing new video_state for key={cache_key[:8]}")
         print_vram("Before video segmentation")
 
         # 1. Initialize video state
@@ -505,6 +557,9 @@ class SAM3VideoSegmentation:
         print(f"[SAM3 Video] Total prompts: {len(video_state.prompts)}")
         print_vram("After video segmentation")
 
+        # Cache the result
+        SAM3VideoSegmentation._cache[cache_key] = video_state
+
         return (video_state,)
 
 
@@ -518,6 +573,8 @@ class SAM3Propagate:
 
     Reconstructs inference state on-demand from immutable video state.
     """
+    # Class-level cache for propagation results
+    _cache = {}
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -545,6 +602,10 @@ class SAM3Propagate:
                     "default": False,
                     "tooltip": "Propagate backwards"
                 }),
+                "offload_model": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Move model to CPU after propagation to free VRAM (slower next run)"
+                }),
             }
         }
 
@@ -553,10 +614,45 @@ class SAM3Propagate:
     FUNCTION = "propagate"
     CATEGORY = "SAM3/video"
 
-    def propagate(self, video_model, video_state, start_frame=0, end_frame=-1, reverse=False):
+    @classmethod
+    def IS_CHANGED(cls, video_model, video_state, start_frame=0, end_frame=-1, reverse=False, offload_model=False):
+        # Use object identity for caching - if upstream node is cached,
+        # it returns the same object, so id() will match
+        # This is more reliable than hashing content since video_state is immutable
+        result = (id(video_state), start_frame, end_frame, reverse)
+        print(f"[IS_CHANGED DEBUG] SAM3Propagate: video_state id={id(video_state)}, session={video_state.session_uuid if video_state else None}")
+        print(f"[IS_CHANGED DEBUG] SAM3Propagate: returning {result}")
+        return result
+
+    def propagate(self, video_model, video_state, start_frame=0, end_frame=-1, reverse=False, offload_model=False):
         """Run propagation using reconstructed inference state."""
+        # Create cache key using video_state object id (since it's immutable and cached upstream)
+        cache_key = (id(video_state), start_frame, end_frame, reverse)
+
+        # Check if we have cached result
+        if cache_key in SAM3Propagate._cache:
+            cached = SAM3Propagate._cache[cache_key]
+            print(f"[SAM3 Propagate] CACHE HIT - returning cached result for session={video_state.session_uuid[:8]}")
+            # Still need to handle offload if requested
+            if offload_model:
+                print("[SAM3 Video] Offloading model to CPU to free VRAM...")
+                if hasattr(video_model, 'model'):
+                    video_model.model.cpu()
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                print_vram("After model offload")
+            return cached
+
+        print(f"[SAM3 Propagate] CACHE MISS - running propagation for session={video_state.session_uuid[:8]}")
+
         if len(video_state.prompts) == 0:
             raise ValueError("[SAM3 Video] No prompts added. Add point, box, or text prompts before propagating.")
+
+        # Ensure model is on GPU before inference (may have been offloaded)
+        if hasattr(video_model, 'model') and hasattr(video_model.model, 'to'):
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            video_model.model.to(device)
 
         print(f"[SAM3 Video] Starting propagation: frames {start_frame} to {end_frame if end_frame >= 0 else 'end'}")
         print(f"[SAM3 Video] Prompts: {len(video_state.prompts)}")
@@ -664,7 +760,24 @@ class SAM3Propagate:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        return (masks_dict, scores_dict, video_state)
+        # Offload model to CPU if requested (Issue #28)
+        if offload_model:
+            print("[SAM3 Video] Offloading model to CPU to free VRAM...")
+            if hasattr(video_model, 'model'):
+                video_model.model.cpu()
+            # Clear inference state cache to free GPU memory
+            from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
+            Sam3VideoPredictor._ALL_INFERENCE_STATES.clear()
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            print_vram("After model offload")
+
+        # Cache the result
+        result = (masks_dict, scores_dict, video_state)
+        SAM3Propagate._cache[cache_key] = result
+
+        return result
 
 
 # =============================================================================
@@ -680,6 +793,8 @@ class SAM3VideoOutput:
 
     Changing obj_id does NOT re-run propagation - only this node re-executes.
     """
+    # Class-level cache for extraction results
+    _cache = {}
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -820,6 +935,15 @@ class SAM3VideoOutput:
         from PIL import Image
         import os
 
+        # Create cache key
+        cache_key = (id(masks), video_state.session_uuid, id(scores), obj_id, plot_all_masks)
+
+        # Check if we have cached result
+        if cache_key in SAM3VideoOutput._cache:
+            print(f"[SAM3 Video Output] CACHE HIT - returning cached result for session={video_state.session_uuid[:8]}")
+            return SAM3VideoOutput._cache[cache_key]
+
+        print(f"[SAM3 Video Output] CACHE MISS - extracting masks for session={video_state.session_uuid[:8]}")
         print_vram("Before extract")
         h, w = video_state.height, video_state.width
         num_frames = video_state.num_frames
@@ -995,7 +1119,11 @@ class SAM3VideoOutput:
         print(f"[SAM3 Video] Objects tracked: {num_objects}, plot_all_masks: {plot_all_masks}")
         print_vram("After extract")
 
-        return (all_masks, all_frames, all_vis)
+        # Cache the result
+        result = (all_masks, all_frames, all_vis)
+        SAM3VideoOutput._cache[cache_key] = result
+
+        return result
 
 
 # =============================================================================

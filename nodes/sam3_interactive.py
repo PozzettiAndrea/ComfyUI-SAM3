@@ -30,6 +30,8 @@ class SAM3PointCollector:
 
     Outputs point arrays to feed into SAM3Segmentation node.
     """
+    # Class-level cache for output results
+    _cache = {}
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -50,6 +52,20 @@ class SAM3PointCollector:
     CATEGORY = "SAM3"
     OUTPUT_NODE = True  # Makes node executable even without outputs connected
 
+    @classmethod
+    def IS_CHANGED(cls, image, points_store, coordinates, neg_coordinates):
+        # Return hash based on actual point content, not object identity
+        # This ensures downstream nodes don't re-run when points haven't changed
+        import hashlib
+        h = hashlib.md5()
+        h.update(str(image.shape).encode())
+        h.update(coordinates.encode())
+        h.update(neg_coordinates.encode())
+        result = h.hexdigest()
+        print(f"[IS_CHANGED DEBUG] SAM3PointCollector: shape={image.shape}, coords={coordinates}, neg_coords={neg_coordinates}")
+        print(f"[IS_CHANGED DEBUG] SAM3PointCollector: returning hash={result}")
+        return result
+
     def collect_points(self, image, points_store, coordinates, neg_coordinates):
         """
         Collect points from interactive canvas
@@ -63,6 +79,27 @@ class SAM3PointCollector:
         Returns:
             Tuple of (positive_points, negative_points) as separate SAM3_POINTS_PROMPT outputs
         """
+        # Create cache key from inputs
+        import hashlib
+        h = hashlib.md5()
+        h.update(str(image.shape).encode())
+        h.update(coordinates.encode())
+        h.update(neg_coordinates.encode())
+        cache_key = h.hexdigest()
+
+        # Check if we have cached result
+        if cache_key in SAM3PointCollector._cache:
+            cached = SAM3PointCollector._cache[cache_key]
+            print(f"[SAM3 Point Collector] CACHE HIT - returning cached result for key={cache_key[:8]}")
+            # Still need to return UI update
+            img_base64 = self.tensor_to_base64(image)
+            return {
+                "ui": {"bg_image": [img_base64]},
+                "result": cached  # Return the SAME objects
+            }
+
+        print(f"[SAM3 Point Collector] CACHE MISS - computing new result for key={cache_key[:8]}")
+
         # Parse coordinates from JSON
         try:
             pos_coords = json.loads(coordinates) if coordinates and coordinates.strip() else []
@@ -100,12 +137,16 @@ class SAM3PointCollector:
 
         print(f"[SAM3 Point Collector] Output: {len(positive_points['points'])} positive, {len(negative_points['points'])} negative")
 
+        # Cache the result
+        result = (positive_points, negative_points)
+        SAM3PointCollector._cache[cache_key] = result
+
         # Send image back to widget as base64
         img_base64 = self.tensor_to_base64(image)
 
         return {
             "ui": {"bg_image": [img_base64]},
-            "result": (positive_points, negative_points)
+            "result": result
         }
 
     def tensor_to_base64(self, tensor):
@@ -136,6 +177,8 @@ class SAM3BBoxCollector:
 
     Outputs bbox arrays to feed into SAM3Segmentation node.
     """
+    # Class-level cache for output results
+    _cache = {}
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -155,6 +198,20 @@ class SAM3BBoxCollector:
     CATEGORY = "SAM3"
     OUTPUT_NODE = True  # Makes node executable even without outputs connected
 
+    @classmethod
+    def IS_CHANGED(cls, image, bboxes, neg_bboxes):
+        # Return hash based on actual bbox content, not object identity
+        # This ensures downstream nodes don't re-run when bboxes haven't changed
+        import hashlib
+        h = hashlib.md5()
+        h.update(str(image.shape).encode())
+        h.update(bboxes.encode())
+        h.update(neg_bboxes.encode())
+        result = h.hexdigest()
+        print(f"[IS_CHANGED DEBUG] SAM3BBoxCollector: shape={image.shape}, bboxes={bboxes}, neg_bboxes={neg_bboxes}")
+        print(f"[IS_CHANGED DEBUG] SAM3BBoxCollector: returning hash={result}")
+        return result
+
     def collect_bboxes(self, image, bboxes, neg_bboxes):
         """
         Collect bounding boxes from interactive canvas
@@ -167,6 +224,27 @@ class SAM3BBoxCollector:
         Returns:
             Tuple of (positive_bboxes, negative_bboxes) as separate SAM3_BOXES_PROMPT outputs
         """
+        # Create cache key from inputs
+        import hashlib
+        h = hashlib.md5()
+        h.update(str(image.shape).encode())
+        h.update(bboxes.encode())
+        h.update(neg_bboxes.encode())
+        cache_key = h.hexdigest()
+
+        # Check if we have cached result
+        if cache_key in SAM3BBoxCollector._cache:
+            cached = SAM3BBoxCollector._cache[cache_key]
+            print(f"[SAM3 BBox Collector] CACHE HIT - returning cached result for key={cache_key[:8]}")
+            # Still need to return UI update
+            img_base64 = self.tensor_to_base64(image)
+            return {
+                "ui": {"bg_image": [img_base64]},
+                "result": cached  # Return the SAME objects
+            }
+
+        print(f"[SAM3 BBox Collector] CACHE MISS - computing new result for key={cache_key[:8]}")
+
         # Parse bboxes from JSON
         try:
             pos_bbox_list = json.loads(bboxes) if bboxes and bboxes.strip() else []
@@ -237,12 +315,16 @@ class SAM3BBoxCollector:
             "labels": negative_labels
         }
 
+        # Cache the result
+        result = (positive_prompt, negative_prompt)
+        SAM3BBoxCollector._cache[cache_key] = result
+
         # Send image back to widget as base64
         img_base64 = self.tensor_to_base64(image)
 
         return {
             "ui": {"bg_image": [img_base64]},
-            "result": (positive_prompt, negative_prompt)
+            "result": result
         }
 
     def tensor_to_base64(self, tensor):

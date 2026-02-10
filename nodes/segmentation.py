@@ -68,6 +68,10 @@ class SAM3Segmentation:
                     "step": 1,
                     "tooltip": "Maximum number of detections to return (-1 for all)"
                 }),
+                "offload_model": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Move model to CPU after segmentation to free VRAM (slower next run)"
+                }),
             }
         }
 
@@ -78,7 +82,7 @@ class SAM3Segmentation:
 
     def segment(self, sam3_model, image, confidence_threshold=0.2,
                 text_prompt="", positive_boxes=None, negative_boxes=None,
-                mask_prompt=None, max_detections=-1):
+                mask_prompt=None, max_detections=-1, offload_model=False):
         """
         Perform SAM3 segmentation with text and box prompts
 
@@ -118,10 +122,20 @@ class SAM3Segmentation:
         img_w, img_h = pil_image.size
         print(f"[SAM3] Image size: {pil_image.size}")
 
-        return self._segment_grounding(
+        result = self._segment_grounding(
             sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
             positive_boxes, negative_boxes, mask_prompt, max_detections
         )
+
+        # Offload model to CPU if requested
+        if offload_model:
+            print("[SAM3] Offloading model to CPU to free VRAM...")
+            sam3_model.unpatch_model()
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+        return result
 
     def _segment_grounding(self, sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
                            positive_boxes, negative_boxes, mask_prompt, max_detections):
@@ -549,6 +563,10 @@ class SAM3InteractiveSegmentation:
                     "default": True,
                     "tooltip": "If True, returns 3 mask candidates and selects the best one. If False, returns single mask."
                 }),
+                "offload_model": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Move model to CPU after segmentation to free VRAM (slower next run)"
+                }),
             }
         }
 
@@ -558,7 +576,7 @@ class SAM3InteractiveSegmentation:
     CATEGORY = "SAM3"
 
     def segment(self, sam3_model, image, positive_points=None, negative_points=None,
-                box=None, multimask_output=True):
+                box=None, multimask_output=True, offload_model=False):
         """
         Perform SAM2-style interactive segmentation at point/box locations.
 
@@ -718,6 +736,14 @@ class SAM3InteractiveSegmentation:
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+
+        # Offload model to CPU if requested
+        if offload_model:
+            print("[SAM3 Interactive] Offloading model to CPU to free VRAM...")
+            sam3_model.unpatch_model()
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
         return (comfy_masks, vis_tensor, boxes_json, scores_json)
 
