@@ -6,6 +6,12 @@ import torch
 from pathlib import Path
 from .utils import get_comfy_models_dir
 
+try:
+    from huggingface_hub import hf_hub_download
+    HF_HUB_AVAILABLE = True
+except ImportError:
+    HF_HUB_AVAILABLE = False
+
 
 # Global cache for loaded models
 _MODEL_CACHE = {}
@@ -37,7 +43,7 @@ class LoadSAM3Model:
                     "default": "",
                     "multiline": False,
                     "placeholder": "Leave empty to auto-download from HuggingFace",
-                    "tooltip": "Optional path to local SAM3 checkpoint file (sam3.pt). Leave empty to auto-download from HuggingFace. Model will be cached in ComfyUI/models/sam3/"
+                    "tooltip": "Optional absolute path to local SAM3 checkpoint file (must include filename, e.g., /path/to/sam3.pt). Leave empty to auto-download from HuggingFace directly to ComfyUI/models/sam3/sam3.pt"
                 }),
                 "hf_token": ("STRING", {
                     "default": "",
@@ -99,8 +105,32 @@ class LoadSAM3Model:
         load_from_hf = True
 
         if model_path and model_path.strip():
-            # User provided a custom path
-            checkpoint_path = model_path.strip()
+            # User provided a custom path - validate it
+            custom_path = Path(model_path.strip())
+
+            # Validate the path exists
+            if not custom_path.exists():
+                raise FileNotFoundError(
+                    f"[SAM3] Model file not found: {custom_path}\n"
+                    f"Please provide a valid absolute path to a sam3.pt checkpoint file.\n"
+                    f"Expected format: /full/path/to/sam3.pt\n"
+                    f"Example: {Path(get_comfy_models_dir()) / 'sam3.pt'}"
+                )
+
+            # Validate it's a file, not a directory
+            if not custom_path.is_file():
+                raise ValueError(
+                    f"[SAM3] Path is a directory, not a file: {custom_path}\n"
+                    f"Please provide the full path including the filename.\n"
+                    f"Example: {custom_path / 'sam3.pt'}"
+                )
+
+            # Validate it's a .pt file
+            if custom_path.suffix != '.pt':
+                print(f"[SAM3] WARNING: File does not have .pt extension: {custom_path}")
+                print(f"[SAM3] Expected a PyTorch checkpoint file (.pt)")
+
+            checkpoint_path = str(custom_path)
             load_from_hf = False
             print(f"[SAM3] Loading from custom path: {checkpoint_path}")
         else:
@@ -113,19 +143,62 @@ class LoadSAM3Model:
                 load_from_hf = False
                 print(f"[SAM3] Found model in ComfyUI models folder: {checkpoint_path}")
             else:
-                print(f"[SAM3] Model not found locally, will download from HuggingFace")
-                if not hf_token or not hf_token.strip():
-                    print(f"[SAM3] WARNING: No HuggingFace token provided!")
-                    print(f"[SAM3] Please provide a token in the 'hf_token' input field")
-                    print(f"[SAM3] Get your token from: https://huggingface.co/settings/tokens")
-                    print(f"[SAM3] And request access to: https://huggingface.co/facebook/sam3")
-                else:
-                    print(f"[SAM3] Using provided HuggingFace token for authentication")
-                print(f"[SAM3] Model will be downloaded to: {models_dir}")
+                # Model not found locally - download from HuggingFace
+                print(f"[SAM3] Model not found locally, downloading from HuggingFace...")
 
-                # We'll let SAM3 download it, then copy to our models folder
-                checkpoint_path = None
-                load_from_hf = True
+                # Validate we have huggingface_hub available
+                if not HF_HUB_AVAILABLE:
+                    raise ImportError(
+                        "[SAM3] huggingface_hub is required to download models from HuggingFace.\n"
+                        "Please install it with: pip install huggingface_hub"
+                    )
+
+                # Validate HF token
+                if not hf_token or not hf_token.strip():
+                    raise ValueError(
+                        "[SAM3] HuggingFace token required to download SAM3 model.\n"
+                        "The SAM3 model is gated and requires authentication.\n"
+                        "Please:\n"
+                        "1. Request access at: https://huggingface.co/facebook/sam3\n"
+                        "2. Get your token at: https://huggingface.co/settings/tokens\n"
+                        "3. Provide the token in the 'hf_token' input field"
+                    )
+
+                print(f"[SAM3] Using provided HuggingFace token for authentication")
+                print(f"[SAM3] Downloading to: {models_dir}")
+
+                # Download directly to ComfyUI models folder
+                try:
+                    SAM3_MODEL_ID = "facebook/sam3"
+                    SAM3_CKPT_NAME = "sam3.pt"
+
+                    # Download checkpoint directly to ComfyUI folder
+                    downloaded_path = hf_hub_download(
+                        repo_id=SAM3_MODEL_ID,
+                        filename=SAM3_CKPT_NAME,
+                        token=hf_token.strip(),
+                        local_dir=models_dir,
+                        local_dir_use_symlinks=False  # Copy file instead of symlink
+                    )
+
+                    checkpoint_path = str(local_checkpoint)  # Use consistent path
+                    load_from_hf = False  # We now have a local checkpoint
+                    print(f"[SAM3] Model downloaded successfully to: {checkpoint_path}")
+
+                except Exception as e:
+                    if "401" in str(e) or "authentication" in str(e).lower() or "gated" in str(e).lower():
+                        raise RuntimeError(
+                            f"[SAM3] Authentication failed. Please ensure:\n"
+                            f"1. You have requested access at: https://huggingface.co/facebook/sam3\n"
+                            f"2. Your access has been approved (check your email)\n"
+                            f"3. Your token is valid (get it from: https://huggingface.co/settings/tokens)\n"
+                            f"Error: {e}"
+                        )
+                    else:
+                        raise RuntimeError(
+                            f"[SAM3] Failed to download model from HuggingFace.\n"
+                            f"Error: {e}"
+                        )
 
         # Load model
         print(f"[SAM3] Building SAM3 model...")
@@ -140,17 +213,46 @@ class LoadSAM3Model:
                 enable_inst_interactivity=False,  # Disabled - not supported in vendored version
                 compile=False  # Disable compile for now (can enable later for speed)
             )
-        except Exception as e:
-            if "Repo model facebook/sam3" in str(e) or "authentication" in str(e).lower() or "401" in str(e):
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                f"[SAM3] Checkpoint file not found: {checkpoint_path}\n"
+                f"Please ensure the file exists and the path is correct.\n"
+                f"Error: {e}"
+            )
+        except PermissionError as e:
+            raise PermissionError(
+                f"[SAM3] Permission denied accessing checkpoint: {checkpoint_path}\n"
+                f"Please check file permissions and try again.\n"
+                f"Error: {e}"
+            )
+        except (RuntimeError, ValueError) as e:
+            error_msg = str(e)
+            # Check for common error patterns
+            if "checkpoint" in error_msg.lower() or "state_dict" in error_msg.lower():
                 raise RuntimeError(
-                    f"Failed to download model from HuggingFace. Please:\n"
-                    f"1. Request access at: https://huggingface.co/facebook/sam3\n"
-                    f"2. Get your token at: https://huggingface.co/settings/tokens\n"
-                    f"3. Paste the token in the 'hf_token' field of the LoadSAM3Model node\n"
+                    f"[SAM3] Invalid or corrupted checkpoint file.\n"
+                    f"The checkpoint may be incomplete or from an incompatible version.\n"
+                    f"Try re-downloading the model or using a different checkpoint.\n"
+                    f"Checkpoint: {checkpoint_path}\n"
+                    f"Error: {e}"
+                )
+            elif "CUDA" in error_msg or "device" in error_msg.lower():
+                raise RuntimeError(
+                    f"[SAM3] Device error - GPU may not be available or out of memory.\n"
+                    f"Try:\n"
+                    f"1. Set device to 'cpu' if you don't have a GPU\n"
+                    f"2. Free up GPU memory if using CUDA\n"
+                    f"3. Restart ComfyUI\n"
                     f"Error: {e}"
                 )
             else:
-                raise RuntimeError(f"Failed to load SAM3 model: {e}")
+                raise RuntimeError(f"[SAM3] Failed to load model: {e}")
+        except Exception as e:
+            raise RuntimeError(
+                f"[SAM3] Unexpected error loading model.\n"
+                f"Checkpoint: {checkpoint_path}\n"
+                f"Error: {e}"
+            )
 
         print(f"[SAM3] Model loaded successfully")
 
