@@ -41,8 +41,10 @@ class SAM3Segmentation:
                     "multiline": False,
                     "placeholder": "e.g., 'cat', 'person in red', 'car'"
                 }),
-                "boxes_prompt": ("SAM3_BOXES_PROMPT",),
-                "points_prompt": ("SAM3_POINTS_PROMPT",),
+                "positive_boxes": ("SAM3_BOXES_PROMPT",),
+                "negative_boxes": ("SAM3_BOXES_PROMPT",),
+                "positive_points": ("SAM3_POINTS_PROMPT",),
+                "negative_points": ("SAM3_POINTS_PROMPT",),
                 "mask_prompt": ("MASK",),
                 "max_detections": ("INT", {
                     "default": -1,
@@ -60,7 +62,8 @@ class SAM3Segmentation:
     CATEGORY = "SAM3"
 
     def segment(self, sam3_model, image, confidence_threshold=0.2, text_prompt="",
-                boxes_prompt=None, points_prompt=None, mask_prompt=None, max_detections=-1):
+                positive_boxes=None, negative_boxes=None, positive_points=None, negative_points=None,
+                mask_prompt=None, max_detections=-1):
         """
         Perform SAM3 segmentation with optional geometric prompts
 
@@ -69,8 +72,10 @@ class SAM3Segmentation:
             image: ComfyUI image tensor [B, H, W, C]
             confidence_threshold: Minimum confidence score for detections
             text_prompt: Optional text description of objects to segment
-            boxes_prompt: Optional box prompts from SAM3CombineBoxes
-            points_prompt: Optional point prompts from SAM3CombinePoints
+            positive_boxes: Optional positive box prompts
+            negative_boxes: Optional negative box prompts
+            positive_points: Optional positive point prompts
+            negative_points: Optional negative point prompts
             mask_prompt: Optional mask prompt
             max_detections: Maximum number of detections to return
 
@@ -84,10 +89,14 @@ class SAM3Segmentation:
         print(f"[SAM3] Running segmentation")
         if text_prompt:
             print(f"[SAM3]   Text prompt: '{text_prompt}'")
-        if boxes_prompt:
-            print(f"[SAM3]   Boxes: {len(boxes_prompt['boxes'])}")
-        if points_prompt:
-            print(f"[SAM3]   Points: {len(points_prompt['points'])}")
+        if positive_boxes:
+            print(f"[SAM3]   Positive boxes: {len(positive_boxes['boxes'])}")
+        if negative_boxes:
+            print(f"[SAM3]   Negative boxes: {len(negative_boxes['boxes'])}")
+        if positive_points:
+            print(f"[SAM3]   Positive points: {len(positive_points['points'])}")
+        if negative_points:
+            print(f"[SAM3]   Negative points: {len(negative_points['points'])}")
         if mask_prompt is not None:
             print(f"[SAM3]   Mask prompt provided")
         print(f"[SAM3] Confidence threshold: {confidence_threshold}")
@@ -107,20 +116,42 @@ class SAM3Segmentation:
             print(f"[SAM3] Adding text prompt...")
             state = processor.set_text_prompt(text_prompt.strip(), state)
 
-        # Add geometric prompts
-        if boxes_prompt is not None and len(boxes_prompt['boxes']) > 0:
-            print(f"[SAM3] Adding {len(boxes_prompt['boxes'])} box prompts...")
+        # Add geometric prompts - combine positive and negative
+        all_boxes = []
+        all_box_labels = []
+
+        if positive_boxes is not None and len(positive_boxes['boxes']) > 0:
+            all_boxes.extend(positive_boxes['boxes'])
+            all_box_labels.extend(positive_boxes['labels'])
+
+        if negative_boxes is not None and len(negative_boxes['boxes']) > 0:
+            all_boxes.extend(negative_boxes['boxes'])
+            all_box_labels.extend(negative_boxes['labels'])
+
+        if len(all_boxes) > 0:
+            print(f"[SAM3] Adding {len(all_boxes)} box prompts...")
             state = processor.add_multiple_box_prompts(
-                boxes_prompt['boxes'],
-                boxes_prompt['labels'],
+                all_boxes,
+                all_box_labels,
                 state
             )
 
-        if points_prompt is not None and len(points_prompt['points']) > 0:
-            print(f"[SAM3] Adding {len(points_prompt['points'])} point prompts...")
+        all_points = []
+        all_point_labels = []
+
+        if positive_points is not None and len(positive_points['points']) > 0:
+            all_points.extend(positive_points['points'])
+            all_point_labels.extend(positive_points['labels'])
+
+        if negative_points is not None and len(negative_points['points']) > 0:
+            all_points.extend(negative_points['points'])
+            all_point_labels.extend(negative_points['labels'])
+
+        if len(all_points) > 0:
+            print(f"[SAM3] Adding {len(all_points)} point prompts...")
             state = processor.add_point_prompt(
-                points_prompt['points'],
-                points_prompt['labels'],
+                all_points,
+                all_point_labels,
                 state
             )
 

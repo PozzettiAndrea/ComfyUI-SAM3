@@ -206,6 +206,7 @@ ComfyUI-SAM3/
 
 - **SAM3**: Meta AI Research (https://github.com/facebookresearch/sam3)
 - **ComfyUI Integration**: ComfyUI-SAM3
+- **Interactive Points Editor**: Adapted from [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes) by kijai (Apache 2.0 License). The SAM3PointsEditor node is based on the PointsEditor implementation from KJNodes, simplified for SAM3-specific point-based segmentation.
 
 ## License
 
