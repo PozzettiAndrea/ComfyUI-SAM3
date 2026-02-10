@@ -735,10 +735,10 @@ def build_sam3_video_model(
         model = Sam3VideoInferenceWithInstanceInteractivity(
             detector=detector,
             tracker=tracker,
-            score_threshold_detection=0.5,
+            score_threshold_detection=0.3,
             assoc_iou_thresh=0.1,
             det_nms_thresh=0.1,
-            new_det_thresh=0.7,
+            new_det_thresh=0.4,
             hotstart_delay=15,
             hotstart_unmatch_thresh=8,
             hotstart_dup_thresh=8,
@@ -762,10 +762,10 @@ def build_sam3_video_model(
         model = Sam3VideoInferenceWithInstanceInteractivity(
             detector=detector,
             tracker=tracker,
-            score_threshold_detection=0.5,
+            score_threshold_detection=0.3,
             assoc_iou_thresh=0.1,
             det_nms_thresh=0.1,
-            new_det_thresh=0.7,
+            new_det_thresh=0.4,
             hotstart_delay=0,
             hotstart_unmatch_thresh=0,
             hotstart_dup_thresh=0,
@@ -802,6 +802,7 @@ def build_sam3_video_model(
         if unexpected_keys:
             print(f"Unexpected keys: {unexpected_keys}")
 
+    # Keep model in float32; autocast will convert activations to bfloat16 dynamically
     model.to(device=device)
     return model
 

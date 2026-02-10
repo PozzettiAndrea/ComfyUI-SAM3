@@ -482,7 +482,7 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
         if self.non_overlap_masks_for_output:
             video_res_masks = self._apply_non_overlapping_constraints(video_res_masks)
         # potentially fill holes in the predicted masks
-        if self.fill_hole_area > 0:
+        if self.fill_hole_area > 0 and len(video_res_masks) > 0:
             video_res_masks = fill_holes_in_mask_scores(
                 video_res_masks, self.fill_hole_area
             )

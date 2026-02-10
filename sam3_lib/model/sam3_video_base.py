@@ -368,8 +368,10 @@ class Sam3VideoBase(nn.Module):
             pred_probs = pred_probs - 1e8  # make sure no detections are kept
         pred_boxes_xyxy = sam3_image_out["pred_boxes_xyxy"]
         pred_masks = sam3_image_out["pred_masks"]
+
         # get the positive detection outputs above threshold
         pos_pred_idx = torch.where(pred_probs > self.score_threshold_detection)
+
         det_out = {
             "bbox": pred_boxes_xyxy[pos_pred_idx[0], pos_pred_idx[1]],
             "mask": pred_masks[pos_pred_idx[0], pos_pred_idx[1]],
@@ -548,6 +550,7 @@ class Sam3VideoBase(nn.Module):
                 trk_masks=tracker_low_res_masks_global,
                 trk_obj_ids=tracker_metadata_prev["obj_ids_all_gpu"],
             )
+
             if self.suppress_det_close_to_boundary:
                 keep = self._suppress_detections_close_to_boundary(
                     det_bbox_xyxy[new_det_fa_inds]
@@ -967,12 +970,13 @@ class Sam3VideoBase(nn.Module):
         # Part 2: masks from new detections
         new_det_fa_inds_t = torch.from_numpy(new_det_fa_inds)
         new_det_low_res_masks = det_out["mask"][new_det_fa_inds_t].unsqueeze(1)
-        new_det_low_res_masks = fill_holes_in_mask_scores(
-            new_det_low_res_masks,
-            max_area=self.fill_hole_area,
-            fill_holes=True,
-            remove_sprinkles=True,
-        )
+        if len(new_det_fa_inds) > 0:
+            new_det_low_res_masks = fill_holes_in_mask_scores(
+                new_det_low_res_masks,
+                max_area=self.fill_hole_area,
+                fill_holes=True,
+                remove_sprinkles=True,
+            )
         new_masklet_video_res_masks = F.interpolate(
             new_det_low_res_masks,
             size=(orig_vid_height, orig_vid_width),
@@ -1264,6 +1268,7 @@ class Sam3VideoBase(nn.Module):
 
         # For detections: allow many tracks to match to the same detection (many-to-one)
         # So, a detection is 'new' if it does not match any track above threshold
+
         is_new_det = np.logical_and(
             det_scores_np >= new_det_thresh,
             np.logical_not(np.any(ious_np >= iou_threshold, axis=1)),
@@ -1432,6 +1437,7 @@ class Sam3VideoBase(nn.Module):
                     )
 
         removed_obj_ids.update(obj_ids_newly_removed)
+
         return obj_ids_newly_removed, rank0_metadata
 
     def _tracker_update_memories(

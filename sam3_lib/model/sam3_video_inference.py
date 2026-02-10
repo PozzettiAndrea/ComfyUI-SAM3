@@ -462,6 +462,7 @@ class Sam3VideoInference(Sam3VideoBase):
             )
 
             assert out_binary_masks.dtype == torch.bool
+
             keep = out_binary_masks.any(dim=(1, 2)).cpu()  # remove masks with 0 areas
             # hide outputs for those object IDs in `obj_ids_to_hide`
             obj_ids_to_hide = []
@@ -477,6 +478,7 @@ class Sam3VideoInference(Sam3VideoBase):
 
             # slice those valid entries from the original outputs
             keep_idx = torch.nonzero(keep, as_tuple=True)[0]
+
             keep_idx_gpu = keep_idx.pin_memory().to(
                 device=out_binary_masks.device, non_blocking=True
             )
@@ -512,7 +514,7 @@ class Sam3VideoInference(Sam3VideoBase):
             ) > 0
 
         outputs = {
-            "out_obj_ids": out_obj_ids.cpu().numpy(),
+            "obj_ids": out_obj_ids.cpu().numpy(),
             "out_probs": out_probs.cpu().numpy(),
             "out_boxes_xywh": out_boxes_xywh.cpu().numpy(),
             "out_binary_masks": out_binary_masks.cpu().numpy(),

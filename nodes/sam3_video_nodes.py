@@ -92,6 +92,77 @@ class SAM3InitVideoSession:
                     "multiline": False,
                     "tooltip": "Optional custom session identifier. Leave empty to auto-generate. Useful for managing multiple video tracking sessions."
                 }),
+                "score_threshold_detection": ("FLOAT", {
+                    "default": 0.3,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.05,
+                    "tooltip": "Minimum confidence score for detections (0.0-1.0). Lower = more detections but more false positives. Default was 0.5, lowered to 0.3 for better recall."
+                }),
+                "new_det_thresh": ("FLOAT", {
+                    "default": 0.4,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.05,
+                    "tooltip": "Minimum confidence for new object tracking (0.0-1.0). Higher = only track high-confidence objects. Default was 0.7, lowered to 0.4 for more objects."
+                }),
+                "fill_hole_area": ("INT", {
+                    "default": 16,
+                    "min": 0,
+                    "max": 1000,
+                    "step": 1,
+                    "tooltip": "Maximum area (in pixels) of holes to fill in masks. 0 disables hole filling. Useful for cleaning up mask interiors."
+                }),
+                "assoc_iou_thresh": ("FLOAT", {
+                    "default": 0.1,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.05,
+                    "tooltip": "IOU threshold for detection-to-track association (0.0-1.0). Lower = more lenient matching for maintaining track continuity."
+                }),
+                "det_nms_thresh": ("FLOAT", {
+                    "default": 0.1,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.05,
+                    "tooltip": "IOU threshold for Non-Maximum Suppression (0.0-1.0). Lower = more aggressive duplicate removal. 0.0 disables NMS."
+                }),
+                "hotstart_unmatch_thresh": ("INT", {
+                    "default": 3,
+                    "min": 0,
+                    "max": 999,
+                    "step": 1,
+                    "tooltip": "Number of unmatched frames before removing a track (hotstart heuristic). Higher = more tolerant of temporary occlusions. Set to 999 to effectively disable."
+                }),
+                "hotstart_dup_thresh": ("INT", {
+                    "default": 3,
+                    "min": 0,
+                    "max": 999,
+                    "step": 1,
+                    "tooltip": "Number of overlapping frames before removing duplicate tracks. Higher = more tolerant of temporary overlaps. Set to 999 to effectively disable."
+                }),
+                "init_trk_keep_alive": ("INT", {
+                    "default": 0,
+                    "min": -10,
+                    "max": 50,
+                    "step": 1,
+                    "tooltip": "Initial keep-alive counter for new tracks. Higher = tracks survive longer without matching detections. Recommended: 5-20 for robust tracking."
+                }),
+                "hotstart_delay": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": 200,
+                    "step": 1,
+                    "tooltip": "Delay (in frames) before applying hotstart removal heuristics. Useful to let tracks stabilize in early frames. Set to 999 to disable hotstart entirely."
+                }),
+                "decrease_keep_alive_empty": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "Whether empty masks (zero area predictions) decrease the keep-alive counter. Disable for more lenient tracking."
+                }),
+                "suppress_unmatched_globally": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "Whether to suppress tracks with keep_alive <= 0 globally (True) or only during hotstart period (False). CRITICAL: Set to True to actually remove dead tracks!"
+                }),
             }
         }
 
@@ -100,8 +171,32 @@ class SAM3InitVideoSession:
     FUNCTION = "init_session"
     CATEGORY = "SAM3/video"
 
-    def init_session(self, video_model, video_frames, session_id=""):
+    def init_session(self, video_model, video_frames, session_id="",
+                     score_threshold_detection=0.3, new_det_thresh=0.4,
+                     fill_hole_area=16, assoc_iou_thresh=0.1, det_nms_thresh=0.1,
+                     hotstart_unmatch_thresh=3, hotstart_dup_thresh=3,
+                     init_trk_keep_alive=0, hotstart_delay=0,
+                     decrease_keep_alive_empty=True, suppress_unmatched_globally=True):
         """Initialize a tracking session with video frames"""
+        # Configure detection/tracking thresholds by modifying model attributes
+        print(f"[SAM3 Video] Detection thresholds: det={score_threshold_detection}, new_det={new_det_thresh}")
+        print(f"[SAM3 Video] Association/NMS: assoc_iou={assoc_iou_thresh}, det_nms={det_nms_thresh}, fill_holes={fill_hole_area}px")
+        print(f"[SAM3 Video] Hotstart params: unmatch_thresh={hotstart_unmatch_thresh}, dup_thresh={hotstart_dup_thresh}, init_keep_alive={init_trk_keep_alive}, delay={hotstart_delay}")
+        print(f"[SAM3 Video] Track lifecycle: decrease_empty={decrease_keep_alive_empty}, suppress_globally={suppress_unmatched_globally}")
+
+        video_model.model.score_threshold_detection = score_threshold_detection
+        video_model.model.new_det_thresh = new_det_thresh
+        video_model.model.fill_hole_area = fill_hole_area
+        video_model.model.assoc_iou_thresh = assoc_iou_thresh
+        video_model.model.det_nms_thresh = det_nms_thresh
+        video_model.model.hotstart_unmatch_thresh = hotstart_unmatch_thresh
+        video_model.model.hotstart_dup_thresh = hotstart_dup_thresh
+        video_model.model.init_trk_keep_alive = init_trk_keep_alive
+        video_model.model.hotstart_delay = hotstart_delay
+        video_model.model.decrease_trk_keep_alive_for_empty_masklets = decrease_keep_alive_empty
+        # NOTE: Inverted logic - suppress_unmatched_globally=True means suppress_unmatched_only_within_hotstart=False
+        video_model.model.suppress_unmatched_only_within_hotstart = not suppress_unmatched_globally
+
         # Convert ComfyUI frames to temporary directory
         import tempfile
         import os
@@ -378,13 +473,32 @@ class SAM3VideoOutput:
                             mode="bilinear",
                             align_corners=False,
                         )
+                elif "out_binary_masks" in frame_output:
+                    # Binary masks from postprocessed output
+                    frame_masks = torch.from_numpy(frame_output["out_binary_masks"])
+                    if frame_masks.ndim == 3:
+                        # Add channel dimension if needed: [N, H, W] -> [N, 1, H, W]
+                        frame_masks = frame_masks.unsqueeze(1)
+                    if frame_masks.shape[-2:] != (height, width):
+                        frame_masks = torch.nn.functional.interpolate(
+                            frame_masks.float(),
+                            size=(height, width),
+                            mode="bilinear",
+                            align_corners=False,
+                        ) > 0.5
                 else:
                     continue
+
+                # Get frame-specific object IDs
+                frame_obj_ids = frame_output.get("obj_ids", [])
 
                 # Filter by object ID if specified
                 if obj_id_filter > 0:
                     try:
-                        obj_idx = obj_ids.index(obj_id_filter)
+                        # Convert numpy array to list if needed
+                        if hasattr(frame_obj_ids, 'tolist'):
+                            frame_obj_ids = frame_obj_ids.tolist()
+                        obj_idx = frame_obj_ids.index(obj_id_filter)
                         mask = frame_masks[obj_idx, 0] > 0.0
                     except (ValueError, IndexError):
                         mask = torch.zeros((height, width), dtype=torch.bool)
@@ -404,7 +518,6 @@ class SAM3VideoOutput:
                 if "cuda" in str(current_device):
                     print(f"[SAM3 Video] Offloading model to CPU to free VRAM")
                     video_model.model.to("cpu")
-                    import torch
                     torch.cuda.empty_cache()
                     import gc
                     gc.collect()
