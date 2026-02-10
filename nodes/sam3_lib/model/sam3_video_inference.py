@@ -59,10 +59,14 @@ class Sam3VideoInference(Sam3VideoBase):
         video_loader_type="cv2",
     ):
         """Initialize an inference state from `resource_path` (an image or a video)."""
+        # Get actual current device from model parameters
+        device = next(self.parameters()).device
+
         images, orig_height, orig_width = load_resource_as_video_frames(
             resource_path=resource_path,
             image_size=self.image_size,
             offload_video_to_cpu=offload_video_to_cpu,
+            device=device,
             img_mean=self.image_mean,
             img_std=self.image_std,
             async_loading_frames=async_loading_frames,
@@ -148,7 +152,7 @@ class Sam3VideoInference(Sam3VideoBase):
             find_targets=[None] * num_frames,
             find_metadatas=[None] * num_frames,
         )
-        input_batch = copy_data_to_device(input_batch, device, non_blocking=True)
+        input_batch = copy_data_to_device(input_batch, device, non_blocking=torch.cuda.is_available())
         inference_state["input_batch"] = input_batch
 
         # construct the placeholder interactive prompts and tracking queries
