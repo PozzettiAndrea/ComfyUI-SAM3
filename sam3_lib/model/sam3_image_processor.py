@@ -151,6 +151,90 @@ class Sam3Processor:
 
         return self._forward_grounding(state)
 
+    @torch.inference_mode()
+    def add_multiple_box_prompts(self, boxes: List[List], labels: List[bool], state: Dict):
+        """Adds multiple box prompts and run the inference.
+        The image needs to be set, but not necessarily the text prompt.
+        Each box is assumed to be in [center_x, center_y, width, height] format and normalized in [0, 1] range.
+        Each label is True for a positive box, False for a negative box.
+        """
+        if "backbone_out" not in state:
+            raise ValueError("You must call set_image before add_multiple_box_prompts")
+
+        if "language_features" not in state["backbone_out"]:
+            dummy_text_outputs = self.model.backbone.forward_text(
+                ["visual"], device=self.device
+            )
+            state["backbone_out"].update(dummy_text_outputs)
+
+        if "geometric_prompt" not in state:
+            state["geometric_prompt"] = self.model._get_dummy_prompt()
+
+        # Convert to [seq_len, batch_size, 4] format
+        boxes_tensor = torch.tensor(boxes, device=self.device, dtype=torch.float32).view(len(boxes), 1, 4)
+        labels_tensor = torch.tensor(labels, device=self.device, dtype=torch.bool).view(len(labels), 1)
+        state["geometric_prompt"].append_boxes(boxes_tensor, labels_tensor)
+
+        return self._forward_grounding(state)
+
+    @torch.inference_mode()
+    def add_point_prompt(self, points: List[List], labels: List[int], state: Dict):
+        """Adds point prompts and run the inference.
+        The image needs to be set, but not necessarily the text prompt.
+        Points should be in [x, y] format, normalized in [0, 1] range.
+        Labels should be 1 for foreground points, 0 for background points.
+        """
+        if "backbone_out" not in state:
+            raise ValueError("You must call set_image before add_point_prompt")
+
+        if "language_features" not in state["backbone_out"]:
+            dummy_text_outputs = self.model.backbone.forward_text(
+                ["visual"], device=self.device
+            )
+            state["backbone_out"].update(dummy_text_outputs)
+
+        if "geometric_prompt" not in state:
+            state["geometric_prompt"] = self.model._get_dummy_prompt()
+
+        # Convert to [seq_len, batch_size, 2] format
+        points_tensor = torch.tensor(points, device=self.device, dtype=torch.float32).view(len(points), 1, 2)
+        labels_tensor = torch.tensor(labels, device=self.device, dtype=torch.long).view(len(labels), 1)
+        state["geometric_prompt"].append_points(points_tensor, labels_tensor)
+
+        return self._forward_grounding(state)
+
+    @torch.inference_mode()
+    def add_mask_prompt(self, mask: torch.Tensor, state: Dict):
+        """Adds a mask prompt and run the inference.
+        The mask should be a binary tensor with shape matching the model's expected input.
+        This is typically used for iterative refinement.
+        """
+        if "backbone_out" not in state:
+            raise ValueError("You must call set_image before add_mask_prompt")
+
+        if "language_features" not in state["backbone_out"]:
+            dummy_text_outputs = self.model.backbone.forward_text(
+                ["visual"], device=self.device
+            )
+            state["backbone_out"].update(dummy_text_outputs)
+
+        if "geometric_prompt" not in state:
+            state["geometric_prompt"] = self.model._get_dummy_prompt()
+
+        # Ensure mask is on correct device and has batch dimension
+        if mask.device != self.device:
+            mask = mask.to(self.device)
+
+        # Add sequence and batch dimensions if needed: [seq_len, batch_size, H, W]
+        if len(mask.shape) == 2:  # [H, W]
+            mask = mask.unsqueeze(0).unsqueeze(0)
+        elif len(mask.shape) == 3:  # [1, H, W] or [batch, H, W]
+            mask = mask.unsqueeze(0)
+
+        state["geometric_prompt"].append_masks(mask)
+
+        return self._forward_grounding(state)
+
     def reset_all_prompts(self, state: Dict):
         """Removes all the prompts and results"""
         if "backbone_out" in state:

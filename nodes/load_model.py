@@ -123,7 +123,7 @@ class LoadSAM3Model:
                 hf_token=hf_token.strip() if hf_token else None,
                 eval_mode=True,
                 enable_segmentation=True,
-                enable_inst_interactivity=False,
+                enable_inst_interactivity=False,  # Disabled - not supported in vendored version
                 compile=False  # Disable compile for now (can enable later for speed)
             )
         except Exception as e:

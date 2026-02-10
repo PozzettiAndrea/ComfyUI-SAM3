@@ -48,14 +48,26 @@ def main():
     print(f"[SAM3] Script directory: {script_dir}")
     print(f"[SAM3] ComfyUI root: {comfy_root}")
 
-    # Copy assets to input folder
+    # Copy image assets to input folder (skip .txt.gz files)
     assets_src = script_dir / "assets"
-    assets_dst = comfy_root / "input" / "sam3_examples"
+    assets_dst = comfy_root / "input"
 
     if assets_src.exists():
-        print(f"[SAM3] Copying assets to {assets_dst}...")
-        copied, skipped = copy_files_skip_existing(str(assets_src), str(assets_dst))
-        print(f"[SAM3] Assets: {copied} copied, {skipped} skipped")
+        print(f"[SAM3] Copying image assets to {assets_dst}...")
+        copied = 0
+        skipped = 0
+        for item in os.listdir(str(assets_src)):
+            src_path = assets_src / item
+            if src_path.is_file():
+                # Only copy image files (jpg, png, etc), skip .txt.gz
+                if not item.endswith('.txt.gz'):
+                    dst_path = assets_dst / item
+                    if dst_path.exists():
+                        skipped += 1
+                    else:
+                        shutil.copy2(str(src_path), str(dst_path))
+                        copied += 1
+        print(f"[SAM3] Image assets: {copied} copied, {skipped} skipped")
     else:
         print(f"[SAM3] No assets folder found")
 
