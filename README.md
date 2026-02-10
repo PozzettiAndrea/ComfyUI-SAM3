@@ -19,17 +19,17 @@ python install.py
 
 For 5-10x faster video tracking, install GPU-accelerated CUDA extensions:
 ```bash
-python speedup.py
+python speedup.py        # Auto-detects your GPU, ~3-5 min compilation
 ```
 
 This is **optional** and only benefits video tracking performance. Image segmentation works fine without it. The script will:
-- Auto-install micromamba if needed
-- Install CUDA toolkit via conda/micromamba
+- Auto-detect your GPU architecture and compile only for your specific GPU (75-80% faster than previous versions)
+- Auto-install CUDA toolkit via conda/micromamba if needed
 - Compile GPU-accelerated extensions (torch_generic_nms, cc_torch)
 
-**Requirements:** NVIDIA GPU, conda/micromamba environment recommended.
+**Requirements:** NVIDIA GPU with compute capability 7.5+ (RTX 2000 series or newer), conda/micromamba environment recommended.
 
-**Known Limitations:** RTX 50-series GPUs (RTX 5090, 5080, etc.) are not currently supported for GPU acceleration due to PyTorch lacking Blackwell architecture (sm_120) support. These GPUs will automatically fall back to CPU mode, which is 5-10x slower but fully functional. Track PyTorch support progress at [pytorch/pytorch#159207](https://github.com/pytorch/pytorch/issues/159207). Image segmentation is unaffected by this limitation.
+**RTX 50-series (Blackwell):** Experimental support available via `python speedup_blackwell.py` (~45-60 sec compilation). May compile successfully but runtime stability not guaranteed due to PyTorch lacking official sm_120 support. Falls back to CPU mode if compilation fails. Track PyTorch support at [pytorch/pytorch#159207](https://github.com/pytorch/pytorch/issues/159207).
 
 ## Troubleshooting
 

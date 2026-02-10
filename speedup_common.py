@@ -1,32 +1,13 @@
 #!/usr/bin/env python3
 """
-GPU Acceleration Setup for ComfyUI-SAM3
+Common shared functions for GPU acceleration setup in ComfyUI-SAM3.
 
-This script installs GPU-accelerated CUDA extensions for faster video tracking:
-- torch_generic_nms: 5-10x faster Non-Maximum Suppression
-- cc_torch: GPU-accelerated connected components
-
-These are OPTIONAL. ComfyUI-SAM3 works fine without them using CPU fallbacks.
-
-Usage:
-    python speedup.py              # Install GPU extensions
-    python speedup.py --compile-only  # Compile even without GPU present (for CI)
-
-Requirements:
-- NVIDIA GPU with CUDA support
-- PyTorch with CUDA enabled
-- CUDA compiler (nvcc) - this script will install it via micromamba if missing
+This module contains shared code used by both speedup.py and speedup_blackwell.py
+to avoid duplication and ensure consistent behavior.
 """
 import os
 import subprocess
 import sys
-import argparse
-
-# Import shared functions
-import speedup_common
-
-# Global flag for compile-only mode
-COMPILE_ONLY = False
 
 
 def find_cuda_home():
@@ -60,6 +41,10 @@ def find_cuda_home():
 
     # Check system CUDA installations (Linux/Mac)
     system_paths = [
+        "/usr/local/cuda-12.8",
+        "/usr/local/cuda-12.7",
+        "/usr/local/cuda-12.6",
+        "/usr/local/cuda-12.5",
         "/usr/local/cuda-12.4",
         "/usr/local/cuda-12.3",
         "/usr/local/cuda-12.2",
@@ -158,73 +143,6 @@ def check_nvcc_available():
     except Exception as e:
         print(f"[ComfyUI-SAM3] [WARNING] Error checking nvcc: {e}")
         return False
-
-
-def get_cuda_arch_list():
-    """
-    Detect GPU compute capability and return TORCH_CUDA_ARCH_LIST string.
-    Returns None if detection fails.
-    """
-    try:
-        import torch
-        if not torch.cuda.is_available():
-            print("[ComfyUI-SAM3] [WARNING] CUDA not available in PyTorch")
-            return None
-
-        # Get compute capability of current device
-        major, minor = torch.cuda.get_device_capability(0)
-        compute_cap = f"{major}.{minor}"
-
-        # Get device name for informational purposes
-        device_name = torch.cuda.get_device_name(0)
-        print(f"[ComfyUI-SAM3] Detected GPU: {device_name} (compute capability {compute_cap})")
-
-        # Check if GPU is too new for current PyTorch version
-        if major >= 12:
-            print("=" * 80)
-            print(f"[ComfyUI-SAM3] [ERROR] GPU compute capability {compute_cap} (sm_{major}{minor}) is not supported")
-            print(f"[ComfyUI-SAM3] Current PyTorch version does not support Blackwell architecture (RTX 50-series)")
-            print(f"[ComfyUI-SAM3]")
-            print(f"[ComfyUI-SAM3] IMPORTANT: This is OPTIONAL - ComfyUI-SAM3 works without GPU acceleration!")
-            print(f"[ComfyUI-SAM3]")
-            print(f"[ComfyUI-SAM3] WORKAROUNDS:")
-            print(f"[ComfyUI-SAM3] 1. Skip GPU acceleration (Recommended)")
-            print(f"[ComfyUI-SAM3]    - Video tracking will use CPU fallback (5-10x slower but fully functional)")
-            print(f"[ComfyUI-SAM3]    - Image segmentation is unaffected")
-            print(f"[ComfyUI-SAM3]    - Simply don't run speedup.py, just use the base installation")
-            print(f"[ComfyUI-SAM3]")
-            print(f"[ComfyUI-SAM3] 2. Wait for PyTorch to add official sm_{major}{minor} support")
-            print(f"[ComfyUI-SAM3]    - Track progress: https://github.com/pytorch/pytorch/issues/159207")
-            print(f"[ComfyUI-SAM3]    - Rerun speedup.py once support is available")
-            print(f"[ComfyUI-SAM3]")
-            print(f"[ComfyUI-SAM3] 3. Advanced users: Build PyTorch from source with sm_{major}{minor} support")
-            print(f"[ComfyUI-SAM3]    - See: https://pytorch.org/get-started/locally/#from-source")
-            print("=" * 80)
-            return None  # Abort compilation
-
-        # OPTIMIZED: Compile ONLY for the detected GPU architecture
-        arch_string = compute_cap
-
-        print(f"[ComfyUI-SAM3]")
-        print(f"[ComfyUI-SAM3] OPTIMIZED COMPILATION:")
-        print(f"[ComfyUI-SAM3] Compiling ONLY for your GPU: {compute_cap} (sm_{major}{minor})")
-        print(f"[ComfyUI-SAM3] Previous approach compiled for 5-6 architectures")
-        print(f"[ComfyUI-SAM3] New approach compiles for 1 architecture only")
-        print(f"[ComfyUI-SAM3]")
-        print(f"[ComfyUI-SAM3] TIME SAVINGS:")
-        print(f"[ComfyUI-SAM3]   Old: ~15-30 minutes (compiling for 5-6 architectures)")
-        print(f"[ComfyUI-SAM3]   New: ~3-5 minutes (compiling for 1 architecture)")
-        print(f"[ComfyUI-SAM3]   Improvement: 75-80% faster compilation!")
-        print(f"[ComfyUI-SAM3]")
-        print(f"[ComfyUI-SAM3] Using CUDA architecture: {arch_string}")
-
-        return arch_string
-
-    except Exception as e:
-        print(f"[ComfyUI-SAM3] [ERROR] Could not detect GPU compute capability: {e}")
-        import traceback
-        traceback.print_exc()
-        return None  # Fail safely instead of guessing architectures
 
 
 def setup_cuda_environment():
@@ -467,105 +385,115 @@ def try_install_cuda_toolkit():
         return False
 
 
-def try_install_torch_generic_nms():
+def install_extension(name, repo_url, cuda_arch_list, compile_only=False, timeout=600, verbose=False):
     """
-    Install torch_generic_nms for GPU-accelerated video tracking.
-    Provides 5-10x faster NMS compared to CPU fallback.
+    Unified function to install a CUDA extension from GitHub.
+
+    Args:
+        name: Extension name (e.g., "torch_generic_nms")
+        repo_url: GitHub repository URL
+        cuda_arch_list: TORCH_CUDA_ARCH_LIST string
+        compile_only: Compile even without GPU present
+        timeout: Compilation timeout in seconds
+        verbose: Show real-time compilation output
+
+    Returns:
+        True if successful, False otherwise
     """
-    # Get CUDA architecture list
-    cuda_arch_list = get_cuda_arch_list()
-    if not cuda_arch_list:
-        print("[ComfyUI-SAM3] [INFO] Skipping GPU NMS compilation (no compatible GPU detected)")
-        print("[ComfyUI-SAM3] Video tracking will use CPU fallback (slower but functional)")
+    print(f"[ComfyUI-SAM3] Checking for {name}...")
+
+    # Check if already installed
+    try:
+        __import__(name)
+        print(f"[ComfyUI-SAM3] [OK] {name} already installed")
+        return True
+    except ImportError:
+        pass
+
+    # Check if CUDA is available in PyTorch
+    try:
+        import torch
+        if not compile_only and not torch.cuda.is_available():
+            print(f"[ComfyUI-SAM3] [INFO] CUDA not available, skipping {name} compilation")
+            return False
+        elif compile_only:
+            print(f"[ComfyUI-SAM3] [INFO] Compile-only mode: checking PyTorch CUDA support...")
+            if not torch.version.cuda:
+                print(f"[ComfyUI-SAM3] [ERROR] PyTorch was not built with CUDA support")
+                return False
+            print(f"[ComfyUI-SAM3] [OK] PyTorch built with CUDA {torch.version.cuda}")
+    except ImportError:
+        print(f"[ComfyUI-SAM3] [WARNING] PyTorch not found, cannot install {name}")
         return False
 
-    # Use unified installation function from speedup_common
-    success = speedup_common.install_extension(
-        name="torch_generic_nms",
-        repo_url="git+https://github.com/ronghanghu/torch_generic_nms",
-        cuda_arch_list=cuda_arch_list,
-        compile_only=COMPILE_ONLY,
-        timeout=600,
-        verbose=False
-    )
+    # Setup CUDA environment
+    cuda_env = setup_cuda_environment()
+    if not cuda_env:
+        print(f"[ComfyUI-SAM3] [WARNING] CUDA compiler not found in system")
+        print(f"[ComfyUI-SAM3] Attempting to install CUDA toolkit...")
 
-    if success:
-        print("[ComfyUI-SAM3] Video tracking will use GPU-accelerated NMS (5-10x faster)")
-    else:
-        print("[ComfyUI-SAM3] This is optional - video tracking will use CPU NMS fallback")
+        if not try_install_cuda_toolkit():
+            print(f"[ComfyUI-SAM3] [WARNING] Could not install CUDA compiler")
+            return False
 
-    return success
+        cuda_env = setup_cuda_environment()
+        if not cuda_env:
+            print(f"[ComfyUI-SAM3] [WARNING] CUDA environment setup failed after toolkit installation")
+            return False
 
+    # Set CUDA architecture list
+    if cuda_arch_list:
+        cuda_env["TORCH_CUDA_ARCH_LIST"] = cuda_arch_list
+        os.environ["TORCH_CUDA_ARCH_LIST"] = cuda_arch_list
+        print(f"[ComfyUI-SAM3] Set TORCH_CUDA_ARCH_LIST={cuda_arch_list}")
 
-def try_install_cc_torch():
-    """
-    Install cc_torch for GPU-accelerated connected components.
-    Used for hole filling in video tracking masks.
-    """
-    # Get CUDA architecture list
-    cuda_arch_list = get_cuda_arch_list()
-    if not cuda_arch_list:
-        print("[ComfyUI-SAM3] [INFO] Skipping GPU connected components (no compatible GPU detected)")
-        print("[ComfyUI-SAM3] Video tracking will use CPU fallback (slower but functional)")
+    # Set C/C++ compiler paths explicitly
+    import shutil
+    gcc_path = shutil.which("gcc-11") or shutil.which("gcc")
+    gxx_path = shutil.which("g++-11") or shutil.which("g++")
+    if gcc_path:
+        cuda_env["CC"] = gcc_path
+        os.environ["CC"] = gcc_path
+        print(f"[ComfyUI-SAM3] Set CC={gcc_path}")
+    if gxx_path:
+        cuda_env["CXX"] = gxx_path
+        os.environ["CXX"] = gxx_path
+        print(f"[ComfyUI-SAM3] Set CXX={gxx_path}")
+
+    # Install extension from GitHub
+    print(f"[ComfyUI-SAM3] Compiling {name} from source (estimated time: ~60 seconds per architecture)...")
+
+    pip_args = [
+        sys.executable, "-m", "pip", "install",
+        "--no-build-isolation",
+    ]
+
+    if verbose:
+        pip_args.append("--verbose")
+
+    pip_args.append(repo_url)
+
+    try:
+        result = subprocess.run(
+            pip_args,
+            capture_output=not verbose,
+            text=True,
+            timeout=timeout,
+            env=cuda_env
+        )
+
+        if result.returncode == 0:
+            print(f"[ComfyUI-SAM3] [OK] {name} compiled and installed successfully")
+            return True
+        else:
+            print(f"[ComfyUI-SAM3] [WARNING] {name} compilation failed")
+            if result.stderr and not verbose:
+                print(f"[ComfyUI-SAM3] Error details: {result.stderr[:500]}")
+            return False
+
+    except subprocess.TimeoutExpired:
+        print(f"[ComfyUI-SAM3] [WARNING] {name} compilation timed out after {timeout}s")
         return False
-
-    # Use unified installation function from speedup_common
-    success = speedup_common.install_extension(
-        name="cc_torch",
-        repo_url="git+https://github.com/ronghanghu/cc_torch.git",
-        cuda_arch_list=cuda_arch_list,
-        compile_only=COMPILE_ONLY,
-        timeout=600,
-        verbose=False
-    )
-
-    if success:
-        print("[ComfyUI-SAM3] Video tracking will use GPU-accelerated connected components")
-    else:
-        print("[ComfyUI-SAM3] This is optional - video tracking will use CPU fallback")
-
-    return success
-
-
-if __name__ == "__main__":
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Install GPU acceleration for ComfyUI-SAM3",
-        epilog="This script is OPTIONAL. ComfyUI-SAM3 works fine without it using CPU fallbacks."
-    )
-    parser.add_argument(
-        "--compile-only",
-        action="store_true",
-        help="Compile CUDA extensions even without GPU present (for CI testing)"
-    )
-    args = parser.parse_args()
-
-    COMPILE_ONLY = args.compile_only
-
-    if COMPILE_ONLY:
-        print("[ComfyUI-SAM3] Running in COMPILE-ONLY mode (will skip GPU runtime checks)")
-
-    print("[ComfyUI-SAM3] GPU Acceleration Setup")
-    print("="*80)
-    print("[ComfyUI-SAM3] This will install GPU-accelerated CUDA extensions")
-    print("[ComfyUI-SAM3] These are OPTIONAL - ComfyUI-SAM3 works without them")
-    print("="*80)
-
-    # Try to install GPU-accelerated dependencies
-    nms_success = try_install_torch_generic_nms()
-
-    print("="*80)
-
-    cc_success = try_install_cc_torch()
-
-    print("="*80)
-
-    if nms_success and cc_success:
-        print("[ComfyUI-SAM3] ✓ GPU acceleration setup completed successfully!")
-        print("[ComfyUI-SAM3] Video tracking will use GPU-accelerated operations (5-10x faster)")
-    elif nms_success or cc_success:
-        print("[ComfyUI-SAM3] ⚠ GPU acceleration partially installed")
-        print("[ComfyUI-SAM3] Some operations will use CPU fallback")
-    else:
-        print("[ComfyUI-SAM3] ℹ GPU acceleration not installed")
-        print("[ComfyUI-SAM3] ComfyUI-SAM3 will use CPU fallbacks (slower but functional)")
+    except Exception as e:
+        print(f"[ComfyUI-SAM3] [WARNING] {name} installation error: {e}")
+        return False
