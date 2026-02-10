@@ -1,8 +1,32 @@
 # ComfyUI-SAM3
 
-ComfyUI integration for Meta's SAM3 (Segment Anything Model 3) - enabling open-vocabulary image segmentation using natural language text prompts.
+ComfyUI integration for Meta's SAM3 (Segment Anything Model 3) - enabling open-vocabulary image and video segmentation using natural language text prompts.
 
-###Examples
+## Installation
+
+Install via ComfyUI Manager or clone to `ComfyUI/custom_nodes/`:
+```bash
+cd ComfyUI/custom_nodes/
+git clone https://github.com/PozzettiAndrea/ComfyUI-SAM3.git
+cd ComfyUI-SAM3
+python install.py
+```
+
+### Optional: GPU Acceleration for Video Tracking
+
+For 5-10x faster video tracking, install GPU-accelerated CUDA extensions:
+```bash
+python speedup.py
+```
+
+This is **optional** and only benefits video tracking performance. Image segmentation works fine without it. The script will:
+- Auto-install micromamba if needed
+- Install CUDA toolkit via conda/micromamba
+- Compile GPU-accelerated extensions (torch_generic_nms, cc_torch)
+
+**Requirements:** NVIDIA GPU, conda/micromamba environment recommended.
+
+### Examples
 
 ![bbox](docs/bbox.png)
 
@@ -13,6 +37,29 @@ ComfyUI integration for Meta's SAM3 (Segment Anything Model 3) - enabling open-v
 ![video](docs/video.png)
 
 ## Nodes
+
+### Image Segmentation
+- **LoadSAM3Model** - Load SAM3 model for image segmentation
+- **SAM3Segmentation** - Segment objects using text prompts ("person", "cat in red", etc.)
+- **SAM3CreateBox** - Create bounding box prompts (normalized coordinates)
+- **SAM3CreatePoint** - Create point prompts with positive/negative labels
+- **SAM3CombineBoxes** - Combine multiple box prompts
+- **SAM3CombinePoints** - Combine multiple point prompts
+
+### Video Tracking
+- **SAM3VideoModelLoader** - Load SAM3 model for video tracking
+- **SAM3InitVideoSession** - Initialize video tracking session
+- **SAM3InitVideoSessionAdvanced** - Advanced session initialization with custom settings
+- **SAM3AddVideoPrompt** - Add object prompts to track in video
+- **SAM3PropagateVideo** - Propagate object tracking through video frames
+
+### Interactive Tools
+- **SAM3PointCollector** - Interactive UI for collecting point prompts
+- **SAM3BBoxCollector** - Interactive UI for drawing bounding boxes
+
+---
+
+## Node Details
 
 ### LoadSAM3Model
 
