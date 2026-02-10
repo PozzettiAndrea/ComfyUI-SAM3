@@ -335,7 +335,7 @@ def try_install_cuda_toolkit():
 
         # Platform-specific installation fallbacks
         if sys.platform.startswith('linux'):
-            return try_install_cuda_linux()
+            return try_install_cuda_linux(cuda_version)
         elif sys.platform == 'win32':
             return try_install_cuda_windows(cuda_version)
         elif sys.platform == 'darwin':
@@ -349,7 +349,7 @@ def try_install_cuda_toolkit():
         return False
 
 
-def try_install_cuda_linux():
+def try_install_cuda_linux(cuda_version=None):
     """Try to install CUDA toolkit on Linux using package managers."""
     print("[ComfyUI-SAM3] Attempting Linux package manager installation...")
 
@@ -378,8 +378,32 @@ def try_install_cuda_linux():
             timeout=120
         )
         if result.returncode == 0:
-            # Install CUDA 12.x toolkit (try 12.4, 12.3, 12.2, etc.)
-            cuda_packages = ["cuda-toolkit-12-4", "cuda-toolkit-12-3", "cuda-toolkit-12-2", "cuda-toolkit-12-1", "cuda-toolkit-12-0"]
+            # Install CUDA toolkit - dynamically construct package list based on detected version
+            cuda_packages = []
+
+            if cuda_version:
+                # Parse CUDA version (e.g., "12.8" -> major=12, minor=8)
+                try:
+                    parts = cuda_version.split('.')
+                    cuda_major = int(parts[0])
+                    cuda_minor = int(parts[1]) if len(parts) > 1 else 0
+
+                    # Try detected version first (e.g., cuda-toolkit-12-8)
+                    detected_pkg = f"cuda-toolkit-{cuda_major}-{cuda_minor}"
+                    cuda_packages.append(detected_pkg)
+                    print(f"[ComfyUI-SAM3] Will try detected version first: {detected_pkg}")
+
+                    # Add fallback versions (same major, decreasing minor)
+                    for minor in range(cuda_minor - 1, -1, -1):
+                        cuda_packages.append(f"cuda-toolkit-{cuda_major}-{minor}")
+                except (ValueError, IndexError) as e:
+                    print(f"[ComfyUI-SAM3] [WARNING] Could not parse CUDA version '{cuda_version}': {e}")
+
+            # Add hardcoded fallbacks if dynamic construction failed or for compatibility
+            fallback_packages = ["cuda-toolkit-12-4", "cuda-toolkit-12-3", "cuda-toolkit-12-2", "cuda-toolkit-12-1", "cuda-toolkit-12-0"]
+            for pkg in fallback_packages:
+                if pkg not in cuda_packages:
+                    cuda_packages.append(pkg)
 
             for cuda_pkg in cuda_packages:
                 print(f"[ComfyUI-SAM3] Trying to install {cuda_pkg}...")
