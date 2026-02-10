@@ -59,67 +59,23 @@ This is **optional** and only benefits video tracking performance. Image segment
 
 ---
 
-## Node Details
+## Quick Start
 
-### LoadSAM3Model
+1. Add **LoadSAM3Model** node (first run downloads ~3.2GB model from HuggingFace)
+2. Add **SAM3Segmentation** node, connect model
+3. Enter text prompt: `"person"`, `"cat in red"`, `"car on the left"`
+4. Get masks, visualization, boxes, and confidence scores
 
-Loads the SAM3 model and creates a processor for inference.
+**Text Prompt Examples:**
+- `"shoe"`, `"cat"`, `"person"` - Single objects
+- `"person in red"`, `"black car"` - With attributes
+- `"person on the left"`, `"car in background"` - Spatial relations
 
-**Inputs:**
-- `device` (auto/cuda/cpu): Device to run the model on (default: auto)
-- `model_path` (optional): Path to custom checkpoint (leave empty to auto-download)
-
-**Outputs:**
-- `sam3_model`: Model object to be used by segmentation nodes
-
-**Notes:**
-- First run will download the model (~3.2GB) from HuggingFace
-- Model is cached in `ComfyUI/models/sam3/sam3.pt`
-- Subsequent loads are instant (uses in-memory cache)
-
-### SAM3Segmentation
-
-Performs segmentation using text prompts.
-
-**Inputs:**
-- `sam3_model`: Model from LoadSAM3Model node
-- `image`: Input image (ComfyUI IMAGE format)
-- `text_prompt`: Natural language description of objects to segment
-  - Examples: "person", "cat", "person in red", "car on the left"
-- `confidence_threshold` (0.0-1.0): Minimum confidence score (default: 0.5)
-- `max_detections` (optional): Maximum number of detections to return (-1 for all)
-
-**Outputs:**
-- `masks`: Binary segmentation masks (ComfyUI MASK format)
-- `visualization`: Image with colored mask overlays and bounding boxes
-- `boxes`: JSON string containing bounding box coordinates [[x0, y0, x1, y1], ...]
-- `scores`: JSON string containing confidence scores [0.95, 0.87, ...]
-
-**Example Prompts:**
-- Single object: `"shoe"`, `"cat"`, `"person"`
-- With attributes: `"person in red"`, `"black car"`, `"wooden table"`
-- Spatial relations: `"person on the left"`, `"car in the background"`
-
-### SAM3GeometricRefine
-
-Refines segmentation using geometric box prompts (advanced usage).
-
-**Inputs:**
-- `sam3_model`: Model from LoadSAM3Model node
-- `image`: Input image
-- `box_x`, `box_y`: Box center coordinates (normalized 0-1)
-- `box_w`, `box_h`: Box width and height (normalized 0-1)
-- `is_positive`: True for positive prompt, False for negative
-- `confidence_threshold`: Minimum confidence score
-- `text_prompt` (optional): Combine with text prompt
-
-**Outputs:**
-- Same as SAM3Segmentation
-
-**Notes:**
-- Box coordinates are normalized to [0, 1] range
-- Positive prompts include the box region, negative prompts exclude it
-- Can be combined with text prompts for more precise control
+**Video Tracking:**
+1. Use **SAM3VideoModelLoader** instead of LoadSAM3Model
+2. Initialize session with **SAM3InitVideoSession**
+3. Add prompts with **SAM3AddVideoPrompt**
+4. Propagate with **SAM3PropagateVideo**
 
 ## Credits
 
