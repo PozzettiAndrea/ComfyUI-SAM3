@@ -14,10 +14,14 @@ try:
     GENERIC_NMS_AVAILABLE = True
 except ImportError:
     logging.debug(
-        "Falling back to triton or CPU mask NMS implementation -- please install `torch_generic_nms` via\n\t"
+        "torch_generic_nms not available, falling back to CPU mask NMS implementation. "
+        "For better performance, install via:\n\t"
         'pip uninstall -y torch_generic_nms; TORCH_CUDA_ARCH_LIST="8.0 9.0" pip install git+https://github.com/ronghanghu/torch_generic_nms'
     )
     GENERIC_NMS_AVAILABLE = False
+
+# Global flag to track if we've shown the GPU NMS warning
+_SHOWN_NMS_WARNING = False
 
 
 def nms_masks(
@@ -64,9 +68,21 @@ def generic_nms(
         if GENERIC_NMS_AVAILABLE:
             return generic_nms_cuda(ious, scores, iou_threshold, use_iou_matrix=True)
         else:
-            from .triton.nms import nms_triton
+            # GPU NMS not available - show one-time warning with install instructions
+            global _SHOWN_NMS_WARNING
+            if not _SHOWN_NMS_WARNING:
+                print("\n" + "="*80)
+                print("⚠️  GPU-accelerated NMS not available - video tracking is 5-10x slower")
+                print("="*80)
+                print("To enable GPU acceleration, run:")
+                print("  cd custom_nodes/ComfyUI-SAM3")
+                print("  python install.py")
+                print("="*80 + "\n")
+                _SHOWN_NMS_WARNING = True
 
-            return nms_triton(ious, scores, iou_threshold)
+            # Fall back to CPU implementation
+            logging.debug("GPU NMS not available, falling back to CPU implementation")
+            return generic_nms_cpu(ious, scores, iou_threshold)
 
     return generic_nms_cpu(ious, scores, iou_threshold)
 

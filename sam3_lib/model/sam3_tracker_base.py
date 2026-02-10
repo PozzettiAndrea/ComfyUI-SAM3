@@ -12,7 +12,7 @@ from .sam3_tracker_utils import get_1d_sine_pe, select_closest_cond_frames
 from ..sam.mask_decoder import MaskDecoder, MLP
 from ..sam.prompt_encoder import PromptEncoder
 from ..sam.transformer import TwoWayTransformer
-from .train.data.collator import BatchedDatapoint
+from .data_misc import BatchedDatapoint
 
 try:
     from timm.layers import trunc_normal_

@@ -73,12 +73,10 @@ def connected_components(input_tensor: torch.Tensor):
         if HAS_CC_TORCH:
             return get_connected_components(input_tensor.to(torch.uint8))
         else:
-            # triton fallback
-            from .triton.connected_components import (
-                connected_components_triton,
-            )
-
-            return connected_components_triton(input_tensor)
+            # Triton implementation not available in vendored version
+            # Fall back to CPU implementation (slower but functional)
+            logging.debug("GPU connected components not available, using CPU fallback")
+            return connected_components_cpu(input_tensor)
 
     # CPU fallback
     return connected_components_cpu(input_tensor)
