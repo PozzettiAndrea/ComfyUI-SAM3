@@ -172,7 +172,8 @@ jobs:
             ${{ runner.os }}-huggingface-sam3-
             ${{ runner.os }}-huggingface-
 
-      - name: Install system dependencies
+      - name: Install system dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential
