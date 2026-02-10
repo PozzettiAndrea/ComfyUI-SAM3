@@ -619,16 +619,48 @@ class Sam3Image(torch.nn.Module):
         ) = self.inst_interactive_predictor.model._prepare_backbone_features(
             backbone_out
         )
+
+        # DEBUG: Log feature shapes before no_mem_embed
+        print(f"[SAM3 PREDICT_INST DEBUG] ========== FEATURE ANALYSIS ==========")
+        print(f"[SAM3 PREDICT_INST DEBUG] orig_hw: ({orig_h}, {orig_w})")
+        print(f"[SAM3 PREDICT_INST DEBUG] vision_feats shapes (before no_mem_embed):")
+        for i, feat in enumerate(vision_feats):
+            print(f"[SAM3 PREDICT_INST DEBUG]   vision_feats[{i}]: {feat.shape}")
+        print(f"[SAM3 PREDICT_INST DEBUG] _bb_feat_sizes (expected): {self.inst_interactive_predictor._bb_feat_sizes}")
+        print(f"[SAM3 PREDICT_INST DEBUG] no_mem_embed shape: {self.inst_interactive_predictor.model.no_mem_embed.shape}")
+        print(f"[SAM3 PREDICT_INST DEBUG] vision_feats[-1] norm (before): {vision_feats[-1].norm().item():.4f}")
+
         # Add no_mem_embed, which is added to the lowest rest feat. map during training on videos
         vision_feats[-1] = (
             vision_feats[-1] + self.inst_interactive_predictor.model.no_mem_embed
         )
+
+        print(f"[SAM3 PREDICT_INST DEBUG] vision_feats[-1] norm (after no_mem_embed): {vision_feats[-1].norm().item():.4f}")
+
         feats = [
             feat.permute(1, 2, 0).view(1, -1, *feat_size)
             for feat, feat_size in zip(
                 vision_feats[::-1], self.inst_interactive_predictor._bb_feat_sizes[::-1]
             )
         ][::-1]
+
+        # DEBUG: Log feature shapes after reshape
+        print(f"[SAM3 PREDICT_INST DEBUG] feats shapes (after reshape):")
+        for i, feat in enumerate(feats):
+            print(f"[SAM3 PREDICT_INST DEBUG]   feats[{i}]: {feat.shape}")
+
+        # DEBUG: Log kwargs being passed to predict
+        print(f"[SAM3 PREDICT_INST DEBUG] kwargs passed to predict(): {list(kwargs.keys())}")
+        if 'point_coords' in kwargs and kwargs['point_coords'] is not None:
+            print(f"[SAM3 PREDICT_INST DEBUG]   point_coords: {kwargs['point_coords']}")
+        if 'point_labels' in kwargs and kwargs['point_labels'] is not None:
+            print(f"[SAM3 PREDICT_INST DEBUG]   point_labels: {kwargs['point_labels']}")
+        if 'box' in kwargs and kwargs['box'] is not None:
+            print(f"[SAM3 PREDICT_INST DEBUG]   box: {kwargs['box']}")
+        if 'normalize_coords' in kwargs:
+            print(f"[SAM3 PREDICT_INST DEBUG]   normalize_coords: {kwargs['normalize_coords']}")
+        print(f"[SAM3 PREDICT_INST DEBUG] =======================================")
+
         self.inst_interactive_predictor._features = {
             "image_embed": feats[-1],
             "high_res_feats": feats[:-1],

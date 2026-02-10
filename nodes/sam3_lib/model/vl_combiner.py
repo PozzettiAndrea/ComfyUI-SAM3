@@ -76,6 +76,18 @@ class SAM3VLBackbone(nn.Module):
         return output
 
     def forward_image(self, samples: torch.Tensor):
+        # Ensure float dtype (not uint8)
+        if samples.dtype == torch.uint8:
+            samples = samples.float() / 255.0
+
+        # Ensure correct device
+        try:
+            expected_device = next(self.vision_backbone.parameters()).device
+            if samples.device != expected_device:
+                samples = samples.to(expected_device)
+        except StopIteration:
+            pass  # No parameters in backbone
+
         return activation_ckpt_wrapper(self._forward_image_no_act_ckpt)(
             samples=samples,
             act_ckpt_enable=self.act_ckpt_whole_vision_backbone and self.training,

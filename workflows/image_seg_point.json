@@ -1,8 +1,8 @@
 {
   "id": "9e5b67d0-53dc-42aa-bdb7-541f1939e114",
   "revision": 0,
-  "last_node_id": 7,
-  "last_link_id": 10,
+  "last_node_id": 19,
+  "last_link_id": 38,
   "nodes": [
     {
       "id": 4,
@@ -12,8 +12,8 @@
         96.54681627376111
       ],
       "size": [
-        140,
-        246.00000000000006
+        210,
+        258
       ],
       "flags": {},
       "order": 4,
@@ -22,7 +22,7 @@
         {
           "name": "mask",
           "type": "MASK",
-          "link": 3
+          "link": 36
         }
       ],
       "outputs": [],
@@ -34,40 +34,11 @@
       "widgets_values": []
     },
     {
-      "id": 3,
-      "type": "PreviewImage",
-      "pos": [
-        1581.6710130707006,
-        443.2242576440796
-      ],
-      "size": [
-        312.1604553633704,
-        258
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 2
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.72",
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
       "id": 1,
       "type": "LoadImage",
       "pos": [
-        259.9558271571259,
-        256.4008840168279
+        487.38811339518077,
+        311.4558528794742
       ],
       "size": [
         274.080078125,
@@ -82,8 +53,8 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            1,
-            8
+            27,
+            38
           ]
         },
         {
@@ -103,59 +74,40 @@
       ]
     },
     {
-      "id": 7,
-      "type": "SAM3BBoxCollector",
+      "id": 3,
+      "type": "PreviewImage",
       "pos": [
-        596.2101933426727,
-        358.1734897024456
+        1561.4061828256129,
+        419.74855413577825
       ],
       "size": [
-        400,
-        480
+        312.1604553633704,
+        258
       ],
       "flags": {},
-      "order": 2,
+      "order": 5,
       "mode": 0,
       "inputs": [
         {
-          "name": "image",
+          "name": "images",
           "type": "IMAGE",
-          "link": 8
+          "link": 37
         }
       ],
-      "outputs": [
-        {
-          "name": "positive_bboxes",
-          "type": "SAM3_BOXES_PROMPT",
-          "links": [
-            9
-          ]
-        },
-        {
-          "name": "negative_bboxes",
-          "type": "SAM3_BOXES_PROMPT",
-          "links": [
-            10
-          ]
-        }
-      ],
+      "outputs": [],
       "properties": {
-        "cnr_id": "comfyui-sam3",
-        "ver": "aa18b50ac98ca1c2d6900d462dcf7a078b9b4a2c",
-        "Node name for S&R": "SAM3BBoxCollector"
+        "cnr_id": "comfy-core",
+        "ver": "0.3.72",
+        "Node name for S&R": "PreviewImage"
       },
-      "widgets_values": [
-        "[]",
-        "[]",
-        ""
-      ]
+      "widgets_values": []
     },
     {
-      "id": 5,
+      "id": 12,
       "type": "LoadSAM3Model",
       "pos": [
-        593.1541722814286,
-        129.00284778827395
+        619.424717299163,
+        120.03196674570798
       ],
       "size": [
         270,
@@ -170,30 +122,77 @@
           "name": "sam3_model",
           "type": "SAM3_MODEL",
           "links": [
-            4
+            34
           ]
         }
       ],
       "properties": {
         "cnr_id": "comfyui-sam3",
-        "ver": "aa18b50ac98ca1c2d6900d462dcf7a078b9b4a2c",
+        "ver": "82c8e4f88a6c0a9242712b827e05f5e67c4a90a7",
         "Node name for S&R": "LoadSAM3Model"
       },
       "widgets_values": [
-        "[Download from HuggingFace]",
+        "models/sam3/sam3.pt",
         ""
       ]
     },
     {
-      "id": 2,
-      "type": "SAM3Segmentation",
+      "id": 15,
+      "type": "SAM3PointCollector",
       "pos": [
-        1141.4093405565593,
-        306.4225420791634
+        841.0615574123426,
+        358.78428795221674
       ],
       "size": [
-        278.08203125,
-        250
+        400,
+        480
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 27
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive_points",
+          "type": "SAM3_POINTS_PROMPT",
+          "links": [
+            35
+          ]
+        },
+        {
+          "name": "negative_points",
+          "type": "SAM3_POINTS_PROMPT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "82c8e4f88a6c0a9242712b827e05f5e67c4a90a7",
+        "Node name for S&R": "SAM3PointCollector"
+      },
+      "widgets_values": [
+        "{\"positive\":[{\"x\":1048.2152695331317,\"y\":364.0021504810385}],\"negative\":[]}",
+        "[{\"x\":1048.2152695331317,\"y\":364.0021504810385}]",
+        "[]",
+        ""
+      ]
+    },
+    {
+      "id": 19,
+      "type": "SAM3Segmentation",
+      "pos": [
+        1242.0554622452871,
+        101.6866843379882
+      ],
+      "size": [
+        270,
+        186
       ],
       "flags": {},
       "order": 3,
@@ -202,41 +201,29 @@
         {
           "name": "sam3_model",
           "type": "SAM3_MODEL",
-          "link": 4
+          "link": 34
         },
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 1
-        },
-        {
-          "name": "positive_boxes",
-          "shape": 7,
-          "type": "SAM3_BOXES_PROMPT",
-          "link": 9
-        },
-        {
-          "name": "negative_boxes",
-          "shape": 7,
-          "type": "SAM3_BOXES_PROMPT",
-          "link": 10
-        },
-        {
-          "name": "mask_prompt",
-          "shape": 7,
-          "type": "MASK",
-          "link": null
+          "link": 38
         },
         {
           "name": "positive_points",
           "shape": 7,
           "type": "SAM3_POINTS_PROMPT",
-          "link": null
+          "link": 35
         },
         {
           "name": "negative_points",
           "shape": 7,
           "type": "SAM3_POINTS_PROMPT",
+          "link": null
+        },
+        {
+          "name": "box",
+          "shape": 7,
+          "type": "SAM3_BOXES_PROMPT",
           "link": null
         }
       ],
@@ -245,14 +232,14 @@
           "name": "masks",
           "type": "MASK",
           "links": [
-            3
+            36
           ]
         },
         {
           "name": "visualization",
           "type": "IMAGE",
           "links": [
-            2
+            37
           ]
         },
         {
@@ -268,89 +255,82 @@
       ],
       "properties": {
         "cnr_id": "comfyui-sam3",
-        "ver": "aa18b50ac98ca1c2d6900d462dcf7a078b9b4a2c",
+        "ver": "82c8e4f88a6c0a9242712b827e05f5e67c4a90a7",
         "Node name for S&R": "SAM3Segmentation"
       },
       "widgets_values": [
-        0.3,
-        "",
-        1
+        true,
+        true,
+        false
       ]
     }
   ],
   "links": [
     [
-      1,
+      27,
       1,
       0,
-      2,
-      1,
-      "IMAGE"
-    ],
-    [
-      2,
-      2,
-      1,
-      3,
+      15,
       0,
       "IMAGE"
     ],
     [
-      3,
+      34,
+      12,
+      0,
+      19,
+      0,
+      "SAM3_MODEL"
+    ],
+    [
+      35,
+      15,
+      0,
+      19,
       2,
+      "SAM3_POINTS_PROMPT"
+    ],
+    [
+      36,
+      19,
       0,
       4,
       0,
       "MASK"
     ],
     [
-      4,
-      5,
-      0,
-      2,
-      0,
-      "SAM3_MODEL"
-    ],
-    [
-      8,
+      37,
+      19,
       1,
-      0,
-      7,
+      3,
       0,
       "IMAGE"
     ],
     [
-      9,
-      7,
-      0,
-      2,
-      2,
-      "SAM3_BOXES_PROMPT"
-    ],
-    [
-      10,
-      7,
+      38,
       1,
-      2,
-      3,
-      "SAM3_BOXES_PROMPT"
+      0,
+      19,
+      1,
+      "IMAGE"
     ]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.6934334949441335,
+      "scale": 0.7595115477546649,
       "offset": [
-        39.31060203728551,
-        188.81029138900294
+        -409.1342471298792,
+        209.55878908351585
       ]
     },
-    "frontendVersion": "1.30.6",
+    "frontendVersion": "1.32.9",
     "VHS_latentpreview": false,
     "VHS_latentpreviewrate": 0,
     "VHS_MetadataImage": true,
-    "VHS_KeepIntermediate": true
+    "VHS_KeepIntermediate": true,
+    "workflowRendererVersion": "LG"
   },
   "version": 0.4
 }

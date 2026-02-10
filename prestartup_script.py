@@ -70,34 +70,7 @@ def main():
         print(f"[SAM3] Image assets: {copied} copied, {skipped} skipped")
     else:
         print(f"[SAM3] No assets folder found")
-
-    # Copy workflows to user workflows folder with SAM3- prefix
-    workflows_src = script_dir / "workflows"
-    workflows_dst = comfy_root / "user" / "default" / "workflows"
-
-    if workflows_src.exists():
-        print(f"[SAM3] Copying workflows to {workflows_dst}...")
-        os.makedirs(str(workflows_dst), exist_ok=True)
-        copied = 0
-        skipped = 0
-
-        for item in os.listdir(str(workflows_src)):
-            src_path = workflows_src / item
-            if src_path.is_file():
-                # Add SAM3- prefix to workflow filenames
-                prefixed_name = f"SAM3-{item}" if not item.startswith("SAM3-") else item
-                dst_path = workflows_dst / prefixed_name
-
-                if dst_path.exists():
-                    skipped += 1
-                else:
-                    shutil.copy2(str(src_path), str(dst_path))
-                    copied += 1
-
-        print(f"[SAM3] Workflows: {copied} copied, {skipped} skipped")
-    else:
-        print(f"[SAM3] No workflows folder found")
-
+    
     print(f"[SAM3] Prestartup script completed")
 
 if __name__ == "__main__":

@@ -4,13 +4,10 @@ LoadSAM3Model node - Loads SAM3 model with ComfyUI memory management integration
 This node integrates with ComfyUI's model_management system for:
 - Automatic GPU/CPU offloading based on VRAM pressure
 - Proper cleanup when models are unloaded
-- Integration with folder_paths for model discovery
+- Auto-download from HuggingFace if model not found
 """
-import os
-import torch
 from pathlib import Path
 
-import folder_paths
 import comfy.model_management
 
 from .sam3_model_patcher import create_sam3_model_patcher
@@ -22,44 +19,29 @@ except ImportError:
     HF_HUB_AVAILABLE = False
 
 
-def get_sam3_models():
-    """Get list of available SAM3 models from the sam3 folder."""
-    try:
-        models = folder_paths.get_filename_list("sam3")
-        return models if models else []
-    except Exception:
-        return []
-
-
 class LoadSAM3Model:
     """
     Node to load SAM3 model with ComfyUI memory management integration.
 
-    This node:
-    - Uses ComfyUI's folder_paths for model discovery
-    - Returns a SAM3ModelPatcher for proper VRAM management
-    - Supports downloading from HuggingFace if model not found locally
+    Specify the path to the model checkpoint. If the model doesn't exist
+    and an HF token is provided, it will be downloaded automatically.
     """
 
     @classmethod
     def INPUT_TYPES(cls):
-        models = get_sam3_models()
-        # Add placeholder option for HuggingFace download
-        model_choices = models + ["[Download from HuggingFace]"] if models else ["[Download from HuggingFace]"]
-
         return {
             "required": {
-                "model_name": (model_choices, {
-                    "default": model_choices[0] if model_choices else "[Download from HuggingFace]",
-                    "tooltip": "Select SAM3 model from ComfyUI/models/sam3/ folder, or download from HuggingFace"
+                "model_path": ("STRING", {
+                    "default": "models/sam3/sam3.pt",
+                    "tooltip": "Path to SAM3 model checkpoint (relative to ComfyUI root or absolute)"
                 }),
             },
             "optional": {
                 "hf_token": ("STRING", {
                     "default": "",
                     "multiline": False,
-                    "placeholder": "HuggingFace token (required for download)",
-                    "tooltip": "HuggingFace authentication token. Required only when downloading from HuggingFace. Get token from https://huggingface.co/settings/tokens"
+                    "placeholder": "HuggingFace token (for auto-download)",
+                    "tooltip": "If model doesn't exist at path and token is provided, downloads from HuggingFace"
                 }),
             }
         }
@@ -69,13 +51,13 @@ class LoadSAM3Model:
     FUNCTION = "load_model"
     CATEGORY = "SAM3"
 
-    def load_model(self, model_name, hf_token=""):
+    def load_model(self, model_path, hf_token=""):
         """
         Load SAM3 model with ComfyUI integration.
 
         Args:
-            model_name: Model filename from sam3 folder or "[Download from HuggingFace]"
-            hf_token: Optional HuggingFace token for downloading gated models
+            model_path: Path to model checkpoint (relative or absolute)
+            hf_token: Optional HuggingFace token for auto-download if model missing
 
         Returns:
             Tuple containing SAM3ModelPatcher for ComfyUI memory management
@@ -97,16 +79,24 @@ class LoadSAM3Model:
 
         print(f"[SAM3] Load device: {load_device}, Offload device: {offload_device}")
 
-        # Determine checkpoint path
-        if model_name == "[Download from HuggingFace]":
-            checkpoint_path = self._download_from_huggingface(hf_token)
-        else:
-            checkpoint_path = folder_paths.get_full_path("sam3", model_name)
-            if checkpoint_path is None:
+        # Resolve checkpoint path
+        checkpoint_path = Path(model_path)
+        if not checkpoint_path.is_absolute():
+            # Relative path - resolve from current working directory (ComfyUI root)
+            checkpoint_path = Path.cwd() / checkpoint_path
+
+        # Check if model exists, download if needed
+        if not checkpoint_path.exists():
+            if hf_token and hf_token.strip():
+                print(f"[SAM3] Model not found at {checkpoint_path}, downloading...")
+                self._download_from_huggingface(hf_token, checkpoint_path)
+            else:
                 raise FileNotFoundError(
-                    f"[SAM3] Model file not found: {model_name}\n"
-                    f"Please ensure the file exists in ComfyUI/models/sam3/"
+                    f"[SAM3] Model file not found: {checkpoint_path}\n"
+                    f"Either place the model at this path, or provide an hf_token to download it."
                 )
+
+        checkpoint_path = str(checkpoint_path)
 
         print(f"[SAM3] Loading model from: {checkpoint_path}")
 
@@ -164,38 +154,20 @@ class LoadSAM3Model:
 
         return (patcher,)
 
-    def _download_from_huggingface(self, hf_token):
-        """Download SAM3 model from HuggingFace."""
+    def _download_from_huggingface(self, hf_token, target_path):
+        """Download SAM3 model from HuggingFace to the specified path."""
         if not HF_HUB_AVAILABLE:
             raise ImportError(
                 "[SAM3] huggingface_hub is required to download models from HuggingFace.\n"
                 "Please install it with: pip install huggingface_hub"
             )
 
-        if not hf_token or not hf_token.strip():
-            raise ValueError(
-                "[SAM3] HuggingFace token required to download SAM3 model.\n"
-                "The SAM3 model is gated and requires authentication.\n"
-                "Please:\n"
-                "1. Request access at: https://huggingface.co/facebook/sam3\n"
-                "2. Get your token at: https://huggingface.co/settings/tokens\n"
-                "3. Provide the token in the 'hf_token' input field"
-            )
-
-        # Get sam3 models directory
-        sam3_folder_paths = folder_paths.get_folder_paths("sam3")
-        if not sam3_folder_paths:
-            raise RuntimeError("[SAM3] sam3 folder not registered with ComfyUI")
-
-        models_dir = sam3_folder_paths[0]
-        local_checkpoint = Path(models_dir) / "sam3.pt"
-
-        if local_checkpoint.exists():
-            print(f"[SAM3] Found existing model: {local_checkpoint}")
-            return str(local_checkpoint)
+        # Ensure parent directory exists
+        target_path = Path(target_path)
+        target_path.parent.mkdir(parents=True, exist_ok=True)
 
         print(f"[SAM3] Downloading SAM3 model from HuggingFace...")
-        print(f"[SAM3] Target directory: {models_dir}")
+        print(f"[SAM3] Target: {target_path}")
 
         try:
             SAM3_MODEL_ID = "facebook/sam3"
@@ -205,12 +177,16 @@ class LoadSAM3Model:
                 repo_id=SAM3_MODEL_ID,
                 filename=SAM3_CKPT_NAME,
                 token=hf_token.strip(),
-                local_dir=models_dir,
+                local_dir=str(target_path.parent),
                 local_dir_use_symlinks=False
             )
 
-            print(f"[SAM3] Model downloaded successfully to: {local_checkpoint}")
-            return str(local_checkpoint)
+            # hf_hub_download saves as filename, rename if needed
+            downloaded_file = target_path.parent / SAM3_CKPT_NAME
+            if downloaded_file != target_path and downloaded_file.exists():
+                downloaded_file.rename(target_path)
+
+            print(f"[SAM3] Model downloaded successfully to: {target_path}")
 
         except Exception as e:
             if "401" in str(e) or "authentication" in str(e).lower() or "gated" in str(e).lower():
@@ -234,5 +210,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LoadSAM3Model": "Load SAM3 Model"
+    "LoadSAM3Model": "(down)Load SAM3 Model"
 }

@@ -22,8 +22,33 @@ from ..perflib.compile import compile_wrapper, shape_logging_wrapper
 from ..perflib.masks_ops import masks_to_boxes as perf_masks_to_boxes
 from torchvision.ops import masks_to_boxes
 from tqdm.auto import tqdm
+from functools import wraps
 
 logger = get_logger(__name__)
+
+
+def _get_autocast_dtype():
+    """Get appropriate autocast dtype based on GPU capability."""
+    if not torch.cuda.is_available():
+        return None
+    major, _ = torch.cuda.get_device_capability()
+    if major >= 8:  # Ampere+ supports bf16
+        return torch.bfloat16
+    elif major >= 7:  # Volta/Turing use fp16
+        return torch.float16
+    return None
+
+
+def autocast_if_cuda(func):
+    """Decorator that applies autocast with appropriate dtype based on GPU capability."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        dtype = _get_autocast_dtype()
+        if dtype is not None:
+            with torch.autocast(device_type="cuda", dtype=dtype):
+                return func(*args, **kwargs)
+        return func(*args, **kwargs)
+    return wrapper
 
 
 class Sam3VideoInference(Sam3VideoBase):
@@ -806,7 +831,7 @@ class Sam3VideoInference(Sam3VideoBase):
         return inference_state
 
     @torch.inference_mode()
-    @torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+    @autocast_if_cuda
     def warm_up_compilation(self):
         """
         Warm up the model by running a dummy inference to compile the model. This is
@@ -914,7 +939,7 @@ class Sam3VideoInference(Sam3VideoBase):
         )
         return frame_idx, self._postprocess_output(inference_state, out)
 
-    @torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+    @autocast_if_cuda
     def forward(self, input: BatchedDatapoint, is_inference: bool = False):
         """This method is only used for benchmark eval (not used in the demo)."""
         # set the model to single GPU for benchmark evaluation (to be compatible with trainer)

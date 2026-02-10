@@ -1,5 +1,8 @@
 """
-SAM3Segmentation node - Performs segmentation using text prompts
+SAM3 Segmentation and Grounding nodes
+
+SAM3Grounding - Text-based object detection ("find all dogs")
+SAM3Segmentation - Click-based interactive segmentation ("segment what I clicked")
 
 This node uses ComfyUI's model_management for GPU/CPU handling.
 """
@@ -19,12 +22,21 @@ from .utils import (
 from .sam3_model_patcher import SAM3ModelPatcher
 
 
-class SAM3Segmentation:
+class SAM3Grounding:
     """
-    Node to perform SAM3 segmentation with text prompts
+    Text-based grounding detection using SAM3.
 
-    Takes an image and text prompt, returns segmentation masks,
-    bounding boxes, confidence scores, and visualization.
+    Use this node to find objects matching a text description (e.g., "dog", "person in red").
+    Returns all matching objects sorted by confidence score.
+
+    Inputs:
+      - text_prompt: Natural language description of what to find
+      - positive_boxes: Optional boxes to focus detection on specific regions
+      - negative_boxes: Optional boxes to exclude regions from detection
+      - confidence_threshold: Minimum score to include detections
+      - max_detections: Limit number of results (-1 for all)
+
+    For click-based segmentation (segment exactly where you click), use SAM3Segmentation instead.
     """
 
     @classmethod
@@ -53,13 +65,10 @@ class SAM3Segmentation:
                     "tooltip": "Describe what to segment using natural language (e.g., 'person', 'cat', 'red car', 'shoes')"
                 }),
                 "positive_boxes": ("SAM3_BOXES_PROMPT", {
-                    "tooltip": "Optional box prompts to include specific regions. Connect from SAM3CombineBoxes node."
+                    "tooltip": "Optional box prompts to focus detection on specific regions. Connect from SAM3CombineBoxes node."
                 }),
                 "negative_boxes": ("SAM3_BOXES_PROMPT", {
-                    "tooltip": "Optional box prompts to exclude specific regions. Connect from SAM3CombineBoxes node."
-                }),
-                "mask_prompt": ("MASK", {
-                    "tooltip": "Optional mask to refine the segmentation. Useful for iterative refinement."
+                    "tooltip": "Optional box prompts to exclude specific regions from detection. Connect from SAM3CombineBoxes node."
                 }),
                 "max_detections": ("INT", {
                     "default": -1,
@@ -78,22 +87,21 @@ class SAM3Segmentation:
     RETURN_TYPES = ("MASK", "IMAGE", "STRING", "STRING")
     RETURN_NAMES = ("masks", "visualization", "boxes", "scores")
     FUNCTION = "segment"
-    CATEGORY = "SAM3"
+    CATEGORY = "SAM3/Grounding"
 
     def segment(self, sam3_model, image, confidence_threshold=0.2,
                 text_prompt="", positive_boxes=None, negative_boxes=None,
-                mask_prompt=None, max_detections=-1, offload_model=False):
+                max_detections=-1, offload_model=False):
         """
-        Perform SAM3 segmentation with text and box prompts
+        Perform SAM3 grounding with text prompts
 
         Args:
             sam3_model: SAM3ModelPatcher from LoadSAM3Model node
             image: ComfyUI image tensor [B, H, W, C]
             confidence_threshold: Minimum confidence score for detections
-            text_prompt: Optional text description of objects to segment
-            positive_boxes: Optional positive box prompts
-            negative_boxes: Optional negative box prompts
-            mask_prompt: Optional mask prompt
+            text_prompt: Text description of objects to find
+            positive_boxes: Optional boxes to focus detection on
+            negative_boxes: Optional boxes to exclude from detection
             max_detections: Maximum number of detections to return
 
         Returns:
@@ -106,30 +114,34 @@ class SAM3Segmentation:
         processor = sam3_model.processor
         device = sam3_model.sam3_wrapper.device
 
-        print(f"[SAM3] Running segmentation")
+        # Sync processor device after model load (handles offload/reload cycles)
+        if hasattr(processor, 'sync_device_with_model'):
+            processor.sync_device_with_model()
+        elif hasattr(processor, 'device') and str(processor.device) != str(device):
+            processor.device = str(device)
+
+        print(f"[SAM3 Grounding] Running text-based detection")
         if text_prompt:
-            print(f"[SAM3]   Text prompt: '{text_prompt}'")
+            print(f"[SAM3 Grounding]   Text prompt: '{text_prompt}'")
         if positive_boxes:
-            print(f"[SAM3]   Positive boxes: {len(positive_boxes['boxes'])}")
+            print(f"[SAM3 Grounding]   Positive boxes: {len(positive_boxes['boxes'])}")
         if negative_boxes:
-            print(f"[SAM3]   Negative boxes: {len(negative_boxes['boxes'])}")
-        if mask_prompt is not None:
-            print(f"[SAM3]   Mask prompt provided")
-        print(f"[SAM3] Confidence threshold: {confidence_threshold}")
+            print(f"[SAM3 Grounding]   Negative boxes: {len(negative_boxes['boxes'])}")
+        print(f"[SAM3 Grounding] Confidence threshold: {confidence_threshold}")
 
         # Convert ComfyUI image to PIL
         pil_image = comfy_image_to_pil(image)
         img_w, img_h = pil_image.size
-        print(f"[SAM3] Image size: {pil_image.size}")
+        print(f"[SAM3 Grounding] Image size: {pil_image.size}")
 
         result = self._segment_grounding(
             sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
-            positive_boxes, negative_boxes, mask_prompt, max_detections
+            positive_boxes, negative_boxes, max_detections
         )
 
         # Offload model to CPU if requested
         if offload_model:
-            print("[SAM3] Offloading model to CPU to free VRAM...")
+            print("[SAM3 Grounding] Offloading model to CPU to free VRAM...")
             sam3_model.unpatch_model()
             gc.collect()
             if torch.cuda.is_available():
@@ -138,14 +150,13 @@ class SAM3Segmentation:
         return result
 
     def _segment_grounding(self, sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
-                           positive_boxes, negative_boxes, mask_prompt, max_detections):
+                           positive_boxes, negative_boxes, max_detections):
         """
-        Grounding mode - text-based detection with box prompts.
+        Grounding mode - text-based detection with optional box refinement.
         """
         import json
 
         processor = sam3_model.processor
-        device = sam3_model.sam3_wrapper.device
 
         # Update confidence threshold
         processor.set_confidence_threshold(confidence_threshold)
@@ -155,10 +166,10 @@ class SAM3Segmentation:
 
         # Add text prompt if provided
         if text_prompt and text_prompt.strip():
-            print(f"[SAM3] Adding text prompt...")
+            print(f"[SAM3 Grounding] Adding text prompt...")
             state = processor.set_text_prompt(text_prompt.strip(), state)
 
-        # Add geometric prompts - combine positive and negative
+        # Add geometric prompts (boxes) for refinement
         all_boxes = []
         all_box_labels = []
 
@@ -171,19 +182,12 @@ class SAM3Segmentation:
             all_box_labels.extend(negative_boxes['labels'])
 
         if len(all_boxes) > 0:
-            print(f"[SAM3] Adding {len(all_boxes)} box prompts...")
+            print(f"[SAM3 Grounding] Adding {len(all_boxes)} box prompts...")
             state = processor.add_multiple_box_prompts(
                 all_boxes,
                 all_box_labels,
                 state
             )
-
-        if mask_prompt is not None:
-            print(f"[SAM3] Adding mask prompt...")
-            if not isinstance(mask_prompt, torch.Tensor):
-                mask_prompt = torch.from_numpy(mask_prompt)
-            mask_prompt = mask_prompt.to(device)
-            state = processor.add_mask_prompt(mask_prompt, state)
 
         # Extract results
         masks = state.get("masks", None)
@@ -225,8 +229,8 @@ class SAM3Segmentation:
 
         # Check if we got any results AFTER threshold
         if masks is None or len(masks) == 0:
-            print(f"[SAM3] No detections found for prompt: '{text_prompt}' at threshold {confidence_threshold}")
-            print(f"[SAM3] TIP: Try lowering the confidence_threshold or check if the object is in the image")
+            print(f"[SAM3 Grounding] No detections found for prompt: '{text_prompt}' at threshold {confidence_threshold}")
+            print(f"[SAM3 Grounding] TIP: Try lowering the confidence_threshold or check if the object is in the image")
             empty_mask = torch.zeros(1, img_h, img_w)
             # Clean up state
             del state
@@ -235,11 +239,11 @@ class SAM3Segmentation:
                 torch.cuda.empty_cache()
             return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
 
-        print(f"[SAM3] Found {len(masks)} detections above threshold {confidence_threshold}")
+        print(f"[SAM3 Grounding] Found {len(masks)} detections above threshold {confidence_threshold}")
 
         # always sort by score
         if scores is not None and len(scores) > 0:
-            print(f"[SAM3] Sorting {len(scores)} detections by score...")
+            print(f"[SAM3 Grounding] Sorting {len(scores)} detections by score...")
 
             sorted_indices = torch.argsort(scores, descending=True)
 
@@ -249,7 +253,7 @@ class SAM3Segmentation:
 
         # Limit number of detections if specified
         if max_detections > 0 and len(masks) > max_detections:
-            print(f"[SAM3] Limiting to top {max_detections} detections")
+            print(f"[SAM3 Grounding] Limiting to top {max_detections} detections")
             # take top k since already sorted
             masks = masks[:max_detections]
             boxes = boxes[:max_detections] if boxes is not None else None
@@ -259,7 +263,7 @@ class SAM3Segmentation:
         comfy_masks = masks_to_comfy_mask(masks)
 
         # Create visualization
-        print(f"[SAM3] Creating visualization...")
+        print(f"[SAM3 Grounding] Creating visualization...")
         vis_image = visualize_masks_on_image(
             pil_image,
             masks,
@@ -277,8 +281,8 @@ class SAM3Segmentation:
         boxes_json = json.dumps(boxes_list, indent=2)
         scores_json = json.dumps(scores_list, indent=2)
 
-        print(f"[SAM3] Segmentation complete")
-        print(f"[SAM3] Output: {len(comfy_masks)} masks")
+        print(f"[SAM3 Grounding] Detection complete")
+        print(f"[SAM3 Grounding] Output: {len(comfy_masks)} masks")
         print(f"[SAM3 DEBUG] Final scores: {scores_list}")
         print(f"[SAM3 DEBUG] Mask output shape: {comfy_masks.shape}")
 
@@ -526,16 +530,16 @@ class SAM3CombinePoints:
         return (combined,)
 
 
-class SAM3InteractiveSegmentation:
+class SAM3Segmentation:
     """
-    SAM2-style interactive segmentation using points and boxes.
+    Click-based interactive segmentation using SAM3.
 
-    This node uses SAM3's inst_interactive_predictor for precise
-    "segment exactly here" tasks. Unlike text-based grounding mode,
-    this segments exactly at the provided point/box locations.
+    Use this node to segment exactly at the provided point/box locations.
+    This is the standard "click to segment" behavior like SAM2.
 
-    NOTE: Currently experimental - may produce lower quality scores
-    than expected. Use SAM3Segmentation for production workflows.
+    For text-based detection (find all "dogs"), use SAM3Grounding instead.
+
+    Requires model loaded with enable_inst_interactivity=True.
     """
 
     @classmethod
@@ -559,9 +563,13 @@ class SAM3InteractiveSegmentation:
                 "box": ("SAM3_BOXES_PROMPT", {
                     "tooltip": "Box prompt to constrain segmentation region. Only first box is used. Connect from SAM3CombineBoxes."
                 }),
-                "multimask_output": ("BOOLEAN", {
+                "use_multimask": ("BOOLEAN", {
                     "default": True,
-                    "tooltip": "If True, returns 3 mask candidates and selects the best one. If False, returns single mask."
+                    "tooltip": "If True, generates 3 mask candidates at different granularities (subpart/part/whole). Better for ambiguous single clicks. If False, generates single mask directly - faster, good for multiple points."
+                }),
+                "output_best_mask": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "If True, automatically selects the highest-scoring mask. If False, outputs all mask candidates (3 if use_multimask=True) so you can choose."
                 }),
                 "offload_model": ("BOOLEAN", {
                     "default": False,
@@ -576,7 +584,7 @@ class SAM3InteractiveSegmentation:
     CATEGORY = "SAM3"
 
     def segment(self, sam3_model, image, positive_points=None, negative_points=None,
-                box=None, multimask_output=True, offload_model=False):
+                box=None, use_multimask=True, output_best_mask=True, offload_model=False):
         """
         Perform SAM2-style interactive segmentation at point/box locations.
 
@@ -599,21 +607,25 @@ class SAM3InteractiveSegmentation:
         processor = sam3_model.processor
         model = processor.model
 
+        # Sync processor device after model load (handles offload/reload cycles)
+        if hasattr(processor, 'sync_device_with_model'):
+            processor.sync_device_with_model()
+
         # Check if interactive predictor is available
         if model.inst_interactive_predictor is None:
-            print("[SAM3 Interactive] ERROR: inst_interactive_predictor not available")
-            print("[SAM3 Interactive] Make sure LoadSAM3Model was loaded with enable_inst_interactivity=True")
+            print("[SAM3 Segmentation] ERROR: inst_interactive_predictor not available")
+            print("[SAM3 Segmentation] Make sure LoadSAM3Model was loaded with enable_inst_interactivity=True")
             pil_image = comfy_image_to_pil(image)
             img_w, img_h = pil_image.size
             empty_mask = torch.zeros(1, img_h, img_w)
             return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
 
-        print("[SAM3 Interactive] Using SAM2-style interactive segmentation")
+        print("[SAM3 Segmentation] Using click-based interactive segmentation")
 
         # Convert ComfyUI image to PIL
         pil_image = comfy_image_to_pil(image)
         img_w, img_h = pil_image.size
-        print(f"[SAM3 Interactive] Image size: {pil_image.size}")
+        print(f"[SAM3 Segmentation] Image size: {pil_image.size}")
 
         # Set image and get backbone features
         state = processor.set_image(pil_image)
@@ -621,10 +633,10 @@ class SAM3InteractiveSegmentation:
         # Debug: check if sam2_backbone_out exists
         backbone_out = state.get("backbone_out", {})
         if "sam2_backbone_out" in backbone_out:
-            print("[SAM3 Interactive] sam2_backbone_out is available")
+            print("[SAM3 Segmentation] sam2_backbone_out is available")
         else:
-            print("[SAM3 Interactive] WARNING: sam2_backbone_out NOT available")
-            print(f"[SAM3 Interactive]   backbone_out keys: {list(backbone_out.keys())}")
+            print("[SAM3 Segmentation] WARNING: sam2_backbone_out NOT available")
+            print(f"[SAM3 Segmentation]   backbone_out keys: {list(backbone_out.keys())}")
 
         # Collect all points
         all_points = []
@@ -637,7 +649,7 @@ class SAM3InteractiveSegmentation:
                 py = pt[1] * img_h
                 all_points.append([px, py])
                 all_point_labels.append(1)  # foreground
-            print(f"[SAM3 Interactive] Added {len(positive_points['points'])} positive points")
+            print(f"[SAM3 Segmentation] Added {len(positive_points['points'])} positive points")
 
         if negative_points is not None and len(negative_points.get('points', [])) > 0:
             for pt in negative_points['points']:
@@ -645,7 +657,7 @@ class SAM3InteractiveSegmentation:
                 py = pt[1] * img_h
                 all_points.append([px, py])
                 all_point_labels.append(0)  # background
-            print(f"[SAM3 Interactive] Added {len(negative_points['points'])} negative points")
+            print(f"[SAM3 Segmentation] Added {len(negative_points['points'])} negative points")
 
         # Collect box (use first box if provided)
         box_array = None
@@ -658,21 +670,35 @@ class SAM3InteractiveSegmentation:
             x2 = (cx + w/2) * img_w
             y2 = (cy + h/2) * img_h
             box_array = np.array([x1, y1, x2, y2])
-            print(f"[SAM3 Interactive] Box: [{x1:.1f}, {y1:.1f}, {x2:.1f}, {y2:.1f}]")
+            print(f"[SAM3 Segmentation] Box: [{x1:.1f}, {y1:.1f}, {x2:.1f}, {y2:.1f}]")
 
         # Prepare point arrays for predict_inst
         point_coords = np.array(all_points) if all_points else None
         point_labels = np.array(all_point_labels) if all_point_labels else None
 
         if point_coords is not None:
-            print(f"[SAM3 Interactive] Points: {len(point_coords)}")
-            print(f"[SAM3 Interactive]   Coords: {point_coords.tolist()}")
-            print(f"[SAM3 Interactive]   Labels: {point_labels.tolist()}")
+            print(f"[SAM3 Segmentation] Points: {len(point_coords)}")
+            print(f"[SAM3 Segmentation]   Coords: {point_coords.tolist()}")
+            print(f"[SAM3 Segmentation]   Labels: {point_labels.tolist()}")
 
         if point_coords is None and box_array is None:
-            print("[SAM3 Interactive] ERROR: No points or box provided. At least one prompt is required.")
+            print("[SAM3 Segmentation] ERROR: No points or box provided. At least one prompt is required.")
             empty_mask = torch.zeros(1, img_h, img_w)
             return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
+
+        # DEBUG: Log inputs before predict_inst call
+        print(f"[SAM3 SEG DEBUG] ========== PREDICT_INST INPUTS ==========")
+        if positive_points is not None:
+            print(f"[SAM3 SEG DEBUG] Input positive_points (normalized 0-1): {positive_points.get('points', [])}")
+        if negative_points is not None:
+            print(f"[SAM3 SEG DEBUG] Input negative_points (normalized 0-1): {negative_points.get('points', [])}")
+        print(f"[SAM3 SEG DEBUG] Converted point_coords (pixels): {point_coords.tolist() if point_coords is not None else None}")
+        print(f"[SAM3 SEG DEBUG] Point labels: {point_labels.tolist() if point_labels is not None else None}")
+        print(f"[SAM3 SEG DEBUG] Original image size: {img_h}x{img_w}")
+        print(f"[SAM3 SEG DEBUG] Box input: {box_array.tolist() if box_array is not None else None}")
+        print(f"[SAM3 SEG DEBUG] normalize_coords=True (pixel coords → model space)")
+        print(f"[SAM3 SEG DEBUG] use_multimask={use_multimask}")
+        print(f"[SAM3 SEG DEBUG] ==========================================")
 
         # Call predict_inst which uses inst_interactive_predictor
         masks_np, scores_np, low_res_masks = model.predict_inst(
@@ -680,39 +706,44 @@ class SAM3InteractiveSegmentation:
             point_coords=point_coords,
             point_labels=point_labels,
             box=box_array,
-            multimask_output=multimask_output,
-            normalize_coords=False,  # We already converted to pixel coords
+            multimask_output=use_multimask,
+            normalize_coords=True,  # Input is pixel coords, transform to model space
         )
 
-        print(f"[SAM3 Interactive] Prediction returned {masks_np.shape[0]} masks")
-        print(f"[SAM3 Interactive]   Mask shape: {masks_np.shape}")
-        print(f"[SAM3 Interactive]   Scores: {scores_np.tolist()}")
+        print(f"[SAM3 Segmentation] Prediction returned {masks_np.shape[0]} masks")
+        print(f"[SAM3 Segmentation]   Mask shape: {masks_np.shape}")
+        print(f"[SAM3 Segmentation]   Scores: {scores_np.tolist()}")
 
-        # Select best mask (highest IoU score)
-        best_idx = np.argmax(scores_np)
-        best_mask = masks_np[best_idx]
-        best_score = scores_np[best_idx]
+        if output_best_mask:
+            # Select best mask (highest IoU score)
+            best_idx = np.argmax(scores_np)
+            best_mask = masks_np[best_idx]
+            best_score = scores_np[best_idx]
 
-        print(f"[SAM3 Interactive] Selected mask {best_idx} with score {best_score:.4f}")
+            print(f"[SAM3 Segmentation] Selected mask {best_idx} with score {best_score:.4f}")
 
-        if best_score < 0.5:
-            print(f"[SAM3 Interactive] WARNING: Low confidence score ({best_score:.4f})")
-            print(f"[SAM3 Interactive] This is a known issue - interactive mode may not work correctly yet")
-
-        # Convert to torch tensors
-        masks = torch.from_numpy(best_mask).unsqueeze(0).float()  # [1, H, W]
-        scores = torch.tensor([best_score])
-
-        # Compute bounding box from mask
-        mask_coords = torch.where(masks[0] > 0)
-        if len(mask_coords[0]) > 0:
-            y1 = mask_coords[0].min().item()
-            y2 = mask_coords[0].max().item()
-            x1 = mask_coords[1].min().item()
-            x2 = mask_coords[1].max().item()
-            boxes = torch.tensor([[x1, y1, x2, y2]]).float()
+            # Convert to torch tensors
+            masks = torch.from_numpy(best_mask).unsqueeze(0).float()  # [1, H, W]
+            scores = torch.tensor([best_score])
         else:
-            boxes = torch.zeros(1, 4)
+            # Output all mask candidates
+            print(f"[SAM3 Segmentation] Outputting all {masks_np.shape[0]} mask candidates")
+            masks = torch.from_numpy(masks_np).float()  # [N, H, W]
+            scores = torch.from_numpy(scores_np).float()
+
+        # Compute bounding boxes from masks
+        boxes_list = []
+        for i in range(masks.shape[0]):
+            mask_coords = torch.where(masks[i] > 0)
+            if len(mask_coords[0]) > 0:
+                y1 = mask_coords[0].min().item()
+                y2 = mask_coords[0].max().item()
+                x1 = mask_coords[1].min().item()
+                x2 = mask_coords[1].max().item()
+                boxes_list.append([x1, y1, x2, y2])
+            else:
+                boxes_list.append([0, 0, 0, 0])
+        boxes = torch.tensor(boxes_list).float()
 
         # Convert to ComfyUI format
         comfy_masks = masks_to_comfy_mask(masks)
@@ -729,7 +760,7 @@ class SAM3InteractiveSegmentation:
         boxes_json = json.dumps(boxes_list, indent=2)
         scores_json = json.dumps(scores_list, indent=2)
 
-        print(f"[SAM3 Interactive] Segmentation complete")
+        print(f"[SAM3 Segmentation] Segmentation complete")
 
         # Cleanup
         del state
@@ -739,7 +770,7 @@ class SAM3InteractiveSegmentation:
 
         # Offload model to CPU if requested
         if offload_model:
-            print("[SAM3 Interactive] Offloading model to CPU to free VRAM...")
+            print("[SAM3 Segmentation] Offloading model to CPU to free VRAM...")
             sam3_model.unpatch_model()
             gc.collect()
             if torch.cuda.is_available():
@@ -750,8 +781,8 @@ class SAM3InteractiveSegmentation:
 
 # Register the nodes
 NODE_CLASS_MAPPINGS = {
+    "SAM3Grounding": SAM3Grounding,
     "SAM3Segmentation": SAM3Segmentation,
-    "SAM3InteractiveSegmentation": SAM3InteractiveSegmentation,
     "SAM3CreateBox": SAM3CreateBox,
     "SAM3CreatePoint": SAM3CreatePoint,
     "SAM3CombineBoxes": SAM3CombineBoxes,
@@ -759,8 +790,8 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "SAM3Segmentation": "SAM3 Segmentation",
-    "SAM3InteractiveSegmentation": "SAM3 Interactive Segmentation (Experimental)",
+    "SAM3Grounding": "SAM3 Text Segmentation",
+    "SAM3Segmentation": "SAM3 Point Segmentation",
     "SAM3CreateBox": "SAM3 Create Box",
     "SAM3CreatePoint": "SAM3 Create Point",
     "SAM3CombineBoxes": "SAM3 Combine Boxes",

@@ -36,6 +36,33 @@ from .sam3_model_patcher import SAM3ModelWrapper, SAM3ModelPatcher
 
 
 # =============================================================================
+# Autocast dtype detection - handles GPUs without bf16 support
+# =============================================================================
+def _get_autocast_dtype():
+    """
+    Get appropriate autocast dtype based on GPU capability.
+    Returns None if autocast should not be used.
+    """
+    if not torch.cuda.is_available():
+        return None
+    major, _ = torch.cuda.get_device_capability()
+    if major >= 8:  # Ampere+ supports bf16
+        return torch.bfloat16
+    elif major >= 7:  # Volta/Turing use fp16
+        return torch.float16
+    else:
+        return None  # Older GPUs - no autocast
+
+
+def _get_autocast_context():
+    """Get autocast context manager based on GPU capability."""
+    dtype = _get_autocast_dtype()
+    if dtype is not None:
+        return torch.autocast(device_type="cuda", dtype=dtype)
+    return torch.no_grad()
+
+
+# =============================================================================
 # VRAM Debug Utility
 # =============================================================================
 
@@ -673,11 +700,11 @@ class SAM3Propagate:
         }
 
         # Run ALL inference inside autocast context for dtype consistency
-        # SAM3 requires bf16 - wrap reconstruction AND propagation
+        # SAM3 requires bf16/fp16 - wrap reconstruction AND propagation
         masks_dict = {}
         scores_dict = {}  # Store confidence scores per frame
-        # Only use autocast on CUDA
-        autocast_context = torch.autocast(device_type="cuda", dtype=torch.bfloat16) if torch.cuda.is_available() else torch.no_grad()
+        # Use autocast with dtype based on GPU capability (bf16 for Ampere+, fp16 for Volta/Turing)
+        autocast_context = _get_autocast_context()
         with autocast_context:
             print_vram("Before reconstruction (in autocast)")
             # Reconstruct inference state from immutable state

@@ -51,8 +51,20 @@ class Sam3Processor:
         else:
             raise ValueError("Image must be a PIL image or a tensor")
 
-        image = v2.functional.to_image(image).to(self.device)
+        # Get model device/dtype and ensure image matches
+        try:
+            model_device = next(self.model.parameters()).device
+            model_dtype = next(self.model.parameters()).dtype
+        except StopIteration:
+            model_device = torch.device(self.device)
+            model_dtype = torch.float32
+
+        image = v2.functional.to_image(image).to(model_device)
         image = self.transform(image).unsqueeze(0)
+
+        # Ensure image dtype matches model for mixed precision scenarios
+        if image.dtype != model_dtype and model_dtype in (torch.float16, torch.bfloat16):
+            image = image.to(dtype=model_dtype)
 
         state["original_height"] = height
         state["original_width"] = width
@@ -88,11 +100,24 @@ class Sam3Processor:
         state["original_heights"] = [image.height for image in images]
         state["original_widths"] = [image.width for image in images]
 
+        # Get model device/dtype and ensure images match
+        try:
+            model_device = next(self.model.parameters()).device
+            model_dtype = next(self.model.parameters()).dtype
+        except StopIteration:
+            model_device = torch.device(self.device)
+            model_dtype = torch.float32
+
         images = [
-            self.transform(v2.functional.to_image(image).to(self.device))
+            self.transform(v2.functional.to_image(image).to(model_device))
             for image in images
         ]
         images = torch.stack(images, dim=0)
+
+        # Ensure images dtype matches model for mixed precision scenarios
+        if images.dtype != model_dtype and model_dtype in (torch.float16, torch.bfloat16):
+            images = images.to(dtype=model_dtype)
+
         state["backbone_out"] = self.model.backbone.forward_image(images)
         inst_interactivity_en = self.model.inst_interactive_predictor is not None
         if inst_interactivity_en and "sam2_backbone_out" in state["backbone_out"]:
@@ -234,6 +259,21 @@ class Sam3Processor:
         state["geometric_prompt"].append_masks(mask)
 
         return self._forward_grounding(state)
+
+    def sync_device_with_model(self):
+        """Synchronize processor device with model's actual device."""
+        try:
+            model_device = next(self.model.parameters()).device
+            self.device = str(model_device)
+
+            # Also sync find_stage tensors
+            if self.find_stage is not None:
+                if self.find_stage.img_ids is not None:
+                    self.find_stage.img_ids = self.find_stage.img_ids.to(model_device)
+                if self.find_stage.text_ids is not None:
+                    self.find_stage.text_ids = self.find_stage.text_ids.to(model_device)
+        except StopIteration:
+            pass  # Model has no parameters
 
     def reset_all_prompts(self, state: Dict):
         """Removes all the prompts and results"""

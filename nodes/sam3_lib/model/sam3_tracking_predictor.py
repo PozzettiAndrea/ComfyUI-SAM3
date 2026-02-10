@@ -11,6 +11,18 @@ from ..model.utils.sam2_utils import load_video_frames
 from tqdm.auto import tqdm
 
 
+def _get_autocast_dtype():
+    """Get appropriate autocast dtype based on GPU capability."""
+    if not torch.cuda.is_available():
+        return None
+    major, _ = torch.cuda.get_device_capability()
+    if major >= 8:  # Ampere+ supports bf16
+        return torch.bfloat16
+    elif major >= 7:  # Volta/Turing use fp16
+        return torch.float16
+    return None
+
+
 class Sam3TrackerPredictor(Sam3TrackerBase):
     """
     The demo class that extends the `Sam3TrackerBase` to handle user interactions
@@ -46,8 +58,10 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
         self.max_point_num_in_prompt_enc = max_point_num_in_prompt_enc
         self.non_overlap_masks_for_output = non_overlap_masks_for_output
 
-        if torch.cuda.is_available():
-            self.bf16_context = torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+        # Use autocast with dtype based on GPU capability
+        autocast_dtype = _get_autocast_dtype()
+        if autocast_dtype is not None:
+            self.bf16_context = torch.autocast(device_type="cuda", dtype=autocast_dtype)
             self.bf16_context.__enter__()  # keep using for the entire model process
         else:
             self.bf16_context = None

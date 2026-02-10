@@ -52,15 +52,25 @@ class SAM3ModelWrapper:
         return self._model_size
 
     def to(self, device):
-        """Move model to specified device."""
+        """Move model to specified device with full processor sync."""
         device_str = str(device)
         if str(self.device) != device_str:
             logging.debug(f"[SAM3] Moving model from {self.device} to {device}")
             self.model.to(device)
             self.device = device
-            # Update processor device
-            if hasattr(self.processor, 'device'):
+
+            # Sync processor device using dedicated method if available
+            if hasattr(self.processor, 'sync_device_with_model'):
+                self.processor.sync_device_with_model()
+            elif hasattr(self.processor, 'device'):
                 self.processor.device = device_str
+                # Also sync find_stage tensors if present
+                if hasattr(self.processor, 'find_stage') and self.processor.find_stage is not None:
+                    fs = self.processor.find_stage
+                    if hasattr(fs, 'img_ids') and fs.img_ids is not None:
+                        fs.img_ids = fs.img_ids.to(device)
+                    if hasattr(fs, 'text_ids') and fs.text_ids is not None:
+                        fs.text_ids = fs.text_ids.to(device)
         return self
 
     def get_dtype(self):
