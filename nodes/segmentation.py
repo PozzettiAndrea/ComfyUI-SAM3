@@ -233,15 +233,29 @@ class SAM3Segmentation:
 
         print(f"[SAM3] Found {len(masks)} detections above threshold {confidence_threshold}")
 
+        # always sort by score
+        if scores is not None and len(scores) > 0:
+            print(f"[SAM3] Sorting {len(scores)} detections by score...")
+            
+            sorted_indices = torch.argsort(scores, descending=True)
+            
+            masks = masks[sorted_indices]
+            boxes = boxes[sorted_indices] if boxes is not None else None
+            scores = scores[sorted_indices] if scores is not None else None
+        
         # Limit number of detections if specified
         if max_detections > 0 and len(masks) > max_detections:
             print(f"[SAM3] Limiting to top {max_detections} detections")
+            # take top k since already sorted
+            masks = masks[:max_detections]
+            boxes = boxes[:max_detections] if boxes is not None else None
+            scores = scores[:max_detections] if scores is not None else None
             # Sort by score and take top k
-            if scores is not None:
-                top_indices = torch.argsort(scores, descending=True)[:max_detections]
-                masks = masks[top_indices]
-                boxes = boxes[top_indices] if boxes is not None else None
-                scores = scores[top_indices] if scores is not None else None
+            # if scores is not None:
+                # top_indices = torch.argsort(scores, descending=True)[:max_detections]
+                # masks = masks[top_indices]
+                # boxes = boxes[top_indices] if boxes is not None else None
+                # scores = scores[top_indices] if scores is not None else None
 
         # Convert masks to ComfyUI format
         comfy_masks = masks_to_comfy_mask(masks)
