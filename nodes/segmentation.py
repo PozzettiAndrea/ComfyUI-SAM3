@@ -8,7 +8,9 @@ from .utils import (
     pil_to_comfy_image,
     masks_to_comfy_mask,
     visualize_masks_on_image,
-    tensor_to_list
+    tensor_to_list,
+    ensure_model_on_device,
+    offload_model_if_needed
 )
 
 
@@ -85,6 +87,10 @@ class SAM3Segmentation:
         # Extract processor from model dict
         processor = sam3_model["processor"]
         device = sam3_model["device"]
+
+        # Ensure model is on GPU if use_gpu_cache is False (model may have been offloaded)
+        ensure_model_on_device(sam3_model)
+        device = sam3_model["device"]  # Update device in case it changed
 
         print(f"[SAM3] Running segmentation")
         if text_prompt:
@@ -206,6 +212,8 @@ class SAM3Segmentation:
             print(f"[SAM3] TIP: Try lowering the confidence_threshold or check if the object is in the image")
             h, w = pil_image.size[1], pil_image.size[0]
             empty_mask = torch.zeros(1, h, w)
+            # Offload model to CPU if use_gpu_cache is False
+            offload_model_if_needed(sam3_model)
             return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
 
         print(f"[SAM3] Found {len(masks)} detections above threshold {confidence_threshold}")
@@ -247,6 +255,9 @@ class SAM3Segmentation:
         print(f"[SAM3] Output: {len(comfy_masks)} masks")
         print(f"[SAM3 DEBUG] Final scores: {scores_list}")
         print(f"[SAM3 DEBUG] Mask output shape: {comfy_masks.shape}")
+
+        # Offload model to CPU if use_gpu_cache is False
+        offload_model_if_needed(sam3_model)
 
         return (comfy_masks, vis_tensor, boxes_json, scores_json)
 

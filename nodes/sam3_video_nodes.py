@@ -2,21 +2,15 @@
 SAM3 Video Tracking Nodes for ComfyUI
 
 These nodes provide video object tracking and segmentation capabilities using SAM3.
-They use the full sam3 library (not the vendored image-only version).
+They use the vendored sam3_lib with full video support.
 """
 
-import sys
 from pathlib import Path
 import torch
 import numpy as np
 import folder_paths
 
-# Add the full sam3 library to the path
-sam3_root = Path(__file__).parent.parent.parent.parent.parent / "sam3"
-if str(sam3_root) not in sys.path:
-    sys.path.insert(0, str(sam3_root))
-
-from sam3.model_builder import build_sam3_video_predictor
+from ..sam3_lib.model_builder import build_sam3_video_predictor
 
 
 class SAM3VideoModelLoader:
@@ -38,6 +32,10 @@ class SAM3VideoModelLoader:
                     "default": "",
                     "multiline": False
                 }),
+                "use_gpu_cache": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "Keep model on GPU between inferences (faster but uses more VRAM). Set to False to offload to CPU after each inference."
+                }),
             },
             "optional": {
                 "use_multi_gpu": ("BOOLEAN", {"default": False}),
@@ -53,7 +51,7 @@ class SAM3VideoModelLoader:
     FUNCTION = "load_model"
     CATEGORY = "SAM3/video"
 
-    def load_model(self, checkpoint_path, bpe_path, hf_token, use_multi_gpu=False, gpu_ids="0"):
+    def load_model(self, checkpoint_path, bpe_path, hf_token, use_gpu_cache=True, use_multi_gpu=False, gpu_ids="0"):
         """Load the SAM3 video model"""
         import os
         if hf_token:
@@ -65,6 +63,7 @@ class SAM3VideoModelLoader:
             gpus_to_use = [int(x.strip()) for x in gpu_ids.split(",")]
 
         print(f"[SAM3 Video] Loading video model from {checkpoint_path}")
+        print(f"[SAM3 Video] GPU cache: {'enabled' if use_gpu_cache else 'disabled (will offload to CPU after inference)'}")
 
         # Build the video predictor
         predictor = build_sam3_video_predictor(
@@ -74,6 +73,9 @@ class SAM3VideoModelLoader:
         )
 
         print(f"[SAM3 Video] Model loaded successfully")
+
+        # Store the use_gpu_cache setting in the predictor
+        predictor.use_gpu_cache = use_gpu_cache
 
         return (predictor,)
 
@@ -185,6 +187,14 @@ class SAM3AddVideoPrompt:
         video_model = session["model"]
         session_id = session["session_id"]
 
+        # Ensure model is on GPU if use_gpu_cache is False (model may have been offloaded)
+        if hasattr(video_model, 'use_gpu_cache') and not video_model.use_gpu_cache:
+            if hasattr(video_model, 'model'):
+                current_device = next(video_model.model.parameters()).device
+                if "cpu" in str(current_device):
+                    print(f"[SAM3 Video] Moving model from CPU to GPU for inference")
+                    video_model.model.to("cuda")
+
         # Prepare prompt parameters
         bounding_boxes = None
         bounding_box_labels = None
@@ -254,6 +264,14 @@ class SAM3PropagateVideo:
         video_model = session["model"]
         session_id = session["session_id"]
         num_frames = session["num_frames"]
+
+        # Ensure model is on GPU if use_gpu_cache is False (model may have been offloaded)
+        if hasattr(video_model, 'use_gpu_cache') and not video_model.use_gpu_cache:
+            if hasattr(video_model, 'model'):
+                current_device = next(video_model.model.parameters()).device
+                if "cpu" in str(current_device):
+                    print(f"[SAM3 Video] Moving model from CPU to GPU for inference")
+                    video_model.model.to("cuda")
 
         max_frame_num_to_track = max_frames if max_frames > 0 else num_frames
 
@@ -361,6 +379,19 @@ class SAM3VideoOutput:
                 output_masks[frame_idx] = mask.float().cpu()
 
         print(f"[SAM3 Video] Output {num_frames} mask frames")
+
+        # Offload model to CPU if use_gpu_cache is False
+        video_model = session["model"]
+        if hasattr(video_model, 'use_gpu_cache') and not video_model.use_gpu_cache:
+            if hasattr(video_model, 'model'):
+                current_device = next(video_model.model.parameters()).device
+                if "cuda" in str(current_device):
+                    print(f"[SAM3 Video] Offloading model to CPU to free VRAM")
+                    video_model.model.to("cpu")
+                    import torch
+                    torch.cuda.empty_cache()
+                    import gc
+                    gc.collect()
 
         return (output_masks,)
 

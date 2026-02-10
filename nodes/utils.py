@@ -206,3 +206,58 @@ def tensor_to_list(tensor):
     if isinstance(tensor, torch.Tensor):
         return tensor.cpu().tolist()
     return tensor
+
+
+def ensure_model_on_device(sam3_model, target_device=None):
+    """
+    Ensure model is on the target device before inference
+
+    Args:
+        sam3_model: Model dict from LoadSAM3Model
+        target_device: Target device (uses original_device if None)
+
+    Returns:
+        None (modifies model dict in place)
+    """
+    model = sam3_model["model"]
+    processor = sam3_model["processor"]
+
+    if target_device is None:
+        target_device = sam3_model["original_device"]
+
+    # Check if model is already on target device
+    current_device = next(model.parameters()).device
+    if str(current_device) != target_device:
+        print(f"[SAM3] Moving model from {current_device} to {target_device}")
+        model.to(target_device)
+        processor.device = target_device
+        sam3_model["device"] = target_device
+
+
+def offload_model_if_needed(sam3_model):
+    """
+    Offload model to CPU if use_gpu_cache is False
+
+    Args:
+        sam3_model: Model dict from LoadSAM3Model
+
+    Returns:
+        None (modifies model dict in place)
+    """
+    use_gpu_cache = sam3_model.get("use_gpu_cache", True)
+
+    if not use_gpu_cache:
+        model = sam3_model["model"]
+        processor = sam3_model["processor"]
+        current_device = next(model.parameters()).device
+
+        # Only offload if currently on GPU
+        if "cuda" in str(current_device):
+            print(f"[SAM3] Offloading model to CPU to free VRAM")
+            model.to("cpu")
+            processor.device = "cpu"
+            sam3_model["device"] = "cpu"
+            # Force garbage collection to free VRAM
+            torch.cuda.empty_cache()
+            import gc
+            gc.collect()

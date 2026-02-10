@@ -24,6 +24,10 @@ class LoadSAM3Model:
         return {
             "required": {
                 "device": (["auto", "cuda", "cpu"], {"default": "auto"}),
+                "use_gpu_cache": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "Keep model on GPU between inferences (faster but uses more VRAM). Set to False to offload to CPU after each inference."
+                }),
             },
             "optional": {
                 "model_path": ("STRING", {
@@ -44,12 +48,13 @@ class LoadSAM3Model:
     FUNCTION = "load_model"
     CATEGORY = "SAM3"
 
-    def load_model(self, device="auto", model_path="", hf_token=""):
+    def load_model(self, device="auto", use_gpu_cache=True, model_path="", hf_token=""):
         """
         Load SAM3 model
 
         Args:
             device: Device to load model on (auto/cuda/cpu)
+            use_gpu_cache: Keep model on GPU between inferences (True) or offload to CPU (False)
             model_path: Optional path to local checkpoint
             hf_token: Optional HuggingFace token for downloading gated models
 
@@ -61,13 +66,17 @@ class LoadSAM3Model:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
         print(f"[SAM3] Loading model on device: {device}")
+        print(f"[SAM3] GPU cache: {'enabled' if use_gpu_cache else 'disabled (will offload to CPU after inference)'}")
 
         # Check cache (use hash of token for privacy in cache key)
         token_hash = str(hash(hf_token))[:8] if hf_token else "notoken"
-        cache_key = f"{model_path}_{device}_{token_hash}"
+        cache_key = f"{model_path}_{device}_{token_hash}_{use_gpu_cache}"
         if cache_key in _MODEL_CACHE:
             print(f"[SAM3] Using cached model")
-            return (_MODEL_CACHE[cache_key],)
+            cached_model = _MODEL_CACHE[cache_key]
+            # Update the use_gpu_cache setting in case it changed
+            cached_model["use_gpu_cache"] = use_gpu_cache
+            return (cached_model,)
 
         # Import SAM3 from vendored library
         try:
@@ -155,7 +164,9 @@ class LoadSAM3Model:
         model_dict = {
             "model": model,
             "processor": processor,
-            "device": device
+            "device": device,
+            "use_gpu_cache": use_gpu_cache,
+            "original_device": device  # Store the original device for re-loading
         }
 
         # Cache the model

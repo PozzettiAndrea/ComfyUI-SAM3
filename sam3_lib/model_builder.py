@@ -37,7 +37,7 @@ from .model.sam3_image import Sam3Image
 # from .model.sam3_image import Sam3ImageOnVideoMultiGPU
 # from .model.sam3_tracking_predictor import Sam3TrackerPredictor
 # from .model.sam3_video_inference import Sam3VideoInferenceWithInstanceInteractivity
-# from .model.sam3_video_predictor import Sam3VideoPredictorMultiGPU
+from .sam3_video_predictor import Sam3VideoPredictorMultiGPU
 from .model.text_encoder_ve import VETextEncoder
 from .model.tokenizer_ve import SimpleTokenizer
 from .model.vitdet import ViT
