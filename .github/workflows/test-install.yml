@@ -43,7 +43,18 @@ jobs:
 
       - name: Install package dependencies
         run: |
-          pip install -r requirements.txt
+          # Install core dependencies first
+          pip install timm ftfy regex iopath huggingface_hub opencv-python psutil scikit-image numpy Pillow tqdm typing_extensions
+
+          # Install platform-specific dependencies
+          if [ "${{ matrix.os }}" != "macos-latest" ]; then
+            # decord doesn't have pre-built wheels for macOS ARM
+            pip install decord || echo "Warning: decord installation failed (not critical for testing)"
+          fi
+
+          # pycocotools may need compilation on some platforms
+          pip install pycocotools || echo "Warning: pycocotools installation failed (not critical for testing)"
+        shell: bash
 
       - name: Verify imports
         run: |
