@@ -28,7 +28,7 @@ def test_sam3_cpu_inference():
 
     # Import SAM3 nodes
     from nodes.load_model import LoadSAM3Model
-    from nodes.segmentation import SAM3Segmentation
+    from nodes.segmentation import SAM3Grounding
 
     # Get path to test image
     script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -64,9 +64,9 @@ def test_sam3_cpu_inference():
     sam3_model = model_output[0]
     print(f"[TEST] Model loaded successfully: {type(sam3_model)}")
 
-    # Run segmentation
-    print("[TEST] Running segmentation with prompt 'person'...")
-    segmenter = SAM3Segmentation()
+    # Run grounding-based segmentation with text prompt
+    print("[TEST] Running grounding segmentation with prompt 'person'...")
+    segmenter = SAM3Grounding()
 
     try:
         outputs = segmenter.segment(
