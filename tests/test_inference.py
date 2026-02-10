@@ -52,8 +52,6 @@ def test_sam3_cpu_inference():
 
     try:
         model_output = model_loader.load_model(
-            device="cpu",
-            use_gpu_cache=False,
             model_path="",
             hf_token=hf_token
         )
@@ -139,12 +137,12 @@ def test_sam3_model_cache():
 
     # First load (may download)
     print("[TEST] First model load...")
-    model1 = model_loader.load_model(device="cpu", use_gpu_cache=False, model_path="", hf_token=hf_token)
+    model1 = model_loader.load_model(model_path="", hf_token=hf_token)
     assert model1 is not None
 
     # Second load (should use cache)
     print("[TEST] Second model load (should use cache)...")
-    model2 = model_loader.load_model(device="cpu", use_gpu_cache=False, model_path="", hf_token=hf_token)
+    model2 = model_loader.load_model(model_path="", hf_token=hf_token)
     assert model2 is not None
 
     print("[TEST] [OK] Model caching works")
