@@ -14,6 +14,7 @@ import os
 
 import torch
 import comfy.model_management
+from folder_paths import base_path as comfy_base_path
 
 from .sam3_model_patcher import SAM3ModelWrapper, SAM3ModelPatcher
 
@@ -205,8 +206,8 @@ class LoadSAM3Model:
         # Resolve checkpoint path
         checkpoint_path = Path(model_path)
         if not checkpoint_path.is_absolute():
-            # Relative path - resolve from current working directory (ComfyUI root)
-            checkpoint_path = Path.cwd() / checkpoint_path
+            # Always resolve relative paths against the ComfyUI root directory
+            checkpoint_path = Path(comfy_base_path) / checkpoint_path
 
         # Check if model exists, download if needed
         if not checkpoint_path.exists():
