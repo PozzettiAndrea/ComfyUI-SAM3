@@ -49,7 +49,7 @@ class SAM3VideoModelLoader:
             os.environ["HF_TOKEN"] = hf_token
 
         # Hardcoded BPE path - using vendored tokenizer vocabulary
-        bpe_path = Path(__file__).parent.parent / "sam3_lib" / "bpe_simple_vocab_16e6.txt.gz"
+        bpe_path = Path(__file__).parent / "sam3_lib" / "bpe_simple_vocab_16e6.txt.gz"
         bpe_path = str(bpe_path)
 
         print(f"[SAM3 Video] Loading video model from {checkpoint_path if checkpoint_path else 'HuggingFace'}")
