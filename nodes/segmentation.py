@@ -26,11 +26,6 @@ class SAM3Segmentation:
             "required": {
                 "sam3_model": ("SAM3_MODEL",),
                 "image": ("IMAGE",),
-                "text_prompt": ("STRING", {
-                    "default": "person",
-                    "multiline": False,
-                    "placeholder": "e.g., 'cat', 'person in red', 'car'"
-                }),
                 "confidence_threshold": ("FLOAT", {
                     "default": 0.2,
                     "min": 0.0,
@@ -41,6 +36,14 @@ class SAM3Segmentation:
                 }),
             },
             "optional": {
+                "text_prompt": ("STRING", {
+                    "default": "",
+                    "multiline": False,
+                    "placeholder": "e.g., 'cat', 'person in red', 'car'"
+                }),
+                "boxes_prompt": ("SAM3_BOXES_PROMPT",),
+                "points_prompt": ("SAM3_POINTS_PROMPT",),
+                "mask_prompt": ("MASK",),
                 "max_detections": ("INT", {
                     "default": -1,
                     "min": -1,
@@ -56,15 +59,19 @@ class SAM3Segmentation:
     FUNCTION = "segment"
     CATEGORY = "SAM3"
 
-    def segment(self, sam3_model, image, text_prompt, confidence_threshold=0.5, max_detections=-1):
+    def segment(self, sam3_model, image, confidence_threshold=0.2, text_prompt="",
+                boxes_prompt=None, points_prompt=None, mask_prompt=None, max_detections=-1):
         """
-        Perform SAM3 segmentation
+        Perform SAM3 segmentation with optional geometric prompts
 
         Args:
             sam3_model: Model dict from LoadSAM3Model node
             image: ComfyUI image tensor [B, H, W, C]
-            text_prompt: Text description of objects to segment
             confidence_threshold: Minimum confidence score for detections
+            text_prompt: Optional text description of objects to segment
+            boxes_prompt: Optional box prompts from SAM3CombineBoxes
+            points_prompt: Optional point prompts from SAM3CombinePoints
+            mask_prompt: Optional mask prompt
             max_detections: Maximum number of detections to return
 
         Returns:
@@ -74,34 +81,55 @@ class SAM3Segmentation:
         processor = sam3_model["processor"]
         device = sam3_model["device"]
 
-        print(f"[SAM3] Running segmentation with prompt: '{text_prompt}'")
+        print(f"[SAM3] Running segmentation")
+        if text_prompt:
+            print(f"[SAM3]   Text prompt: '{text_prompt}'")
+        if boxes_prompt:
+            print(f"[SAM3]   Boxes: {len(boxes_prompt['boxes'])}")
+        if points_prompt:
+            print(f"[SAM3]   Points: {len(points_prompt['points'])}")
+        if mask_prompt is not None:
+            print(f"[SAM3]   Mask prompt provided")
         print(f"[SAM3] Confidence threshold: {confidence_threshold}")
 
         # Convert ComfyUI image to PIL
-        print(f"[SAM3 DEBUG] Input image shape: {image.shape}, dtype: {image.dtype}")
-        print(f"[SAM3 DEBUG] Input image range: [{image.min():.3f}, {image.max():.3f}]")
         pil_image = comfy_image_to_pil(image)
-        print(f"[SAM3] Image size: {pil_image.size}, mode: {pil_image.mode}")
+        print(f"[SAM3] Image size: {pil_image.size}")
 
         # Update confidence threshold
         processor.set_confidence_threshold(confidence_threshold)
 
         # Set image (extracts features)
-        print(f"[SAM3] Extracting image features...")
         state = processor.set_image(pil_image)
-        print(f"[SAM3 DEBUG] State keys after set_image: {list(state.keys())}")
 
-        # Check if text prompt is provided
-        if not text_prompt or not text_prompt.strip():
-            print(f"[SAM3] Warning: Empty text prompt, returning empty results")
-            # Return empty results
-            h, w = pil_image.size[1], pil_image.size[0]
-            empty_mask = torch.zeros(1, h, w)
-            return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
+        # Add text prompt if provided
+        if text_prompt and text_prompt.strip():
+            print(f"[SAM3] Adding text prompt...")
+            state = processor.set_text_prompt(text_prompt.strip(), state)
 
-        # Set text prompt
-        print(f"[SAM3] Running detection with text prompt...")
-        state = processor.set_text_prompt(text_prompt.strip(), state)
+        # Add geometric prompts
+        if boxes_prompt is not None and len(boxes_prompt['boxes']) > 0:
+            print(f"[SAM3] Adding {len(boxes_prompt['boxes'])} box prompts...")
+            state = processor.add_multiple_box_prompts(
+                boxes_prompt['boxes'],
+                boxes_prompt['labels'],
+                state
+            )
+
+        if points_prompt is not None and len(points_prompt['points']) > 0:
+            print(f"[SAM3] Adding {len(points_prompt['points'])} point prompts...")
+            state = processor.add_point_prompt(
+                points_prompt['points'],
+                points_prompt['labels'],
+                state
+            )
+
+        if mask_prompt is not None:
+            print(f"[SAM3] Adding mask prompt...")
+            if not isinstance(mask_prompt, torch.Tensor):
+                mask_prompt = torch.from_numpy(mask_prompt)
+            mask_prompt = mask_prompt.to(device)
+            state = processor.add_mask_prompt(mask_prompt, state)
 
         # Extract results
         masks = state.get("masks", None)
@@ -192,21 +220,18 @@ class SAM3Segmentation:
         return (comfy_masks, vis_tensor, boxes_json, scores_json)
 
 
-class SAM3GeometricRefine:
+class SAM3CreateBox:
     """
-    Node to refine SAM3 results with geometric prompts (boxes)
+    Helper node to create a box prompt visually
 
-    This node is optional and can be used to add positive or negative
-    box prompts to refine the segmentation results.
+    Use sliders to define a bounding box for refinement.
     """
 
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "sam3_model": ("SAM3_MODEL",),
-                "image": ("IMAGE",),
-                "box_x": ("FLOAT", {
+                "center_x": ("FLOAT", {
                     "default": 0.5,
                     "min": 0.0,
                     "max": 1.0,
@@ -214,7 +239,7 @@ class SAM3GeometricRefine:
                     "display": "slider",
                     "tooltip": "Box center X (normalized 0-1)"
                 }),
-                "box_y": ("FLOAT", {
+                "center_y": ("FLOAT", {
                     "default": 0.5,
                     "min": 0.0,
                     "max": 1.0,
@@ -222,7 +247,7 @@ class SAM3GeometricRefine:
                     "display": "slider",
                     "tooltip": "Box center Y (normalized 0-1)"
                 }),
-                "box_w": ("FLOAT", {
+                "width": ("FLOAT", {
                     "default": 0.3,
                     "min": 0.0,
                     "max": 1.0,
@@ -230,7 +255,7 @@ class SAM3GeometricRefine:
                     "display": "slider",
                     "tooltip": "Box width (normalized 0-1)"
                 }),
-                "box_h": ("FLOAT", {
+                "height": ("FLOAT", {
                     "default": 0.3,
                     "min": 0.0,
                     "max": 1.0,
@@ -240,422 +265,179 @@ class SAM3GeometricRefine:
                 }),
                 "is_positive": ("BOOLEAN", {
                     "default": True,
-                    "tooltip": "True for positive prompt, False for negative"
-                }),
-                "confidence_threshold": ("FLOAT", {
-                    "default": 0.2,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.05,
-                    "display": "slider",
-                    "tooltip": "Lower threshold (0.2) works better with SAM3's presence scoring"
-                }),
-            },
-            "optional": {
-                "text_prompt": ("STRING", {
-                    "default": "",
-                    "multiline": False,
-                    "placeholder": "Optional: combine with text prompt"
+                    "tooltip": "True for positive (include), False for negative (exclude)"
                 }),
             }
         }
 
-    RETURN_TYPES = ("MASK", "IMAGE", "STRING", "STRING")
-    RETURN_NAMES = ("masks", "visualization", "boxes", "scores")
-    FUNCTION = "refine"
-    CATEGORY = "SAM3"
+    RETURN_TYPES = ("SAM3_BOX_PROMPT",)
+    RETURN_NAMES = ("box_prompt",)
+    FUNCTION = "create_box"
+    CATEGORY = "SAM3/prompts"
 
-    def refine(self, sam3_model, image, box_x, box_y, box_w, box_h,
-               is_positive=True, confidence_threshold=0.5, text_prompt=""):
-        """
-        Refine segmentation with geometric box prompt
-
-        Args:
-            sam3_model: Model dict from LoadSAM3Model node
-            image: ComfyUI image tensor
-            box_x, box_y, box_w, box_h: Box parameters (normalized 0-1)
-            is_positive: Whether this is a positive or negative prompt
-            confidence_threshold: Minimum confidence score
-            text_prompt: Optional text prompt to combine with box
-
-        Returns:
-            Tuple of (masks, visualization, boxes_json, scores_json)
-        """
-        processor = sam3_model["processor"]
-
-        print(f"[SAM3] Running geometric refinement")
-        print(f"[SAM3] Box: ({box_x:.2f}, {box_y:.2f}, {box_w:.2f}, {box_h:.2f})")
-        print(f"[SAM3] Positive prompt: {is_positive}")
-
-        # Convert ComfyUI image to PIL
-        pil_image = comfy_image_to_pil(image)
-
-        # Update confidence threshold
-        processor.set_confidence_threshold(confidence_threshold)
-
-        # Set image
-        state = processor.set_image(pil_image)
-
-        # Add text prompt if provided
-        if text_prompt and text_prompt.strip():
-            print(f"[SAM3] Adding text prompt: '{text_prompt}'")
-            state = processor.set_text_prompt(text_prompt.strip(), state)
-
-        # Add geometric prompt
-        box = [box_x, box_y, box_w, box_h]
-        state = processor.add_geometric_prompt(box, is_positive, state)
-
-        # Extract results
-        masks = state.get("masks", None)
-        boxes = state.get("boxes", None)
-        scores = state.get("scores", None)
-
-        if masks is None or len(masks) == 0:
-            print(f"[SAM3] No detections found")
-            h, w = pil_image.size[1], pil_image.size[0]
-            empty_mask = torch.zeros(1, h, w)
-            return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
-
-        print(f"[SAM3] Found {len(masks)} detections")
-
-        # Convert to ComfyUI formats
-        comfy_masks = masks_to_comfy_mask(masks)
-        vis_image = visualize_masks_on_image(pil_image, masks, boxes, scores, alpha=0.5)
-        vis_tensor = pil_to_comfy_image(vis_image)
-
-        # Convert to JSON
-        import json
-        boxes_list = tensor_to_list(boxes) if boxes is not None else []
-        scores_list = tensor_to_list(scores) if scores is not None else []
-        boxes_json = json.dumps(boxes_list, indent=2)
-        scores_json = json.dumps(scores_list, indent=2)
-
-        print(f"[SAM3] Refinement complete")
-
-        return (comfy_masks, vis_tensor, boxes_json, scores_json)
+    def create_box(self, center_x, center_y, width, height, is_positive):
+        """Create a box prompt"""
+        box_prompt = {
+            "box": [center_x, center_y, width, height],
+            "label": is_positive
+        }
+        return (box_prompt,)
 
 
-class SAM3PointRefine:
+class SAM3CreatePoint:
     """
-    Node for interactive point-based refinement with SAM3
+    Helper node to create a point prompt visually
 
-    Use this to add foreground/background point prompts for precise segmentation.
-    Points are specified in normalized coordinates (0-1).
+    Use sliders to define a point for refinement.
     """
 
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "sam3_model": ("SAM3_MODEL",),
-                "image": ("IMAGE",),
-                "point_x": ("FLOAT", {
+                "x": ("FLOAT", {
                     "default": 0.5,
                     "min": 0.0,
                     "max": 1.0,
                     "step": 0.01,
                     "display": "slider",
-                    "tooltip": "Point X coordinate (normalized 0-1)"
+                    "tooltip": "Point X (normalized 0-1)"
                 }),
-                "point_y": ("FLOAT", {
+                "y": ("FLOAT", {
                     "default": 0.5,
                     "min": 0.0,
                     "max": 1.0,
                     "step": 0.01,
                     "display": "slider",
-                    "tooltip": "Point Y coordinate (normalized 0-1)"
+                    "tooltip": "Point Y (normalized 0-1)"
                 }),
                 "is_foreground": ("BOOLEAN", {
                     "default": True,
-                    "tooltip": "True for foreground point, False for background"
-                }),
-                "multimask_output": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Return 3 masks for ambiguous prompts"
-                }),
-            },
-            "optional": {
-                "additional_points": ("STRING", {
-                    "default": "",
-                    "multiline": True,
-                    "placeholder": "Additional points as JSON: [[x,y,label], ...]\nLabel: 1=foreground, 0=background"
+                    "tooltip": "True for foreground, False for background"
                 }),
             }
         }
 
-    RETURN_TYPES = ("MASK", "IMAGE", "STRING")
-    RETURN_NAMES = ("masks", "visualization", "scores")
-    FUNCTION = "refine_with_points"
-    CATEGORY = "SAM3"
+    RETURN_TYPES = ("SAM3_POINT_PROMPT",)
+    RETURN_NAMES = ("point_prompt",)
+    FUNCTION = "create_point"
+    CATEGORY = "SAM3/prompts"
 
-    def refine_with_points(self, sam3_model, image, point_x, point_y,
-                           is_foreground=True, multimask_output=False,
-                           additional_points=""):
-        """Point-based refinement using SAM3's grounding model"""
-        import json
-        processor = sam3_model["processor"]
-
-        # Convert ComfyUI image to PIL
-        pil_image = comfy_image_to_pil(image)
-
-        # Set image
-        state = processor.set_image(pil_image)
-
-        # Build point list
-        points = [[point_x, point_y]]
-        labels = [1 if is_foreground else 0]
-
-        # Parse additional points if provided
-        if additional_points and additional_points.strip():
-            try:
-                extra_points = json.loads(additional_points.strip())
-                for pt in extra_points:
-                    if len(pt) == 3:  # [x, y, label]
-                        points.append([pt[0], pt[1]])
-                        labels.append(pt[2])
-            except json.JSONDecodeError:
-                print(f"[SAM3] Warning: Could not parse additional_points JSON")
-
-        print(f"[SAM3] Running point refinement with {len(points)} points")
-
-        # Use grounding approach for point-based refinement
-        state = processor.add_point_prompt(points, labels, state)
-
-        # Extract results
-        masks = state.get("masks", None)
-        boxes = state.get("boxes", None)
-        scores = state.get("scores", None)
-
-        if masks is None or len(masks) == 0:
-            print(f"[SAM3] No masks generated")
-            h, w = pil_image.size[1], pil_image.size[0]
-            empty_mask = torch.zeros(1, h, w)
-            return (empty_mask, pil_to_comfy_image(pil_image), "[]")
-
-        print(f"[SAM3] Generated {len(masks)} mask(s)")
-
-        # Convert to ComfyUI formats
-        comfy_masks = masks_to_comfy_mask(masks)
-        vis_image = visualize_masks_on_image(pil_image, masks, boxes, scores, alpha=0.5)
-        vis_tensor = pil_to_comfy_image(vis_image)
-
-        scores_list = tensor_to_list(scores) if scores is not None else []
-        scores_json = json.dumps(scores_list, indent=2)
-
-        return (comfy_masks, vis_tensor, scores_json)
+    def create_point(self, x, y, is_foreground):
+        """Create a point prompt"""
+        point_prompt = {
+            "point": [x, y],
+            "label": 1 if is_foreground else 0
+        }
+        return (point_prompt,)
 
 
-class SAM3MaskRefine:
+class SAM3CombineBoxes:
     """
-    Node for mask-to-mask refinement
+    Combine multiple box prompts into a single input
 
-    Takes an existing mask and refines it using SAM3's interactive predictor.
+    Connect multiple SAM3CreateBox nodes to combine them.
     """
 
     @classmethod
     def INPUT_TYPES(cls):
         return {
-            "required": {
-                "sam3_model": ("SAM3_MODEL",),
-                "image": ("IMAGE",),
-                "input_mask": ("MASK",),
-                "multimask_output": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Return 3 masks for ambiguous prompts"
-                }),
-            },
+            "required": {},
+            "optional": {
+                "box_1": ("SAM3_BOX_PROMPT",),
+                "box_2": ("SAM3_BOX_PROMPT",),
+                "box_3": ("SAM3_BOX_PROMPT",),
+                "box_4": ("SAM3_BOX_PROMPT",),
+                "box_5": ("SAM3_BOX_PROMPT",),
+            }
         }
 
-    RETURN_TYPES = ("MASK", "IMAGE", "STRING")
-    RETURN_NAMES = ("masks", "visualization", "scores")
-    FUNCTION = "refine_with_mask"
-    CATEGORY = "SAM3"
+    RETURN_TYPES = ("SAM3_BOXES_PROMPT",)
+    RETURN_NAMES = ("boxes_prompt",)
+    FUNCTION = "combine_boxes"
+    CATEGORY = "SAM3/prompts"
 
-    def refine_with_mask(self, sam3_model, image, input_mask, multimask_output=False):
-        """Refine an existing mask using SAM3's grounding model"""
-        import json
-        processor = sam3_model["processor"]
+    def combine_boxes(self, **kwargs):
+        """Combine multiple box prompts"""
+        boxes = []
+        labels = []
 
-        # Convert ComfyUI image to PIL
-        pil_image = comfy_image_to_pil(image)
+        for i in range(1, 6):
+            box_key = f"box_{i}"
+            if box_key in kwargs and kwargs[box_key] is not None:
+                box_data = kwargs[box_key]
+                boxes.append(box_data["box"])
+                labels.append(box_data["label"])
 
-        # Set image
-        state = processor.set_image(pil_image)
-
-        # Convert mask to tensor for grounding approach
-        if not isinstance(input_mask, torch.Tensor):
-            input_mask = torch.from_numpy(input_mask)
-
-        # Ensure mask is on correct device
-        input_mask = input_mask.to(processor.device)
-
-        print(f"[SAM3] Running mask refinement")
-        print(f"[SAM3] Input mask shape: {input_mask.shape}")
-
-        # Use grounding approach for mask-based refinement
-        state = processor.add_mask_prompt(input_mask, state)
-
-        # Extract results
-        masks = state.get("masks", None)
-        boxes = state.get("boxes", None)
-        scores = state.get("scores", None)
-
-        if masks is None or len(masks) == 0:
-            print(f"[SAM3] No masks generated")
-            h, w = pil_image.size[1], pil_image.size[0]
-            empty_mask = torch.zeros(1, h, w)
-            return (empty_mask, pil_to_comfy_image(pil_image), "[]")
-
-        print(f"[SAM3] Generated {len(masks)} mask(s)")
-
-        # Convert to ComfyUI formats
-        comfy_masks = masks_to_comfy_mask(masks)
-        vis_image = visualize_masks_on_image(pil_image, masks, boxes, scores, alpha=0.5)
-        vis_tensor = pil_to_comfy_image(vis_image)
-
-        scores_list = tensor_to_list(scores) if scores is not None else []
-        scores_json = json.dumps(scores_list, indent=2)
-
-        return (comfy_masks, vis_tensor, scores_json)
+        combined = {
+            "boxes": boxes,
+            "labels": labels
+        }
+        return (combined,)
 
 
-class SAM3MultiPrompt:
+class SAM3CombinePoints:
     """
-    Node for combining multiple geometric prompts
+    Combine multiple point prompts into a single input
 
-    Supports multiple boxes and/or points simultaneously for complex segmentation tasks.
+    Connect multiple SAM3CreatePoint nodes to combine them.
     """
 
     @classmethod
     def INPUT_TYPES(cls):
         return {
-            "required": {
-                "sam3_model": ("SAM3_MODEL",),
-                "image": ("IMAGE",),
-                "confidence_threshold": ("FLOAT", {
-                    "default": 0.2,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.05,
-                    "display": "slider"
-                }),
-            },
+            "required": {},
             "optional": {
-                "text_prompt": ("STRING", {
-                    "default": "",
-                    "placeholder": "Optional text prompt"
-                }),
-                "boxes_json": ("STRING", {
-                    "default": "",
-                    "multiline": True,
-                    "placeholder": "Boxes as JSON: [[cx,cy,w,h,label], ...]\nLabel: true=positive, false=negative"
-                }),
-                "points_json": ("STRING", {
-                    "default": "",
-                    "multiline": True,
-                    "placeholder": "Points as JSON: [[x,y,label], ...]\nLabel: 1=foreground, 0=background"
-                }),
+                "point_1": ("SAM3_POINT_PROMPT",),
+                "point_2": ("SAM3_POINT_PROMPT",),
+                "point_3": ("SAM3_POINT_PROMPT",),
+                "point_4": ("SAM3_POINT_PROMPT",),
+                "point_5": ("SAM3_POINT_PROMPT",),
+                "point_6": ("SAM3_POINT_PROMPT",),
+                "point_7": ("SAM3_POINT_PROMPT",),
+                "point_8": ("SAM3_POINT_PROMPT",),
+                "point_9": ("SAM3_POINT_PROMPT",),
+                "point_10": ("SAM3_POINT_PROMPT",),
             }
         }
 
-    RETURN_TYPES = ("MASK", "IMAGE", "STRING", "STRING")
-    RETURN_NAMES = ("masks", "visualization", "boxes", "scores")
-    FUNCTION = "multi_prompt_segment"
-    CATEGORY = "SAM3"
+    RETURN_TYPES = ("SAM3_POINTS_PROMPT",)
+    RETURN_NAMES = ("points_prompt",)
+    FUNCTION = "combine_points"
+    CATEGORY = "SAM3/prompts"
 
-    def multi_prompt_segment(self, sam3_model, image, confidence_threshold=0.2,
-                            text_prompt="", boxes_json="", points_json=""):
-        """Segment with multiple geometric prompts"""
-        import json
-        processor = sam3_model["processor"]
+    def combine_points(self, **kwargs):
+        """Combine multiple point prompts"""
+        points = []
+        labels = []
 
-        # Convert ComfyUI image to PIL
-        pil_image = comfy_image_to_pil(image)
+        for i in range(1, 11):
+            point_key = f"point_{i}"
+            if point_key in kwargs and kwargs[point_key] is not None:
+                point_data = kwargs[point_key]
+                points.append(point_data["point"])
+                labels.append(point_data["label"])
 
-        # Update confidence threshold
-        processor.set_confidence_threshold(confidence_threshold)
-
-        # Set image
-        state = processor.set_image(pil_image)
-
-        # Add text prompt if provided
-        if text_prompt and text_prompt.strip():
-            print(f"[SAM3] Adding text prompt: '{text_prompt}'")
-            state = processor.set_text_prompt(text_prompt.strip(), state)
-
-        # Parse and add boxes
-        if boxes_json and boxes_json.strip():
-            try:
-                boxes_data = json.loads(boxes_json.strip())
-                boxes = []
-                labels = []
-                for box_entry in boxes_data:
-                    if len(box_entry) == 5:  # [cx, cy, w, h, label]
-                        boxes.append(box_entry[:4])
-                        labels.append(box_entry[4])
-
-                if boxes:
-                    print(f"[SAM3] Adding {len(boxes)} box prompts")
-                    state = processor.add_multiple_box_prompts(boxes, labels, state)
-            except json.JSONDecodeError:
-                print(f"[SAM3] Warning: Could not parse boxes_json")
-
-        # Parse and add points
-        if points_json and points_json.strip():
-            try:
-                points_data = json.loads(points_json.strip())
-                points = []
-                labels = []
-                for pt_entry in points_data:
-                    if len(pt_entry) == 3:  # [x, y, label]
-                        points.append(pt_entry[:2])
-                        labels.append(pt_entry[2])
-
-                if points:
-                    print(f"[SAM3] Adding {len(points)} point prompts")
-                    state = processor.add_point_prompt(points, labels, state)
-            except json.JSONDecodeError:
-                print(f"[SAM3] Warning: Could not parse points_json")
-
-        # Extract results
-        masks = state.get("masks", None)
-        boxes = state.get("boxes", None)
-        scores = state.get("scores", None)
-
-        if masks is None or len(masks) == 0:
-            print(f"[SAM3] No detections found")
-            h, w = pil_image.size[1], pil_image.size[0]
-            empty_mask = torch.zeros(1, h, w)
-            return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
-
-        print(f"[SAM3] Found {len(masks)} detections")
-
-        # Convert to ComfyUI formats
-        comfy_masks = masks_to_comfy_mask(masks)
-        vis_image = visualize_masks_on_image(pil_image, masks, boxes, scores, alpha=0.5)
-        vis_tensor = pil_to_comfy_image(vis_image)
-
-        boxes_list = tensor_to_list(boxes) if boxes is not None else []
-        scores_list = tensor_to_list(scores) if scores is not None else []
-        boxes_json_out = json.dumps(boxes_list, indent=2)
-        scores_json_out = json.dumps(scores_list, indent=2)
-
-        return (comfy_masks, vis_tensor, boxes_json_out, scores_json_out)
+        combined = {
+            "points": points,
+            "labels": labels
+        }
+        return (combined,)
 
 
 # Register the nodes
 NODE_CLASS_MAPPINGS = {
     "SAM3Segmentation": SAM3Segmentation,
-    "SAM3GeometricRefine": SAM3GeometricRefine,
-    "SAM3PointRefine": SAM3PointRefine,
-    "SAM3MaskRefine": SAM3MaskRefine,
-    "SAM3MultiPrompt": SAM3MultiPrompt,
+    "SAM3CreateBox": SAM3CreateBox,
+    "SAM3CreatePoint": SAM3CreatePoint,
+    "SAM3CombineBoxes": SAM3CombineBoxes,
+    "SAM3CombinePoints": SAM3CombinePoints,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3Segmentation": "SAM3 Segmentation",
-    "SAM3GeometricRefine": "SAM3 Geometric Refine",
-    "SAM3PointRefine": "SAM3 Point Refine",
-    "SAM3MaskRefine": "SAM3 Mask Refine",
-    "SAM3MultiPrompt": "SAM3 Multi-Prompt",
+    "SAM3CreateBox": "SAM3 Create Box",
+    "SAM3CreatePoint": "SAM3 Create Point",
+    "SAM3CombineBoxes": "SAM3 Combine Boxes",
+    "SAM3CombinePoints": "SAM3 Combine Points",
 }

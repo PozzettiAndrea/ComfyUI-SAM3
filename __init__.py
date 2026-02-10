@@ -2,17 +2,24 @@
 ComfyUI-SAM3: SAM3 Integration for ComfyUI
 
 This custom node package provides integration with Meta's SAM3 (Segment Anything Model 3)
-for open-vocabulary image segmentation using text prompts and geometric refinement.
+for open-vocabulary image segmentation using text prompts and visual geometric refinement.
 
-Nodes:
-- LoadSAM3Model: Loads SAM3 model (auto-downloads if needed)
-- SAM3Segmentation: Segment objects using text prompts
-- SAM3GeometricRefine: Refine segmentation with geometric box prompts
-- SAM3PointRefine: Point-based refinement (foreground/background points)
-- SAM3MaskRefine: Mask-based refinement (use previous masks as constraints)
-- SAM3MultiPrompt: Combine multiple geometric prompts (text + boxes + points + masks)
+Main Node:
+- LoadSAM3Model: Load SAM3 model (auto-downloads from HuggingFace)
+- SAM3Segmentation: Segment with optional text/boxes/points/masks
+
+Helper Nodes (Visual Prompt Creation):
+- SAM3CreateBox: Visually create a box prompt using sliders
+- SAM3CreatePoint: Visually create a point prompt using sliders
+- SAM3CombineBoxes: Combine multiple box prompts (up to 5)
+- SAM3CombinePoints: Combine multiple point prompts (up to 10)
+
+Workflow Example:
+  [SAM3CreateBox] → [SAM3CombineBoxes] → [SAM3Segmentation] ← [LoadImage]
+  [SAM3CreatePoint] → [SAM3CombinePoints] ↗
 
 All geometric refinement uses SAM3's grounding model approach.
+No JSON typing required - pure visual node-based workflow!
 
 Author: ComfyUI-SAM3
 Version: 2.0.0
