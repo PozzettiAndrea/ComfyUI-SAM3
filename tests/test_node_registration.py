@@ -53,13 +53,10 @@ def test_required_nodes_registered():
     required_nodes = [
         'LoadSAM3Model',
         'SAM3Segmentation',
-        'SAM3VideoModelLoader',
-        'SAM3InitVideoSession',
-        'SAM3InitVideoSessionAdvanced',
-        'SAM3AddVideoPrompt',
-        'SAM3PropagateVideo',
+        'SAM3Grounding',
+        'SAM3VideoSegmentation',
+        'SAM3Propagate',
         'SAM3VideoOutput',
-        'SAM3CloseVideoSession',
     ]
 
     for node in required_nodes:
@@ -96,24 +93,20 @@ def test_node_display_names():
 
 
 @pytest.mark.unit
-def test_simplified_vs_advanced_session_params():
-    """Test that simplified session node has fewer parameters than advanced"""
+def test_video_segmentation_node():
+    """Test that SAM3VideoSegmentation node has expected parameters"""
     from nodes.sam3_video_nodes import NODE_CLASS_MAPPINGS
 
-    simplified = NODE_CLASS_MAPPINGS['SAM3InitVideoSession']
-    advanced = NODE_CLASS_MAPPINGS['SAM3InitVideoSessionAdvanced']
+    video_seg = NODE_CLASS_MAPPINGS['SAM3VideoSegmentation']
+    inputs = video_seg.INPUT_TYPES()
 
-    simplified_inputs = simplified.INPUT_TYPES()
-    advanced_inputs = advanced.INPUT_TYPES()
+    # Check required inputs exist
+    required = inputs.get('required', {})
+    assert 'video_frames' in required, 'Missing video_frames input'
+    assert 'prompt_mode' in required, 'Missing prompt_mode input'
 
-    simplified_optional = len(simplified_inputs.get('optional', {}))
-    advanced_optional = len(advanced_inputs.get('optional', {}))
-
-    assert simplified_optional < advanced_optional, \
-        f'Simplified node should have fewer parameters than advanced (got {simplified_optional} vs {advanced_optional})'
-
-    print(f'✓ Simplified node has {simplified_optional} optional parameters')
-    print(f'✓ Advanced node has {advanced_optional} optional parameters')
+    print(f'✓ SAM3VideoSegmentation has {len(required)} required parameters')
+    print(f'✓ SAM3VideoSegmentation has {len(inputs.get("optional", {}))} optional parameters')
 
 
 @pytest.mark.unit

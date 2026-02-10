@@ -417,12 +417,6 @@ To use stable CPU fallback:
     print("[Blackwell] ComfyUI-SAM3 works fine without them using CPU fallbacks")
     print("=" * 80)
 
-    if not DRY_RUN:
-        response = input("\n[Blackwell] Do you want to proceed with experimental compilation? [y/N]: ")
-        if response.lower() not in ['y', 'yes']:
-            print("[Blackwell] Aborted by user")
-            sys.exit(0)
-
     print()
 
     # Try experimental installations
