@@ -30,7 +30,6 @@ def install_requirements():
 
         if result.returncode == 0:
             print("[ComfyUI-SAM3] [OK] Requirements installed successfully")
-            return True
         else:
             print("[ComfyUI-SAM3] [WARNING] Requirements installation had issues")
             if result.stderr:
@@ -41,6 +40,24 @@ def install_requirements():
         print(f"[ComfyUI-SAM3] [WARNING] Requirements installation error: {e}")
         return False
 
+    # Install ninja for faster CUDA compilation
+    print("[ComfyUI-SAM3] Installing ninja build system...")
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "ninja"],
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
+        if result.returncode == 0:
+            print("[ComfyUI-SAM3] [OK] Ninja installed successfully")
+        else:
+            print("[ComfyUI-SAM3] [WARNING] Ninja installation failed (optional, compilation will be slower)")
+    except Exception as e:
+        print(f"[ComfyUI-SAM3] [WARNING] Ninja installation error: {e}")
+
+    return True
+
 
 def find_cuda_home():
     """
@@ -48,6 +65,7 @@ def find_cuda_home():
     Returns path to CUDA installation or None if not found.
     """
     import site
+    import shutil
 
     # Check existing CUDA_HOME environment variable
     if "CUDA_HOME" in os.environ and os.path.exists(os.environ["CUDA_HOME"]):
@@ -57,8 +75,32 @@ def find_cuda_home():
             print(f"[ComfyUI-SAM3] Found CUDA via CUDA_HOME: {cuda_home}")
             return cuda_home
 
+    # Check if nvcc is in system PATH (e.g., from apt-get install nvidia-cuda-toolkit)
+    nvcc_in_path = shutil.which("nvcc")
+    if nvcc_in_path:
+        # Derive CUDA_HOME from nvcc location
+        # /usr/local/cuda-12.4/bin/nvcc -> /usr/local/cuda-12.4  (preferred)
+        # /usr/bin/nvcc -> /usr  (old CUDA 11.5, only use if no better option)
+        nvcc_dir = os.path.dirname(nvcc_in_path)  # Get bin directory
+        if os.path.basename(nvcc_dir) == "bin":
+            cuda_home = os.path.dirname(nvcc_dir)  # Get parent directory
+            # Only return /usr if it's not the system directory (avoid old CUDA 11.5)
+            # Prefer checking explicit CUDA 12.x paths first
+            if cuda_home != "/usr" or "cuda-12" in cuda_home or "cuda-11" in nvcc_in_path:
+                print(f"[ComfyUI-SAM3] Found CUDA via system PATH: {cuda_home} (nvcc at {nvcc_in_path})")
+                return cuda_home
+            else:
+                # nvcc is at /usr/bin/nvcc (old CUDA 11.5), defer to explicit path checking below
+                print(f"[ComfyUI-SAM3] Found nvcc at {nvcc_in_path} but deferring to explicit CUDA 12.x path search...")
+
     # Check system CUDA installations (Linux/Mac)
+    # Prioritize CUDA 12.x installations
     system_paths = [
+        "/usr/local/cuda-12.4",
+        "/usr/local/cuda-12.3",
+        "/usr/local/cuda-12.2",
+        "/usr/local/cuda-12.1",
+        "/usr/local/cuda-12.0",
         "/usr/local/cuda",
         "/usr/cuda",
         "/opt/cuda",
@@ -136,10 +178,25 @@ def check_nvcc_available():
             # Extract CUDA version from nvcc output
             output = result.stdout
             if "release" in output:
-                print(f"[ComfyUI-SAM3] [OK] CUDA compiler found: {output.split('release')[1].split(',')[0].strip()}")
-                return True
+                version = output.split('release')[1].split(',')[0].strip()
+                print(f"[ComfyUI-SAM3] [OK] CUDA compiler found: release {version}")
+            else:
+                print(f"[ComfyUI-SAM3] [OK] CUDA compiler found")
+            print(f"[ComfyUI-SAM3] nvcc output: {output.strip()}")
+            return True
+        else:
+            print(f"[ComfyUI-SAM3] [WARNING] nvcc command failed with return code {result.returncode}")
+            if result.stderr:
+                print(f"[ComfyUI-SAM3] Error: {result.stderr[:200]}")
+            return False
+    except FileNotFoundError:
+        print("[ComfyUI-SAM3] [WARNING] nvcc command not found in PATH")
         return False
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    except subprocess.TimeoutExpired:
+        print("[ComfyUI-SAM3] [WARNING] nvcc command timed out")
+        return False
+    except Exception as e:
+        print(f"[ComfyUI-SAM3] [WARNING] Error checking nvcc: {e}")
         return False
 
 
@@ -190,27 +247,39 @@ def setup_cuda_environment():
     """
     Setup CUDA environment variables (CUDA_HOME and PATH) for compilation.
     Searches for CUDA installation from all possible sources.
-    Returns True if CUDA found and environment set up, False otherwise.
+    Returns dict with environment variables if CUDA found, None otherwise.
     """
     # First try to find existing CUDA installation
     cuda_home = find_cuda_home()
 
     if cuda_home:
+        # Create a copy of current environment
+        env = os.environ.copy()
+
         # Set CUDA_HOME environment variable
-        os.environ["CUDA_HOME"] = cuda_home
+        env["CUDA_HOME"] = cuda_home
+        os.environ["CUDA_HOME"] = cuda_home  # Also set in current process
         print(f"[ComfyUI-SAM3] Set CUDA_HOME={cuda_home}")
 
         # Add CUDA bin directory to PATH
         cuda_bin = os.path.join(cuda_home, "bin")
-        if cuda_bin not in os.environ.get("PATH", ""):
-            os.environ["PATH"] = cuda_bin + os.pathsep + os.environ.get("PATH", "")
+        if cuda_bin not in env.get("PATH", ""):
+            env["PATH"] = cuda_bin + os.pathsep + env.get("PATH", "")
+            os.environ["PATH"] = env["PATH"]  # Also set in current process
             print(f"[ComfyUI-SAM3] Added to PATH: {cuda_bin}")
 
         # Verify nvcc is accessible
         if check_nvcc_available():
-            return True
+            # Print final environment summary for debugging
+            print(f"[ComfyUI-SAM3] CUDA environment configured:")
+            print(f"[ComfyUI-SAM3]   CUDA_HOME: {env.get('CUDA_HOME', 'not set')}")
+            print(f"[ComfyUI-SAM3]   PATH includes: {cuda_bin}")
+            return env
+        else:
+            print(f"[ComfyUI-SAM3] [WARNING] nvcc not accessible after setting CUDA_HOME={cuda_home}")
 
-    return False
+    print("[ComfyUI-SAM3] [WARNING] Could not setup CUDA environment")
+    return None
 
 
 def try_install_cuda_toolkit():
@@ -283,6 +352,21 @@ def try_install_cuda_linux():
     # Try apt-get (Debian/Ubuntu)
     try:
         print("[ComfyUI-SAM3] Trying apt-get (Debian/Ubuntu)...")
+
+        # First, ensure build-essential is installed (includes g++ and gcc)
+        print("[ComfyUI-SAM3] Ensuring build-essential and g++ are installed...")
+        result = subprocess.run(
+            ["sudo", "apt-get", "install", "-y", "build-essential", "g++"],
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
+        if result.returncode == 0:
+            print("[ComfyUI-SAM3] [OK] Build tools installed successfully")
+        else:
+            print("[ComfyUI-SAM3] [WARNING] Failed to install build-essential/g++")
+
+        # Update package lists
         result = subprocess.run(
             ["sudo", "apt-get", "update"],
             capture_output=True,
@@ -290,16 +374,24 @@ def try_install_cuda_linux():
             timeout=120
         )
         if result.returncode == 0:
-            result = subprocess.run(
-                ["sudo", "apt-get", "install", "-y", "nvidia-cuda-toolkit"],
-                capture_output=True,
-                text=True,
-                timeout=600
-            )
-            if result.returncode == 0:
-                print("[ComfyUI-SAM3] [OK] CUDA compiler installed via apt-get")
-                if setup_cuda_environment():
-                    return True
+            # Install CUDA 12.x toolkit (try 12.4, 12.3, 12.2, etc.)
+            cuda_packages = ["cuda-toolkit-12-4", "cuda-toolkit-12-3", "cuda-toolkit-12-2", "cuda-toolkit-12-1", "cuda-toolkit-12-0"]
+
+            for cuda_pkg in cuda_packages:
+                print(f"[ComfyUI-SAM3] Trying to install {cuda_pkg}...")
+                result = subprocess.run(
+                    ["sudo", "apt-get", "install", "-y", "--fix-missing", cuda_pkg],
+                    capture_output=True,
+                    text=True,
+                    timeout=600
+                )
+                if result.returncode == 0:
+                    print(f"[ComfyUI-SAM3] [OK] CUDA compiler installed via apt-get: {cuda_pkg}")
+                    if setup_cuda_environment():
+                        return True
+                else:
+                    print(f"[ComfyUI-SAM3] {cuda_pkg} not available, trying next...")
+
     except (FileNotFoundError, subprocess.TimeoutExpired) as e:
         print(f"[ComfyUI-SAM3] apt-get not available or failed: {e}")
 
@@ -420,7 +512,8 @@ def try_install_torch_generic_nms():
         return False
 
     # Setup CUDA environment (find CUDA from all possible sources)
-    if not setup_cuda_environment():
+    cuda_env = setup_cuda_environment()
+    if not cuda_env:
         print("[ComfyUI-SAM3] [WARNING] CUDA compiler not found in system")
         print("[ComfyUI-SAM3] Attempting to install CUDA toolkit...")
 
@@ -430,12 +523,32 @@ def try_install_torch_generic_nms():
             print("[ComfyUI-SAM3] To install manually, see: https://developer.nvidia.com/cuda-downloads")
             return False
 
+        # Try setup again after installation
+        cuda_env = setup_cuda_environment()
+        if not cuda_env:
+            print("[ComfyUI-SAM3] [WARNING] CUDA environment setup failed after toolkit installation")
+            return False
+
     # Get CUDA architecture list
     cuda_arch_list = get_cuda_arch_list()
 
     if cuda_arch_list:
-        os.environ["TORCH_CUDA_ARCH_LIST"] = cuda_arch_list
+        cuda_env["TORCH_CUDA_ARCH_LIST"] = cuda_arch_list
+        os.environ["TORCH_CUDA_ARCH_LIST"] = cuda_arch_list  # Also set in current process
         print(f"[ComfyUI-SAM3] Set TORCH_CUDA_ARCH_LIST={cuda_arch_list}")
+
+    # Set C/C++ compiler paths explicitly (needed for CUDA compilation)
+    import shutil
+    gcc_path = shutil.which("gcc-11") or shutil.which("gcc")
+    gxx_path = shutil.which("g++-11") or shutil.which("g++")
+    if gcc_path:
+        cuda_env["CC"] = gcc_path
+        os.environ["CC"] = gcc_path
+        print(f"[ComfyUI-SAM3] Set CC={gcc_path}")
+    if gxx_path:
+        cuda_env["CXX"] = gxx_path
+        os.environ["CXX"] = gxx_path
+        print(f"[ComfyUI-SAM3] Set CXX={gxx_path}")
 
     # Install torch_generic_nms from GitHub
     print("[ComfyUI-SAM3] Compiling torch_generic_nms from source (may take 1-2 minutes)...")
@@ -444,11 +557,13 @@ def try_install_torch_generic_nms():
         result = subprocess.run(
             [
                 sys.executable, "-m", "pip", "install",
+                "--no-build-isolation",  # Use current environment's torch
                 "git+https://github.com/ronghanghu/torch_generic_nms"
             ],
             capture_output=True,
             text=True,
-            timeout=120
+            timeout=180,  # Increased timeout for compilation
+            env=cuda_env  # Pass CUDA environment explicitly to subprocess
         )
 
         if result.returncode == 0:
@@ -499,7 +614,8 @@ def try_install_cc_torch():
         return False
 
     # Setup CUDA environment (find CUDA from all possible sources)
-    if not setup_cuda_environment():
+    cuda_env = setup_cuda_environment()
+    if not cuda_env:
         print("[ComfyUI-SAM3] [WARNING] CUDA compiler not found in system")
         print("[ComfyUI-SAM3] Attempting to install CUDA toolkit...")
 
@@ -508,12 +624,32 @@ def try_install_cc_torch():
             print("[ComfyUI-SAM3] Video tracking will use CPU connected components fallback")
             return False
 
+        # Try setup again after installation
+        cuda_env = setup_cuda_environment()
+        if not cuda_env:
+            print("[ComfyUI-SAM3] [WARNING] CUDA environment setup failed after toolkit installation")
+            return False
+
     # Get CUDA architecture list
     cuda_arch_list = get_cuda_arch_list()
 
     if cuda_arch_list:
-        os.environ["TORCH_CUDA_ARCH_LIST"] = cuda_arch_list
+        cuda_env["TORCH_CUDA_ARCH_LIST"] = cuda_arch_list
+        os.environ["TORCH_CUDA_ARCH_LIST"] = cuda_arch_list  # Also set in current process
         print(f"[ComfyUI-SAM3] Set TORCH_CUDA_ARCH_LIST={cuda_arch_list}")
+
+    # Set C/C++ compiler paths explicitly (needed for CUDA compilation)
+    import shutil
+    gcc_path = shutil.which("gcc-11") or shutil.which("gcc")
+    gxx_path = shutil.which("g++-11") or shutil.which("g++")
+    if gcc_path:
+        cuda_env["CC"] = gcc_path
+        os.environ["CC"] = gcc_path
+        print(f"[ComfyUI-SAM3] Set CC={gcc_path}")
+    if gxx_path:
+        cuda_env["CXX"] = gxx_path
+        os.environ["CXX"] = gxx_path
+        print(f"[ComfyUI-SAM3] Set CXX={gxx_path}")
 
     # Install cc_torch from GitHub
     print("[ComfyUI-SAM3] Compiling cc_torch from source (may take 1-2 minutes)...")
@@ -522,11 +658,13 @@ def try_install_cc_torch():
         result = subprocess.run(
             [
                 sys.executable, "-m", "pip", "install",
+                "--no-build-isolation",  # Use current environment's torch
                 "git+https://github.com/ronghanghu/cc_torch.git"
             ],
             capture_output=True,
             text=True,
-            timeout=120
+            timeout=180,  # Increased timeout for compilation
+            env=cuda_env  # Pass CUDA environment explicitly to subprocess
         )
 
         if result.returncode == 0:
