@@ -43,6 +43,7 @@ class Sam3VideoPredictor:
         video_loader_type="cv2",
         apply_temporal_disambiguation: bool = True,
         hf_token=None,
+        enable_inst_interactivity=False,
     ):
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
@@ -65,6 +66,7 @@ class Sam3VideoPredictor:
                 strict_state_dict_loading=strict_state_dict_loading,
                 apply_temporal_disambiguation=apply_temporal_disambiguation,
                 hf_token=hf_token,
+                enable_inst_interactivity=enable_inst_interactivity,
             )
             .to(self.device)
             .eval()

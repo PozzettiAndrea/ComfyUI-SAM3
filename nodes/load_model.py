@@ -174,6 +174,7 @@ class LoadSAM3Model:
         Load SAM3 unified model with ComfyUI integration.
 
         Builds a unified model that supports both image segmentation and video tracking.
+        Instance interactivity (SAM2-style points/boxes) is always enabled.
 
         Args:
             model_path: Path to model checkpoint (relative or absolute)
@@ -182,6 +183,8 @@ class LoadSAM3Model:
         Returns:
             Tuple containing SAM3UnifiedModel for ComfyUI memory management
         """
+        # Always enable instance interactivity (required by checkpoint)
+        enable_inst_interactivity = True
         # Import SAM3 from vendored library
         try:
             from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
@@ -236,6 +239,7 @@ class LoadSAM3Model:
                 checkpoint_path=checkpoint_path_str,
                 bpe_path=bpe_path_str,
                 hf_token=hf_token if hf_token else None,
+                enable_inst_interactivity=enable_inst_interactivity,
             )
         except FileNotFoundError as e:
             raise FileNotFoundError(

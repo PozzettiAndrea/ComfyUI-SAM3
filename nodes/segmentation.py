@@ -194,39 +194,6 @@ class SAM3Grounding:
         boxes = state.get("boxes", None)
         scores = state.get("scores", None)
 
-        # DEBUG: Show ALL predictions before threshold filtering
-        print(f"[SAM3 DEBUG] ========== RAW PREDICTIONS ==========")
-        print(f"[SAM3 DEBUG] State keys: {list(state.keys())}")
-        if scores is not None and len(scores) > 0:
-            print(f"[SAM3 DEBUG] Total predictions: {len(scores)}")
-            print(f"[SAM3 DEBUG] Score range: [{scores.min():.4f}, {scores.max():.4f}]")
-            print(f"[SAM3 DEBUG] Score mean: {scores.mean():.4f}")
-            # Show top 10 scores regardless of threshold
-            top_10_scores = torch.topk(scores, min(10, len(scores)))
-            print(f"[SAM3 DEBUG] Top 10 scores: {top_10_scores.values.tolist()}")
-            # Show score distribution at different thresholds
-            for thresh in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]:
-                count = (scores > thresh).sum().item()
-                print(f"[SAM3 DEBUG]   Detections > {thresh}: {count}")
-        elif scores is not None:
-            print(f"[SAM3 DEBUG] Total predictions: 0 (empty tensor!)")
-            print(f"[SAM3 DEBUG] WARNING: Model returned ZERO predictions - this is unusual!")
-        else:
-            print(f"[SAM3 DEBUG] No scores in state!")
-
-        if masks is not None:
-            print(f"[SAM3 DEBUG] Masks shape: {masks.shape}")
-        if boxes is not None:
-            print(f"[SAM3 DEBUG] Boxes shape: {boxes.shape}")
-            print(f"[SAM3 DEBUG] Sample boxes: {boxes[:3].tolist() if len(boxes) > 0 else 'empty'}")
-
-        # Check masks_logits for raw model output
-        if 'masks_logits' in state:
-            masks_logits = state['masks_logits']
-            print(f"[SAM3 DEBUG] Masks logits shape: {masks_logits.shape if masks_logits is not None else 'None'}")
-
-        print(f"[SAM3 DEBUG] ====================================")
-
         # Check if we got any results AFTER threshold
         if masks is None or len(masks) == 0:
             print(f"[SAM3 Grounding] No detections found for prompt: '{text_prompt}' at threshold {confidence_threshold}")
@@ -281,10 +248,7 @@ class SAM3Grounding:
         boxes_json = json.dumps(boxes_list, indent=2)
         scores_json = json.dumps(scores_list, indent=2)
 
-        print(f"[SAM3 Grounding] Detection complete")
-        print(f"[SAM3 Grounding] Output: {len(comfy_masks)} masks")
-        print(f"[SAM3 DEBUG] Final scores: {scores_list}")
-        print(f"[SAM3 DEBUG] Mask output shape: {comfy_masks.shape}")
+        print(f"[SAM3 Grounding] Detection complete: {len(comfy_masks)} masks")
 
         # Clean up state to free GPU memory
         del state

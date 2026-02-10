@@ -315,25 +315,11 @@ class Sam3Processor:
         out_bbox = outputs["pred_boxes"]
         out_logits = outputs["pred_logits"]
         out_masks = outputs["pred_masks"]
-        out_probs = out_logits.sigmoid()
-        presence_score = outputs["presence_logit_dec"].sigmoid().unsqueeze(1)
-
-        # DEBUG: Log raw predictions before filtering
-        print(f"[SAM3 PROCESSOR DEBUG] Raw predictions from model:")
-        print(f"  pred_logits shape: {out_logits.shape}")
-        print(f"  pred_boxes shape: {out_bbox.shape}")
-        print(f"  pred_masks shape: {out_masks.shape}")
-        print(f"  out_probs (after sigmoid) range: [{out_probs.min():.4f}, {out_probs.max():.4f}]")
-        print(f"  presence_score: {presence_score.item():.4f}")
-
-        out_probs = (out_probs * presence_score).squeeze(-1)
-
-        print(f"  out_probs (after presence multiply) range: [{out_probs.min():.4f}, {out_probs.max():.4f}]")
-        print(f"  out_probs shape: {out_probs.shape}")
-        print(f"  Threshold: {self.confidence_threshold}")
+        # Note: presence_score is already baked into pred_logits during training
+        # (via supervise_joint_box_scores=True), so we don't multiply again
+        out_probs = out_logits.sigmoid().squeeze(-1)
 
         keep = out_probs > self.confidence_threshold
-        print(f"  Predictions passing threshold: {keep.sum().item()} / {len(keep)}")
 
         out_probs = out_probs[keep]
         out_masks = out_masks[keep]

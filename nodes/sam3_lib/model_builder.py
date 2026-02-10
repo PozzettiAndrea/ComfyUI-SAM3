@@ -689,6 +689,7 @@ def build_sam3_video_model(
     device="cuda" if torch.cuda.is_available() else "cpu",
     compile=False,
     hf_token: Optional[str] = None,
+    enable_inst_interactivity: bool = False,
 ):
     """
     Build SAM3 dense tracking model.
@@ -710,7 +711,7 @@ def build_sam3_video_model(
     tracker = build_tracker(apply_temporal_disambiguation=apply_temporal_disambiguation)
 
     # Build Detector components
-    visual_neck = _create_vision_backbone()
+    visual_neck = _create_vision_backbone(enable_inst_interactivity=enable_inst_interactivity)
     text_encoder = _create_text_encoder(bpe_path)
     backbone = SAM3VLBackbone(scalp=1, visual=visual_neck, text=text_encoder)
     transformer = _create_sam3_transformer(has_presence_token=has_presence_token)
@@ -731,6 +732,13 @@ def build_sam3_video_model(
         d_model=256, d_proj=256, prompt_mlp=main_dot_prod_mlp
     )
 
+    # Build instance interactive predictor if enabled (for SAM2-style point/box segmentation)
+    if enable_inst_interactivity:
+        sam3_tracker_base = build_tracker(apply_temporal_disambiguation=False)
+        inst_predictor = SAM3InteractiveImagePredictor(sam3_tracker_base)
+    else:
+        inst_predictor = None
+
     # Build Detector module
     detector = Sam3ImageOnVideoMultiGPU(
         num_feature_levels=1,
@@ -743,6 +751,7 @@ def build_sam3_video_model(
         use_dot_prod_scoring=True,
         dot_prod_scoring=main_dot_prod_scoring,
         supervise_joint_box_scores=has_presence_token,
+        inst_interactive_predictor=inst_predictor,
     )
 
     # Build the main SAM3 video model
@@ -808,6 +817,17 @@ def build_sam3_video_model(
             ckpt = torch.load(f, map_location="cpu", weights_only=True)
         if "model" in ckpt and isinstance(ckpt["model"], dict):
             ckpt = ckpt["model"]
+
+        # If inst_interactive_predictor is enabled, remap tracker weights for it
+        # The checkpoint has tracker.* keys, but detector.inst_interactive_predictor.model.* is expected
+        if enable_inst_interactivity and inst_predictor is not None:
+            inst_predictor_keys = {
+                k.replace("tracker.", "detector.inst_interactive_predictor.model."): v
+                for k, v in ckpt.items()
+                if k.startswith("tracker.")
+            }
+            ckpt.update(inst_predictor_keys)
+            print(f"[SAM3] Added {len(inst_predictor_keys)} keys for detector.inst_interactive_predictor")
 
         missing_keys, unexpected_keys = model.load_state_dict(
             ckpt, strict=strict_state_dict_loading

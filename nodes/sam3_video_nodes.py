@@ -465,22 +465,11 @@ class SAM3Propagate:
                 for response in sam3_model.handle_stream_request(request):
                     frame_idx = response.get("frame_index", response.get("frame_idx"))
                     if frame_idx is None:
-                        print(f"[SAM3 Video DEBUG] Response has no frame_idx: {response.keys() if hasattr(response, 'keys') else type(response)}")
                         continue
 
                     outputs = response.get("outputs", response)
                     if outputs is None:
-                        print(f"[SAM3 Video DEBUG] Frame {frame_idx}: outputs is None")
                         continue
-
-                    # Debug: print all output keys for first few frames
-                    if frame_idx < 3:
-                        print(f"[SAM3 Video DEBUG] Frame {frame_idx} output keys: {outputs.keys() if hasattr(outputs, 'keys') else type(outputs)}")
-                        for k, v in outputs.items() if hasattr(outputs, 'items') else []:
-                            if hasattr(v, 'shape'):
-                                print(f"[SAM3 Video DEBUG]   {k}: shape={v.shape}, dtype={v.dtype if hasattr(v, 'dtype') else 'N/A'}")
-                            else:
-                                print(f"[SAM3 Video DEBUG]   {k}: {type(v)} = {v}")
 
                     # Try different possible mask keys
                     mask_key = None
@@ -495,13 +484,6 @@ class SAM3Propagate:
                         if hasattr(mask, 'cpu'):
                             mask = mask.cpu()
                         masks_dict[frame_idx] = mask
-                        if frame_idx < 3:
-                            print(f"[SAM3 Video DEBUG] Frame {frame_idx} mask: shape={mask.shape if hasattr(mask, 'shape') else type(mask)}, sum={mask.sum() if hasattr(mask, 'sum') else 'N/A'}")
-                            if hasattr(mask, 'shape') and len(mask.shape) >= 1 and mask.size > 0:
-                                print(f"[SAM3 Video DEBUG]   mask dtype={mask.dtype}, min={mask.min()}, max={mask.max()}")
-                    else:
-                        if frame_idx < 3:
-                            print(f"[SAM3 Video DEBUG] Frame {frame_idx}: No mask key found in outputs")
 
                     # Capture confidence scores
                     for score_key in ["out_probs", "scores", "confidences", "obj_scores"]:
@@ -512,8 +494,6 @@ class SAM3Propagate:
                             elif isinstance(probs, np.ndarray):
                                 probs = torch.from_numpy(probs)
                             scores_dict[frame_idx] = probs
-                            if frame_idx == 0:
-                                print(f"[SAM3 Video] Frame 0 scores ({score_key}): {probs.tolist() if hasattr(probs, 'tolist') else probs}")
                             break
 
                     # Periodic cleanup and VRAM monitoring
@@ -730,14 +710,6 @@ class SAM3VideoOutput:
             empty_frames = torch.zeros(num_frames, h, w, 3)
             return (empty_mask, empty_frames, empty_frames)
 
-        # Debug: print masks dict info
-        print(f"[SAM3 Video DEBUG] masks_dict has {len(masks)} frames")
-        print(f"[SAM3 Video DEBUG] masks_dict keys (first 5): {list(masks.keys())[:5]}")
-        if len(masks) > 0:
-            first_key = list(masks.keys())[0]
-            first_mask = masks[first_key]
-            print(f"[SAM3 Video DEBUG] First mask (frame {first_key}): type={type(first_mask)}, shape={first_mask.shape if hasattr(first_mask, 'shape') else 'N/A'}")
-
         # Process all frames in order
         mask_list = []
         frame_list = []
@@ -774,41 +746,23 @@ class SAM3VideoOutput:
             if frame_idx in masks:
                 frame_mask = masks[frame_idx]
 
-                # Debug for first few frames
-                if frame_idx < 3:
-                    print(f"[SAM3 Video DEBUG] Extract frame {frame_idx}: raw mask type={type(frame_mask)}, shape={frame_mask.shape if hasattr(frame_mask, 'shape') else 'N/A'}")
-                    if hasattr(frame_mask, 'dtype'):
-                        print(f"[SAM3 Video DEBUG]   dtype={frame_mask.dtype}, sum={frame_mask.sum() if hasattr(frame_mask, 'sum') else 'N/A'}")
-
                 # Convert numpy to torch if needed
                 if isinstance(frame_mask, np.ndarray):
                     frame_mask = torch.from_numpy(frame_mask)
-                    if frame_idx < 3:
-                        print(f"[SAM3 Video DEBUG]   Converted from numpy, new shape={frame_mask.shape}")
 
                 # Convert mask to ComfyUI format
                 if frame_mask.dim() == 4:
                     frame_mask = frame_mask.squeeze(0)  # Remove batch dim
-                    if frame_idx < 3:
-                        print(f"[SAM3 Video DEBUG]   Squeezed dim 4->3, new shape={frame_mask.shape}")
 
                 # Create visualization with colored overlays
                 vis_frame = img_tensor.clone()
 
-                # Debug: check mask state before processing
-                if frame_idx < 3:
-                    print(f"[SAM3 Video DEBUG] Frame {frame_idx} before processing: dim={frame_mask.dim()}, shape={frame_mask.shape}, numel={frame_mask.numel()}")
-
                 # Check for empty mask (no detections)
                 if frame_mask.numel() == 0 or (frame_mask.dim() == 3 and frame_mask.shape[0] == 0):
                     # No detections - use empty mask
-                    if frame_idx < 3:
-                        print(f"[SAM3 Video DEBUG] Frame {frame_idx}: EMPTY MASK branch taken")
                     frame_mask = torch.zeros(h, w)
                     # vis_frame stays as original image
                 elif frame_mask.dim() == 3 and frame_mask.shape[0] >= 1:
-                    if frame_idx < 3:
-                        print(f"[SAM3 Video DEBUG] Frame {frame_idx}: MULTI-OBJECT branch taken, {frame_mask.shape[0]} objects")
                     num_objects = max(num_objects, frame_mask.shape[0])
                     combined_mask = torch.zeros(h, w)
 
