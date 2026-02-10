@@ -46,12 +46,6 @@ jobs:
           # Install core dependencies first
           pip install timm ftfy regex iopath huggingface_hub einops opencv-python psutil scikit-image numpy Pillow tqdm typing_extensions
 
-          # Install platform-specific dependencies
-          if [ "${{ matrix.os }}" != "macos-latest" ]; then
-            # decord doesn't have pre-built wheels for macOS ARM
-            pip install decord || echo "Warning: decord installation failed (not critical for testing)"
-          fi
-
           # pycocotools may need compilation on some platforms
           pip install pycocotools || echo "Warning: pycocotools installation failed (not critical for testing)"
         shell: bash
@@ -116,7 +110,6 @@ jobs:
       - name: Install core dependencies
         run: |
           pip install timm ftfy regex iopath huggingface_hub einops opencv-python psutil scikit-image numpy Pillow tqdm typing_extensions
-          pip install decord || echo "Warning: decord failed"
           pip install pycocotools || echo "Warning: pycocotools failed"
 
       - name: Compile CUDA extensions
@@ -186,7 +179,6 @@ jobs:
       - name: Install package dependencies
         run: |
           pip install timm ftfy regex iopath huggingface_hub einops opencv-python psutil scikit-image numpy Pillow tqdm typing_extensions
-          pip install decord || echo "Warning: decord installation failed (not critical)"
           pip install pycocotools || echo "Warning: pycocotools installation failed (not critical)"
 
       - name: Install test dependencies
