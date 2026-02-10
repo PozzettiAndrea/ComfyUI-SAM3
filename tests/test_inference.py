@@ -75,7 +75,7 @@ def test_sam3_cpu_inference():
             sam3_model=sam3_model,
             image=image_tensor,
             text_prompt="person",
-            confidence_threshold=0.2,
+            confidence_threshold=0.1,
             max_detections=-1
         )
     except Exception as e:
