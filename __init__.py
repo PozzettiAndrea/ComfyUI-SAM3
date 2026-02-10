@@ -48,16 +48,16 @@ INIT_SUCCESS = False
 INIT_ERRORS = []
 
 # Detect if running under pytest with robust checks
-# Check multiple indicators to reduce false positives:
-# 1. PYTEST_CURRENT_TEST env var (most reliable - only set during actual pytest execution)
-# 2. _pytest module (pytest runtime, more specific than just 'pytest')
-# 3. pytest module (fallback, may have false positives if pytest is just installed)
-# Allow override with SAM3_FORCE_INIT=1 for users who encounter false positives
+# Only skip initialization when we're CERTAIN tests are actively running:
+# 1. PYTEST_CURRENT_TEST env var (only set during actual pytest execution)
+# 2. _pytest.config in sys.modules (pytest runtime configuration - more specific)
+# Note: We don't check 'pytest' in sys.modules alone because ComfyUI may import
+#       pytest as a dependency, causing false positives (see issue #7)
+# Allow override with SAM3_FORCE_INIT=1 for users who need to force initialization
 force_init = os.environ.get('SAM3_FORCE_INIT') == '1'
 is_pytest = (
     'PYTEST_CURRENT_TEST' in os.environ or
-    '_pytest' in sys.modules or
-    'pytest' in sys.modules
+    '_pytest.config' in sys.modules
 )
 skip_init = is_pytest and not force_init
 
@@ -106,10 +106,8 @@ else:
     reasons = []
     if 'PYTEST_CURRENT_TEST' in os.environ:
         reasons.append("PYTEST_CURRENT_TEST env var detected")
-    if '_pytest' in sys.modules:
-        reasons.append("_pytest module in sys.modules")
-    if 'pytest' in sys.modules:
-        reasons.append("pytest module in sys.modules")
+    if '_pytest.config' in sys.modules:
+        reasons.append("_pytest.config module in sys.modules")
 
     print(f"[SAM3] ComfyUI-SAM3 v{__version__} running in pytest mode - skipping initialization")
     print(f"[SAM3] Reason: {', '.join(reasons)}")
