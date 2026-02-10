@@ -11,6 +11,12 @@ These are OPTIONAL. ComfyUI-SAM3 works fine without them using CPU fallbacks.
 Usage:
     python speedup.py              # Install GPU extensions
     python speedup.py --compile-only  # Compile even without GPU present (for CI)
+    
+For Comfyui_Portable:
+    cd H:\AI\ComfyUI_windows_portable\ComfyUI\custom_nodes\comfyui-sam3 # Open Terminal within comfyui-sam3 folder
+    H:\AI\ComfyUI_windows_portable\python_embeded\python.exe speedup.py # Run this command, replacing the path with the path correct for your system -> python_embeded\python.exe 
+    
+
 
 Requirements:
 - NVIDIA GPU with CUDA support
@@ -21,6 +27,13 @@ import os
 import subprocess
 import sys
 import argparse
+
+# FIX: Add current directory to path for embedded python support
+# This ensures speedup_common can be found regardless of how python is called
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+# -------------------------------------------------------
 
 # Import shared functions
 import speedup_common
