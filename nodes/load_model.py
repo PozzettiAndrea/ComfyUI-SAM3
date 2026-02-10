@@ -85,12 +85,12 @@ class LoadSAM3Model:
 
         # Import SAM3 from vendored library
         try:
-            from ..sam3_lib.model_builder import build_sam3_image_model
-            from ..sam3_lib.model.sam3_image_processor import Sam3Processor
+            from .sam3_lib.model_builder import build_sam3_image_model
+            from .sam3_lib.model.sam3_image_processor import Sam3Processor
         except ImportError as e:
             raise ImportError(
                 "SAM3 library import failed. This is an internal error.\n"
-                f"Please ensure all files are properly installed in ComfyUI-SAM3/sam3_lib/\n"
+                f"Please ensure all files are properly installed in ComfyUI-SAM3/nodes/sam3_lib/\n"
                 f"Error: {e}"
             )
 

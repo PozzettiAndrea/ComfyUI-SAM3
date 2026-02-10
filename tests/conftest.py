@@ -5,7 +5,7 @@ import sys
 import os
 from pathlib import Path
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 
 
 # Add the custom node directory to Python path so we can import modules

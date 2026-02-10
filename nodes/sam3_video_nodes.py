@@ -10,7 +10,7 @@ import torch
 import numpy as np
 import folder_paths
 
-from ..sam3_lib.model_builder import build_sam3_video_predictor
+from .sam3_lib.model_builder import build_sam3_video_predictor
 
 
 class SAM3VideoModelLoader:
