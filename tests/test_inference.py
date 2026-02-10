@@ -113,8 +113,8 @@ def test_sam3_cpu_inference():
     except json.JSONDecodeError as e:
         pytest.fail(f"Invalid JSON output: {e}")
 
-    print(f"[TEST] ✓ All outputs are valid")
-    print(f"[TEST] ✓ Found {len(boxes_data)} detections" if isinstance(boxes_data, list) else "[TEST] ✓ Boxes data validated")
+    print(f"[TEST] [OK] All outputs are valid")
+    print(f"[TEST] [OK] Found {len(boxes_data)} detections" if isinstance(boxes_data, list) else "[TEST] [OK] Boxes data validated")
 
     # Note: We don't require detections to be found - the image might not contain the prompt
     # The test passes as long as the model runs without errors and produces valid outputs
@@ -147,7 +147,7 @@ def test_sam3_model_cache():
     model2 = model_loader.load_model(device="cpu", use_gpu_cache=False, model_path="", hf_token=hf_token)
     assert model2 is not None
 
-    print("[TEST] ✓ Model caching works")
+    print("[TEST] [OK] Model caching works")
 
 
 if __name__ == "__main__":
