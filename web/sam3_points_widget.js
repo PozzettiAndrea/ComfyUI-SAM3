@@ -268,15 +268,41 @@ app.registerExtension({
                             const newWidgetHeight = Math.round(availableWidth * aspectRatio);
 
                             // Update widget height and resize node
+                            this._isResizing = true;  // Prevent onResize from fighting
                             this.canvasWidget.widgetHeight = newWidgetHeight;
                             container.style.height = newWidgetHeight + "px";
                             this.setSize([nodeWidth, newWidgetHeight + 80]); // +80 for title/padding
+                            setTimeout(() => { this._isResizing = false; }, 50);
 
                             console.log(`[SAM3] Widget resized to match image: ${newWidgetHeight}px`);
                             this.redrawCanvas();
                         };
                         img.src = "data:image/jpeg;base64," + message.bg_image[0];
                     }
+                };
+
+                // Handle manual node resize (user dragging)
+                const originalOnResize = this.onResize;
+                this.onResize = function(size) {
+                    if (originalOnResize) {
+                        originalOnResize.apply(this, arguments);
+                    }
+
+                    // Prevent feedback loop - only update if not already resizing
+                    if (this._isResizing) return;
+                    this._isResizing = true;
+
+                    // Calculate new widget height from node size
+                    const newWidgetHeight = Math.max(200, size[1] - 80);
+
+                    // Only update if significantly different (prevents micro-adjustments)
+                    if (Math.abs(newWidgetHeight - this.canvasWidget.widgetHeight) > 5) {
+                        this.canvasWidget.widgetHeight = newWidgetHeight;
+                        container.style.height = newWidgetHeight + "px";
+                    }
+
+                    // Reset flag after a short delay to allow resize to settle
+                    setTimeout(() => { this._isResizing = false; }, 50);
                 };
 
                 // Draw initial placeholder
