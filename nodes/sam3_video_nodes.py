@@ -73,7 +73,123 @@ class SAM3VideoModelLoader:
 
 
 class SAM3InitVideoSession:
-    """Initialize a video tracking session"""
+    """Initialize a video tracking session (Simplified - use Advanced node for full control)"""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "video_model": ("SAM3_VIDEO_MODEL", {
+                    "tooltip": "SAM3 video model loaded from SAM3VideoModelLoader node"
+                }),
+                "video_frames": ("IMAGE", {
+                    "tooltip": "Video frames as a batch of images (e.g., from LoadVideo node). Frames will be temporarily saved to disk for processing."
+                }),
+            },
+            "optional": {
+                "session_id": ("STRING", {
+                    "default": "",
+                    "multiline": False,
+                    "tooltip": "Optional custom session identifier. Leave empty to auto-generate. Useful for managing multiple video tracking sessions."
+                }),
+                "score_threshold_detection": ("FLOAT", {
+                    "default": 0.3,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.05,
+                    "tooltip": "Minimum confidence score for detections (0.0-1.0). Lower = more detections but more false positives."
+                }),
+                "new_det_thresh": ("FLOAT", {
+                    "default": 0.4,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.05,
+                    "tooltip": "Minimum confidence for new object tracking (0.0-1.0). Higher = only track high-confidence objects."
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("SAM3_VIDEO_SESSION", "STRING")
+    RETURN_NAMES = ("session", "session_id")
+    FUNCTION = "init_session"
+    CATEGORY = "SAM3/video"
+
+    def init_session(self, video_model, video_frames, session_id="",
+                     score_threshold_detection=0.3, new_det_thresh=0.4):
+        """Initialize a tracking session with video frames (simplified with optimal defaults)"""
+        # Use optimal defaults for advanced parameters (model defaults for robust tracking)
+        fill_hole_area = 16
+        assoc_iou_thresh = 0.1
+        det_nms_thresh = 0.1
+        hotstart_unmatch_thresh = 8  # Model default (was 3)
+        hotstart_dup_thresh = 8  # Model default (was 3)
+        init_trk_keep_alive = 30  # Model default - MUCH better than 0 for handling occlusions
+        hotstart_delay = 15  # Model default - enables hotstart stabilization (was 0 = disabled)
+        decrease_keep_alive_empty = False  # Model default (was True)
+        suppress_unmatched_globally = False  # Model default: suppress only within hotstart (was True)
+
+        # Configure detection/tracking thresholds by modifying model attributes
+        print(f"[SAM3 Video] Detection thresholds: det={score_threshold_detection}, new_det={new_det_thresh}")
+        print(f"[SAM3 Video] Using optimal defaults: fill_holes={fill_hole_area}px, assoc_iou={assoc_iou_thresh}, det_nms={det_nms_thresh}")
+        print(f"[SAM3 Video] Hotstart params: unmatch={hotstart_unmatch_thresh}, dup={hotstart_dup_thresh}, keep_alive={init_trk_keep_alive}, delay={hotstart_delay}")
+        print(f"[SAM3 Video] Track lifecycle: decrease_empty={decrease_keep_alive_empty}, suppress_globally={suppress_unmatched_globally}")
+
+        video_model.model.score_threshold_detection = score_threshold_detection
+        video_model.model.new_det_thresh = new_det_thresh
+        video_model.model.fill_hole_area = fill_hole_area
+        video_model.model.assoc_iou_thresh = assoc_iou_thresh
+        video_model.model.det_nms_thresh = det_nms_thresh
+        video_model.model.hotstart_unmatch_thresh = hotstart_unmatch_thresh
+        video_model.model.hotstart_dup_thresh = hotstart_dup_thresh
+        video_model.model.init_trk_keep_alive = init_trk_keep_alive
+        video_model.model.hotstart_delay = hotstart_delay
+        video_model.model.decrease_trk_keep_alive_for_empty_masklets = decrease_keep_alive_empty
+        # NOTE: Inverted logic - suppress_unmatched_globally=True means suppress_unmatched_only_within_hotstart=False
+        video_model.model.suppress_unmatched_only_within_hotstart = not suppress_unmatched_globally
+
+        # Convert ComfyUI frames to temporary directory
+        import tempfile
+        import os
+        from PIL import Image
+
+        # Create a temporary directory for frames
+        temp_dir = tempfile.mkdtemp(prefix="sam3_video_")
+
+        # Save frames as JPEG
+        num_frames = video_frames.shape[0]
+        for i in range(num_frames):
+            frame = video_frames[i].cpu().numpy()
+            # Convert from [H, W, C] float32 0-1 to uint8 0-255
+            frame = (frame * 255).astype(np.uint8)
+            img = Image.fromarray(frame)
+            img.save(os.path.join(temp_dir, f"{i:05d}.jpg"))
+
+        print(f"[SAM3 Video] Saved {num_frames} frames to {temp_dir}")
+
+        # Start the session
+        response = video_model.start_session(
+            resource_path=temp_dir,
+            session_id=session_id if session_id else None
+        )
+
+        actual_session_id = response["session_id"]
+
+        session_data = {
+            "model": video_model,
+            "session_id": actual_session_id,
+            "temp_dir": temp_dir,
+            "num_frames": num_frames,
+            "height": video_frames.shape[1],
+            "width": video_frames.shape[2],
+        }
+
+        print(f"[SAM3 Video] Initialized session {actual_session_id}")
+
+        return (session_data, actual_session_id)
+
+
+class SAM3InitVideoSessionAdvanced:
+    """Initialize a video tracking session (Advanced mode with all parameters)"""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -569,6 +685,7 @@ class SAM3CloseVideoSession:
 NODE_CLASS_MAPPINGS = {
     "SAM3VideoModelLoader": SAM3VideoModelLoader,
     "SAM3InitVideoSession": SAM3InitVideoSession,
+    "SAM3InitVideoSessionAdvanced": SAM3InitVideoSessionAdvanced,
     "SAM3AddVideoPrompt": SAM3AddVideoPrompt,
     "SAM3PropagateVideo": SAM3PropagateVideo,
     "SAM3VideoOutput": SAM3VideoOutput,
@@ -579,6 +696,7 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3VideoModelLoader": "SAM3 Load Video Model",
     "SAM3InitVideoSession": "SAM3 Init Video Session",
+    "SAM3InitVideoSessionAdvanced": "SAM3 Init Video Session (Advanced)",
     "SAM3AddVideoPrompt": "SAM3 Add Video Prompt",
     "SAM3PropagateVideo": "SAM3 Propagate Video",
     "SAM3VideoOutput": "SAM3 Video Output",
