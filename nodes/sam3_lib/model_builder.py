@@ -1,7 +1,6 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates. All Rights Reserved
 
 import os
-import re
 from typing import Optional
 
 import torch
@@ -24,360 +23,26 @@ except ImportError:
     SAFETENSORS_AVAILABLE = False
 
 
-def _remap_transformers_keys(state_dict: dict) -> dict:
-    """
-    Remap HuggingFace Transformers-format keys to our checkpoint format.
-
-    This handles the structural differences between HF Transformers Sam3Model
-    and our native checkpoint format, including tensor combinations where
-    HF uses separate q/k/v projections but native uses combined in_proj.
-    """
-    remapped = {}
-
-    # First pass: collect keys that need to be combined
-    # Text encoder attention: q_proj + k_proj + v_proj -> in_proj
-    qkv_groups = {}  # base_key -> {q: tensor, k: tensor, v: tensor}
-
-    for k, v in state_dict.items():
-        # Check for text encoder q/k/v projections that need combining
-        # Keys look like: detector_model.text_encoder.text_model.encoder.layers.0.self_attn.q_proj.weight
-        if "detector_model.text_encoder.text_model.encoder.layers." in k and ".self_attn." in k:
-            if ".q_proj." in k or ".k_proj." in k or ".v_proj." in k:
-                # Extract base key (without q/k/v_proj part)
-                base = k.replace(".q_proj.", ".PROJ.").replace(".k_proj.", ".PROJ.").replace(".v_proj.", ".PROJ.")
-                if base not in qkv_groups:
-                    qkv_groups[base] = {}
-                if ".q_proj." in k:
-                    qkv_groups[base]["q"] = (k, v)
-                elif ".k_proj." in k:
-                    qkv_groups[base]["k"] = (k, v)
-                elif ".v_proj." in k:
-                    qkv_groups[base]["v"] = (k, v)
-
-        # Also handle vision encoder q/k/v if they exist separately
-        # Keys look like: detector_model.vision_encoder.backbone.encoder.layers.0.self_attn.q_proj.weight
-        elif "detector_model.vision_encoder.backbone.encoder.layers." in k and ".self_attn." in k:
-            if ".q_proj." in k or ".k_proj." in k or ".v_proj." in k:
-                base = k.replace(".q_proj.", ".PROJ.").replace(".k_proj.", ".PROJ.").replace(".v_proj.", ".PROJ.")
-                if base not in qkv_groups:
-                    qkv_groups[base] = {}
-                if ".q_proj." in k:
-                    qkv_groups[base]["q"] = (k, v)
-                elif ".k_proj." in k:
-                    qkv_groups[base]["k"] = (k, v)
-                elif ".v_proj." in k:
-                    qkv_groups[base]["v"] = (k, v)
-
-    # Combine q/k/v projections
-    combined_keys = set()
-    for base, qkv in qkv_groups.items():
-        if "q" in qkv and "k" in qkv and "v" in qkv:
-            q_key, q_val = qkv["q"]
-            k_key, k_val = qkv["k"]
-            v_key, v_val = qkv["v"]
-            combined_keys.add(q_key)
-            combined_keys.add(k_key)
-            combined_keys.add(v_key)
-
-            # Create combined in_proj key
-            combined_val = torch.cat([q_val, k_val, v_val], dim=0)
-            # Map to native format
-            if "detector_model.text_encoder.text_model.encoder.layers." in q_key:
-                match = re.search(r'\.layers\.(\d+)\.', q_key)
-                if match:
-                    layer_num = match.group(1)
-                    # Native format uses in_proj_weight/in_proj_bias (no dot before weight/bias)
-                    suffix = "_weight" if ".weight" in q_key else "_bias"
-                    new_key = f"detector.backbone.language_backbone.encoder.transformer.resblocks.{layer_num}.attn.in_proj{suffix}"
-                    remapped[new_key] = combined_val
-            elif "detector_model.vision_encoder.backbone.encoder.layers." in q_key:
-                match = re.search(r'\.layers\.(\d+)\.', q_key)
-                if match:
-                    layer_num = match.group(1)
-                    suffix = ".weight" if ".weight" in q_key else ".bias"
-                    new_key = f"detector.backbone.vision_backbone.trunk.blocks.{layer_num}.attn.qkv{suffix}"
-                    remapped[new_key] = combined_val
-
-    # Second pass: process remaining keys
-    for k, v in state_dict.items():
-        # Skip keys that were already combined
-        if k in combined_keys:
-            continue
-
-        new_key = k
-
-        # === DETECTOR MAPPINGS ===
-
-        # Vision encoder backbone -> backbone.vision_backbone.trunk
-        if k.startswith("detector_model.vision_encoder.backbone."):
-            new_key = k.replace(
-                "detector_model.vision_encoder.backbone.",
-                "detector.backbone.vision_backbone.trunk."
-            )
-            # HF uses "embeddings.patch_embeddings.projection" -> we use "patch_embed.proj"
-            new_key = new_key.replace(".embeddings.patch_embeddings.projection.", ".patch_embed.proj.")
-            # HF uses "embeddings.position_embedding" -> we use "pos_embed"
-            new_key = new_key.replace(".embeddings.position_embedding", ".pos_embed")
-            # HF uses "encoder.layers" -> we use "blocks"
-            new_key = new_key.replace(".encoder.layers.", ".blocks.")
-            # HF uses "layer_norm1/2" -> we use "norm1/2"
-            new_key = new_key.replace(".layer_norm1.", ".norm1.")
-            new_key = new_key.replace(".layer_norm2.", ".norm2.")
-            # HF uses "self_attn" -> we use "attn"
-            new_key = new_key.replace(".self_attn.", ".attn.")
-            # HF uses "in_proj" -> we use "qkv"
-            new_key = new_key.replace(".in_proj_weight", ".qkv.weight")
-            new_key = new_key.replace(".in_proj_bias", ".qkv.bias")
-            # HF uses "out_proj" -> we use "proj"
-            new_key = new_key.replace(".out_proj.", ".proj.")
-            # HF uses "mlp.fc1/fc2" -> we use "mlp.fc1/fc2" (same)
-            # HF uses "pre_layernorm" -> we use "ln_pre"
-            new_key = new_key.replace(".pre_layernorm.", ".ln_pre.")
-
-        # Vision encoder neck -> backbone.vision_backbone.convs/sam2_convs
-        elif k.startswith("detector_model.vision_encoder.neck."):
-            new_key = k.replace(
-                "detector_model.vision_encoder.neck.",
-                "detector.backbone.vision_backbone."
-            )
-            # HF uses "layers" -> we use "convs" or "sam2_convs"
-            new_key = new_key.replace(".layers.", ".convs.")
-            # HF uses "deconv" -> we use "dconv_2x2"
-            new_key = new_key.replace(".deconv.", ".dconv_2x2.")
-
-        # Text encoder -> backbone.language_backbone.encoder
-        elif k.startswith("detector_model.text_encoder.text_model."):
-            new_key = k.replace(
-                "detector_model.text_encoder.text_model.",
-                "detector.backbone.language_backbone.encoder."
-            )
-            # HF uses "embeddings.position_embedding.weight" -> "positional_embedding"
-            new_key = new_key.replace(".embeddings.position_embedding.weight", ".positional_embedding")
-            # HF uses "embeddings.token_embedding" -> "token_embedding"
-            new_key = new_key.replace(".embeddings.token_embedding.", ".token_embedding.")
-            # HF uses "encoder.layers" -> "transformer.resblocks"
-            new_key = new_key.replace(".encoder.layers.", ".transformer.resblocks.")
-            # HF uses "final_layer_norm" -> "ln_final"
-            new_key = new_key.replace(".final_layer_norm.", ".ln_final.")
-            # HF uses "self_attn" -> "attn"
-            new_key = new_key.replace(".self_attn.", ".attn.")
-            # HF uses "layer_norm1/2" -> "ln_1/2"
-            new_key = new_key.replace(".layer_norm1.", ".ln_1.")
-            new_key = new_key.replace(".layer_norm2.", ".ln_2.")
-            # HF uses "mlp.fc1/fc2" -> "mlp.c_fc/c_proj"
-            new_key = new_key.replace(".mlp.fc1.", ".mlp.c_fc.")
-            new_key = new_key.replace(".mlp.fc2.", ".mlp.c_proj.")
-
-        # Text encoder projection
-        elif k.startswith("detector_model.text_encoder.text_projection"):
-            new_key = k.replace(
-                "detector_model.text_encoder.text_projection",
-                "detector.backbone.language_backbone.encoder.text_projection"
-            )
-
-        # Text projection (separate module)
-        elif k.startswith("detector_model.text_projection."):
-            new_key = k.replace(
-                "detector_model.text_projection.",
-                "detector.backbone.language_backbone.text_proj."
-            )
-
-        # DETR encoder -> transformer.encoder
-        elif k.startswith("detector_model.detr_encoder."):
-            new_key = k.replace(
-                "detector_model.detr_encoder.",
-                "detector.transformer.encoder."
-            )
-            # HF layer naming adjustments
-            new_key = new_key.replace(".self_attn_layer_norm.", ".norm1.")
-            new_key = new_key.replace(".cross_attn_layer_norm.", ".cross_attn_norm.")
-            new_key = new_key.replace(".mlp_layer_norm.", ".norm2.")
-            new_key = new_key.replace(".mlp.fc1.", ".linear1.")
-            new_key = new_key.replace(".mlp.fc2.", ".linear2.")
-
-        # DETR decoder -> transformer.decoder
-        elif k.startswith("detector_model.detr_decoder."):
-            new_key = k.replace(
-                "detector_model.detr_decoder.",
-                "detector.transformer.decoder."
-            )
-            # HF uses "ref_point_head.layer1/2/3" -> "ref_point_head.layers.0/1/2"
-            new_key = new_key.replace(".ref_point_head.layer1.", ".ref_point_head.layers.0.")
-            new_key = new_key.replace(".ref_point_head.layer2.", ".ref_point_head.layers.1.")
-            new_key = new_key.replace(".ref_point_head.layer3.", ".ref_point_head.layers.2.")
-            # HF uses "box_head.layer1/2/3" -> "box_head.layers.0/1/2"
-            new_key = new_key.replace(".box_head.layer1.", ".box_head.layers.0.")
-            new_key = new_key.replace(".box_head.layer2.", ".box_head.layers.1.")
-            new_key = new_key.replace(".box_head.layer3.", ".box_head.layers.2.")
-            # Layer norm and attention naming
-            new_key = new_key.replace(".self_attn_layer_norm.", ".norm1.")
-            new_key = new_key.replace(".vision_cross_attn_layer_norm.", ".ca_norm.")
-            new_key = new_key.replace(".text_cross_attn_layer_norm.", ".text_ca_norm.")
-            new_key = new_key.replace(".mlp_layer_norm.", ".ffn_norm.")
-            new_key = new_key.replace(".mlp.fc1.", ".linear1.")
-            new_key = new_key.replace(".mlp.fc2.", ".linear2.")
-
-        # Geometry encoder (mostly same structure)
-        elif k.startswith("detector_model.geometry_encoder."):
-            new_key = k.replace(
-                "detector_model.geometry_encoder.",
-                "detector.geometry_encoder."
-            )
-            # HF uses "output_layer_norm" -> "norm"
-            new_key = new_key.replace(".output_layer_norm.", ".norm.")
-            # HF uses "prompt_layer_norm" -> "encode_norm"
-            new_key = new_key.replace(".prompt_layer_norm.", ".encode_norm.")
-            # HF uses "vision_layer_norm" -> "img_pre_norm"
-            new_key = new_key.replace(".vision_layer_norm.", ".img_pre_norm.")
-
-        # Dot product scoring
-        elif k.startswith("detector_model.dot_product_scoring."):
-            new_key = k.replace(
-                "detector_model.dot_product_scoring.",
-                "detector.dot_prod_scoring."
-            )
-            # HF uses "query_proj" -> "hs_proj"
-            new_key = new_key.replace(".query_proj.", ".hs_proj.")
-            # HF uses "text_mlp" -> "prompt_mlp"
-            new_key = new_key.replace(".text_mlp.", ".prompt_mlp.")
-            # HF uses "text_proj" -> "prompt_proj"
-            new_key = new_key.replace(".text_proj.", ".prompt_proj.")
-            new_key = new_key.replace(".text_mlp_out_norm.", ".prompt_mlp.out_norm.")
-
-        # Mask decoder -> segmentation_head
-        elif k.startswith("detector_model.mask_decoder."):
-            new_key = k.replace(
-                "detector_model.mask_decoder.",
-                "detector.segmentation_head."
-            )
-            # HF uses "instance_projection" -> "instance_seg_head"
-            new_key = new_key.replace(".instance_projection.", ".instance_seg_head.")
-            # HF uses "semantic_projection" -> "semantic_seg_head"
-            new_key = new_key.replace(".semantic_projection.", ".semantic_seg_head.")
-            # HF uses "mask_embedder" -> "mask_predictor"
-            new_key = new_key.replace(".mask_embedder.", ".mask_predictor.")
-            # HF uses "prompt_cross_attn" -> "cross_attend_prompt"
-            new_key = new_key.replace(".prompt_cross_attn.", ".cross_attend_prompt.")
-            new_key = new_key.replace(".prompt_cross_attn_norm.", ".cross_attn_norm.")
-
-        # === TRACKER MAPPINGS ===
-
-        # Tracker mask decoder -> sam_mask_decoder
-        elif k.startswith("tracker_model.mask_decoder."):
-            new_key = k.replace(
-                "tracker_model.mask_decoder.",
-                "tracker.sam_mask_decoder."
-            )
-            # HF uses "upscale_conv1/2" -> "output_upscaling.0/3"
-            new_key = new_key.replace(".upscale_conv1.", ".output_upscaling.0.")
-            new_key = new_key.replace(".upscale_conv2.", ".output_upscaling.3.")
-            new_key = new_key.replace(".upscale_layer_norm.", ".output_upscaling.1.")
-
-        # Tracker mask downsample (same)
-        elif k.startswith("tracker_model.mask_downsample."):
-            new_key = k.replace("tracker_model.mask_downsample.", "tracker.mask_downsample.")
-
-        # Memory attention -> transformer.encoder
-        elif k.startswith("tracker_model.memory_attention."):
-            new_key = k.replace(
-                "tracker_model.memory_attention.",
-                "tracker.transformer.encoder."
-            )
-
-        # Memory encoder -> maskmem_backbone
-        elif k.startswith("tracker_model.memory_encoder."):
-            new_key = k.replace(
-                "tracker_model.memory_encoder.",
-                "tracker.maskmem_backbone."
-            )
-            # HF uses "feature_projection" -> "pix_feat_proj"
-            new_key = new_key.replace(".feature_projection.", ".pix_feat_proj.")
-            # HF uses "projection" -> "out_proj"
-            if ".projection." in new_key and ".feature_projection." not in k:
-                new_key = new_key.replace(".projection.", ".out_proj.")
-            # HF uses "memory_fuser" -> "fuser"
-            new_key = new_key.replace(".memory_fuser.", ".fuser.")
-            # HF mask_downsampler layers
-            new_key = new_key.replace(".mask_downsampler.layers.0.conv.", ".mask_downsampler.encoder.0.")
-            new_key = new_key.replace(".mask_downsampler.layers.1.conv.", ".mask_downsampler.encoder.3.")
-            new_key = new_key.replace(".mask_downsampler.layers.2.conv.", ".mask_downsampler.encoder.6.")
-            new_key = new_key.replace(".mask_downsampler.layers.3.conv.", ".mask_downsampler.encoder.9.")
-            new_key = new_key.replace(".mask_downsampler.layers.0.layer_norm.", ".mask_downsampler.encoder.1.")
-            new_key = new_key.replace(".mask_downsampler.layers.1.layer_norm.", ".mask_downsampler.encoder.4.")
-            new_key = new_key.replace(".mask_downsampler.layers.2.layer_norm.", ".mask_downsampler.encoder.7.")
-            new_key = new_key.replace(".mask_downsampler.layers.3.layer_norm.", ".mask_downsampler.encoder.10.")
-
-        # Prompt encoder -> sam_prompt_encoder
-        elif k.startswith("tracker_model.prompt_encoder."):
-            new_key = k.replace(
-                "tracker_model.prompt_encoder.",
-                "tracker.sam_prompt_encoder."
-            )
-            # HF uses "mask_embed.conv1/2/3" -> "mask_downscaling.0/3/6"
-            new_key = new_key.replace(".mask_embed.conv1.", ".mask_downscaling.0.")
-            new_key = new_key.replace(".mask_embed.conv2.", ".mask_downscaling.3.")
-            new_key = new_key.replace(".mask_embed.conv3.", ".mask_downscaling.6.")
-            new_key = new_key.replace(".mask_embed.layer_norm1.", ".mask_downscaling.1.")
-            new_key = new_key.replace(".mask_embed.layer_norm2.", ".mask_downscaling.4.")
-            # HF uses "point_embed" -> "point_embeddings"
-            new_key = new_key.replace(".point_embed.", ".point_embeddings.")
-            # HF uses "shared_embedding" -> "shared_image_embedding" (handled separately)
-
-        # Object pointer projection
-        elif k.startswith("tracker_model.object_pointer_proj."):
-            new_key = k.replace(
-                "tracker_model.object_pointer_proj.",
-                "tracker.obj_ptr_proj."
-            )
-
-        # Temporal positional encoding projection
-        elif k.startswith("tracker_model.temporal_positional_encoding_projection_layer."):
-            new_key = k.replace(
-                "tracker_model.temporal_positional_encoding_projection_layer.",
-                "tracker.obj_ptr_tpos_proj."
-            )
-
-        # Special single-key mappings
-        elif k == "tracker_model.memory_temporal_positional_encoding":
-            new_key = "tracker.maskmem_tpos_enc"
-        elif k == "tracker_model.no_memory_embedding":
-            new_key = "tracker.no_mem_embed"
-        elif k == "tracker_model.no_memory_positional_encoding":
-            new_key = "tracker.no_mem_pos_enc"
-        elif k == "tracker_model.no_object_pointer":
-            new_key = "tracker.no_obj_ptr"
-        elif k == "tracker_model.occlusion_spatial_embedding_parameter":
-            new_key = "tracker.no_obj_embed_spatial"
-        elif k.startswith("tracker_model.shared_image_embedding."):
-            new_key = k.replace(
-                "tracker_model.shared_image_embedding.positional_embedding",
-                "tracker.sam_prompt_encoder.pe_layer.positional_encoding_gaussian_matrix"
-            )
-
-        # Tracker neck -> backbone.vision_backbone.sam2_convs (if present)
-        elif k.startswith("tracker_neck."):
-            # This maps to the SAM2-style neck in the vision backbone
-            new_key = k.replace("tracker_neck.", "detector.backbone.vision_backbone.sam2_neck.")
-
-        # Default: keep as is (shouldn't happen for valid keys)
-        else:
-            new_key = k
-
-        remapped[new_key] = v
-
-    return remapped
-
-
 def _load_checkpoint_file(checkpoint_path: str) -> dict:
     """
     Load checkpoint from file, supporting both .pt and .safetensors formats.
-    Automatically detects and remaps HuggingFace Transformers-format keys.
 
     Args:
         checkpoint_path: Path to checkpoint file (.pt, .pth, or .safetensors)
 
     Returns:
         Dictionary containing model state dict
+
+    Note:
+        Safetensors files must use the same key format as the native .pt checkpoint.
+        The HuggingFace Transformers format (detector_model.*/tracker_model.* keys)
+        is NOT supported. To convert a .pt file to safetensors while preserving
+        the correct key format, use:
+
+            import torch
+            from safetensors.torch import save_file
+            state_dict = torch.load("sam3.pt", map_location="cpu", weights_only=True)
+            save_file(state_dict, "sam3.safetensors")
     """
     is_safetensors = checkpoint_path.endswith('.safetensors')
 
@@ -390,7 +55,7 @@ def _load_checkpoint_file(checkpoint_path: str) -> dict:
         print(f"[SAM3] Loading safetensors checkpoint: {checkpoint_path}")
         state_dict = load_safetensors(checkpoint_path)
 
-        # Auto-detect and remap HuggingFace Transformers format if needed
+        # Check if this is an unsupported HuggingFace Transformers format
         sample_keys = list(state_dict.keys())[:10]
         is_transformers_format = any(
             k.startswith('detector_model.') or k.startswith('tracker_model.')
@@ -398,8 +63,15 @@ def _load_checkpoint_file(checkpoint_path: str) -> dict:
         )
 
         if is_transformers_format:
-            print("[SAM3] Detected HuggingFace Transformers format, remapping keys...")
-            state_dict = _remap_transformers_keys(state_dict)
+            raise ValueError(
+                "This safetensors file uses the HuggingFace Transformers key format "
+                "(detector_model.*/tracker_model.*), which is not compatible with this loader. "
+                "Please use the native sam3.pt checkpoint and convert it to safetensors if needed:\n"
+                "    import torch\n"
+                "    from safetensors.torch import save_file\n"
+                "    state_dict = torch.load('sam3.pt', map_location='cpu', weights_only=True)\n"
+                "    save_file(state_dict, 'sam3.safetensors')"
+            )
 
         return state_dict
     else:
