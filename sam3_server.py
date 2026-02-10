@@ -132,17 +132,25 @@ async def sam3_detect(request):
 
         # Load SAM3 model on-demand
         # We need to import here to avoid circular imports
-        from .sam3_lib.model_builder import build_sam3_image_model
-        from .sam3_lib.model.sam3_image_processor import SAM3ImageProcessor
+        from .nodes.sam3_lib.model_builder import build_sam3_image_model
+        from .nodes.sam3_lib.model.sam3_image_processor import Sam3Processor 
 
         # Build model (cached globally if possible)
         if "model" not in sam3_predictor:
             print(f"[SAM3 Server] Loading SAM3 model...")
-            model = build_sam3_image_model()
+            import os
+            import folder_paths
+            ckpt_path = os.path.join(folder_paths.models_dir, "sam3", "sam3.pt")
+            
+            if os.path.exists(ckpt_path):
+                print(f"[SAM3 Server] Found local model at {ckpt_path}")
+                model = build_sam3_image_model(checkpoint_path=ckpt_path, load_from_HF=False)
+            else:
+                model = build_sam3_image_model()
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model = model.to(device).eval()
 
-            processor = SAM3ImageProcessor(model, device=device)
+            processor = Sam3Processor(model, device=device)
 
             sam3_predictor["model"] = model
             sam3_predictor["processor"] = processor
@@ -174,12 +182,8 @@ async def sam3_detect(request):
 
         # Run detection with points if we have any
         if len(all_points) > 0:
-            # Convert to tensors
-            points_tensor = torch.tensor(all_points, dtype=torch.float32).unsqueeze(0)  # [1, N, 2]
-            labels_tensor = torch.tensor(all_labels, dtype=torch.int32).unsqueeze(0)  # [1, N]
-
             print(f"[SAM3 Server] Running point prompt detection...")
-            state = processor.add_point_prompt(points_tensor, labels_tensor, state)
+            state = processor.add_point_prompt(all_points, all_labels, state)
 
             # Get masks from state
             masks = state.get("masks", None)
