@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2025 Andrea Pozzetti
-# SPDX-License-Identifier: MIT
 """
 Installation script for ComfyUI-SAM3.
-
-Uses comfy-env for declarative dependency management via comfy-env.toml.
 """
 
 import sys
@@ -16,13 +12,13 @@ def main():
     print("ComfyUI-SAM3 Installation")
     print("=" * 60)
 
-    from comfy_env import install
+    from comfy_env import install, IsolatedEnvManager, discover_config
 
     node_root = Path(__file__).parent.absolute()
 
-    # Run comfy-env install (local mode - installs into ComfyUI's Python)
+    # Run comfy-env install
     try:
-        install(config=node_root / "comfy-env.toml", mode="local", node_dir=node_root)
+        install(config=node_root / "comfy-env.toml", mode="isolated", node_dir=node_root)
     except Exception as e:
         print(f"\n[SAM3] Installation FAILED: {e}")
         print("[SAM3] Report issues at: https://github.com/PozzettiAndrea/ComfyUI-SAM3/issues")
