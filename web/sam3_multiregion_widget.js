@@ -248,12 +248,14 @@ app.registerExtension({
 
             canvas.addEventListener("contextmenu", (e) => {
                 e.preventDefault();
-                canvas.dispatchEvent(new MouseEvent('mousedown', {
-                    button: 2,
-                    clientX: e.clientX,
-                    clientY: e.clientY,
-                    shiftKey: e.shiftKey
-                }));
+                // Right-click already triggers native mousedown(button=2).
+                // Keep this block disabled to avoid adding duplicate negative points.
+                // canvas.dispatchEvent(new MouseEvent('mousedown', {
+                //     button: 2,
+                //     clientX: e.clientX,
+                //     clientY: e.clientY,
+                //     shiftKey: e.shiftKey
+                // }));
             });
 
             // Handle image loading
