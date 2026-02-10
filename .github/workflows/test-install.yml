@@ -142,3 +142,64 @@ jobs:
               print(f'✗ cc_torch import failed: {e}')
               exit(1)
           " || echo "cc_torch compilation verification failed (non-critical)"
+
+  test-cpu-inference:
+    name: Test SAM3 CPU Inference (Linux Python 3.10)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Cache HuggingFace models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: ${{ runner.os }}-huggingface-sam3-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-huggingface-sam3-
+            ${{ runner.os }}-huggingface-
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      - name: Install PyTorch (CPU version)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install package dependencies
+        run: |
+          pip install timm ftfy regex iopath huggingface_hub einops opencv-python psutil scikit-image numpy Pillow tqdm typing_extensions
+          pip install decord || echo "Warning: decord installation failed (not critical)"
+          pip install pycocotools || echo "Warning: pycocotools installation failed (not critical)"
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest pytest-cov
+
+      - name: Run CPU inference test
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          pytest tests/test_inference.py -v -s -m integration --tb=short
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: inference-test-results
+          path: |
+            tests/*.log
+            tests/*.png
+          if-no-files-found: ignore
