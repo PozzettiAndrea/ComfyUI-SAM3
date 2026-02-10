@@ -1160,6 +1160,12 @@ class Sam3VideoInferenceWithInstanceInteractivity(Sam3VideoInference):
                         )  # (1, H_video, W_video) bool
                         refined_obj_id_to_mask[obj_id] = refined_mask_video_res
 
+                    # Initialize cache if not present (needed for point prompts during propagation)
+                    if "cached_frame_outputs" not in inference_state:
+                        inference_state["cached_frame_outputs"] = {}
+                    if frame_idx not in inference_state["cached_frame_outputs"]:
+                        inference_state["cached_frame_outputs"][frame_idx] = {}
+
                     obj_id_to_mask = self._build_tracker_output(
                         inference_state, frame_idx, refined_obj_id_to_mask
                     )
