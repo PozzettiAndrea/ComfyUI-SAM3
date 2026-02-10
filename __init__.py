@@ -47,18 +47,15 @@ __version__ = "3.0.0"  # Major refactor for memory management
 INIT_SUCCESS = False
 INIT_ERRORS = []
 
-# Detect if running under pytest with robust checks
-# Only skip initialization when we're CERTAIN tests are actively running:
-# 1. PYTEST_CURRENT_TEST env var (only set during actual pytest execution)
-# 2. _pytest.config in sys.modules (pytest runtime configuration - more specific)
-# Note: We don't check 'pytest' in sys.modules alone because ComfyUI may import
-#       pytest as a dependency, causing false positives (see issue #7)
-# Allow override with SAM3_FORCE_INIT=1 for users who need to force initialization
+# Detect if running under pytest
+# Only skip initialization when PYTEST_CURRENT_TEST env var is set.
+# This is the ONLY reliable indicator that pytest is actively running tests.
+# Note: We previously also checked '_pytest.config' in sys.modules, but this
+# caused false positives when ComfyUI or its dependencies imported pytest
+# as a dependency (see issue #7).
+# Allow override with SAM3_FORCE_INIT=1 for edge cases.
 force_init = os.environ.get('SAM3_FORCE_INIT') == '1'
-is_pytest = (
-    'PYTEST_CURRENT_TEST' in os.environ or
-    '_pytest.config' in sys.modules
-)
+is_pytest = 'PYTEST_CURRENT_TEST' in os.environ
 skip_init = is_pytest and not force_init
 
 if not skip_init:
@@ -114,15 +111,8 @@ if not skip_init:
 
 else:
     # During testing, skip initialization to prevent import errors
-    # Debug info to help diagnose false positives
-    reasons = []
-    if 'PYTEST_CURRENT_TEST' in os.environ:
-        reasons.append("PYTEST_CURRENT_TEST env var detected")
-    if '_pytest.config' in sys.modules:
-        reasons.append("_pytest.config module in sys.modules")
-
     print(f"[SAM3] ComfyUI-SAM3 v{__version__} running in pytest mode - skipping initialization")
-    print(f"[SAM3] Reason: {', '.join(reasons)}")
+    print(f"[SAM3] Reason: PYTEST_CURRENT_TEST={os.environ.get('PYTEST_CURRENT_TEST')}")
     print(f"[SAM3] If this is a false positive, set environment variable: SAM3_FORCE_INIT=1")
 
     NODE_CLASS_MAPPINGS = {}

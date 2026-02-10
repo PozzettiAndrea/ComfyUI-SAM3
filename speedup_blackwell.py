@@ -38,6 +38,13 @@ import subprocess
 import sys
 import argparse
 
+# FIX: Add current directory to path for embedded python support
+# This ensures speedup_common can be found regardless of how python is called
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+# -------------------------------------------------------
+
 # Import shared functions from speedup_common
 import speedup_common
 
