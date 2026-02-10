@@ -625,9 +625,9 @@ class SAM3Propagate:
                     "min": -1,
                     "tooltip": "End frame (-1 for all)"
                 }),
-                "reverse": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Propagate backwards"
+                "direction": (["forward", "backward", "both"], {
+                    "default": "forward",
+                    "tooltip": "Propagation direction: forward (future frames), backward (past frames), or both directions"
                 }),
                 "offload_model": ("BOOLEAN", {
                     "default": False,
@@ -642,19 +642,19 @@ class SAM3Propagate:
     CATEGORY = "SAM3/video"
 
     @classmethod
-    def IS_CHANGED(cls, video_model, video_state, start_frame=0, end_frame=-1, reverse=False, offload_model=False):
+    def IS_CHANGED(cls, video_model, video_state, start_frame=0, end_frame=-1, direction="forward", offload_model=False):
         # Use object identity for caching - if upstream node is cached,
         # it returns the same object, so id() will match
         # This is more reliable than hashing content since video_state is immutable
-        result = (id(video_state), start_frame, end_frame, reverse)
+        result = (id(video_state), start_frame, end_frame, direction)
         print(f"[IS_CHANGED DEBUG] SAM3Propagate: video_state id={id(video_state)}, session={video_state.session_uuid if video_state else None}")
         print(f"[IS_CHANGED DEBUG] SAM3Propagate: returning {result}")
         return result
 
-    def propagate(self, video_model, video_state, start_frame=0, end_frame=-1, reverse=False, offload_model=False):
+    def propagate(self, video_model, video_state, start_frame=0, end_frame=-1, direction="forward", offload_model=False):
         """Run propagation using reconstructed inference state."""
         # Create cache key using video_state object id (since it's immutable and cached upstream)
-        cache_key = (id(video_state), start_frame, end_frame, reverse)
+        cache_key = (id(video_state), start_frame, end_frame, direction)
 
         # Check if we have cached result
         if cache_key in SAM3Propagate._cache:
@@ -690,11 +690,11 @@ class SAM3Propagate:
             end_frame = video_state.num_frames - 1
 
         # Build propagation request - uses predictor's handle_stream_request API
-        propagation_direction = "backward" if reverse else "forward"
+        # direction is already "forward", "backward", or "both"
         request = {
             "type": "propagate_in_video",
             "session_id": video_state.session_uuid,
-            "propagation_direction": propagation_direction,
+            "propagation_direction": direction,
             "start_frame_index": start_frame,
             "max_frame_num_to_track": end_frame - start_frame + 1,
         }
