@@ -70,7 +70,7 @@ sys.modules["aiohttp"] = mock_aiohttp
 sys.modules["aiohttp.web"] = mock_aiohttp_web
 
 
-def pytest_ignore_collect(collection_path, path, config):
+def pytest_ignore_collect(collection_path, config):
     """Ignore __init__.py files during collection"""
     if collection_path.name == "__init__.py":
         return True
