@@ -1703,7 +1703,10 @@ class Sam3VideoBase(nn.Module):
         raise NotImplementedError("Evaluation outside demo is not implemented yet")
 
     def _load_checkpoint(self, ckpt_path: str, strict: bool = True):
-        sd = torch.load(ckpt_path, map_location="cpu", weights_only=True)["model"]
+        # Support both .pt and .safetensors formats
+        from ..model_builder import _load_checkpoint_file
+        ckpt = _load_checkpoint_file(ckpt_path)
+        sd = ckpt["model"] if "model" in ckpt else ckpt
         missing_keys, unexpected_keys = self.load_state_dict(sd, strict=strict)
         if len(missing_keys) > 0 or len(unexpected_keys) > 0:
             logger.warning(f"Loaded ckpt with {missing_keys=}, {unexpected_keys=}")

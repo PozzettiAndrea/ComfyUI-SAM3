@@ -132,8 +132,9 @@ async def sam3_detect(request):
 
         # Load SAM3 model on-demand
         # We need to import here to avoid circular imports
+        # sam3_server.py is at package root, nodes/ is a subpackage
         from .nodes.sam3_lib.model_builder import build_sam3_image_model
-        from .nodes.sam3_lib.model.sam3_image_processor import Sam3Processor 
+        from .nodes.sam3_lib.model.sam3_image_processor import Sam3Processor
 
         # Build model (cached globally if possible)
         if "model" not in sam3_predictor:

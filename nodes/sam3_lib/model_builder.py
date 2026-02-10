@@ -7,6 +7,41 @@ import torch
 import torch.nn as nn
 from huggingface_hub import hf_hub_download
 from iopath.common.file_io import g_pathmgr
+
+# Optional safetensors support
+try:
+    from safetensors.torch import load_file as load_safetensors
+    SAFETENSORS_AVAILABLE = True
+except ImportError:
+    SAFETENSORS_AVAILABLE = False
+
+
+def _load_checkpoint_file(checkpoint_path: str) -> dict:
+    """
+    Load checkpoint from file, supporting both .pt and .safetensors formats.
+
+    Args:
+        checkpoint_path: Path to checkpoint file (.pt, .pth, or .safetensors)
+
+    Returns:
+        Dictionary containing model state dict
+    """
+    is_safetensors = checkpoint_path.endswith('.safetensors')
+
+    if is_safetensors:
+        if not SAFETENSORS_AVAILABLE:
+            raise ImportError(
+                "safetensors is required to load .safetensors files. "
+                "Install it with: pip install safetensors"
+            )
+        print(f"[SAM3] Loading safetensors checkpoint: {checkpoint_path}")
+        # safetensors returns flat state dict, wrap it like torch checkpoint
+        state_dict = load_safetensors(checkpoint_path)
+        return {"model": state_dict}
+    else:
+        print(f"[SAM3] Loading PyTorch checkpoint: {checkpoint_path}")
+        with g_pathmgr.open(checkpoint_path, "rb") as f:
+            return torch.load(f, map_location="cpu", weights_only=True)
 from .model.decoder import (
     TransformerDecoder,
     TransformerDecoderLayer,
@@ -510,9 +545,8 @@ def _create_sam3_transformer(has_presence_token: bool = True) -> TransformerWrap
 
 
 def _load_checkpoint(model, checkpoint_path):
-    """Load model checkpoint from file."""
-    with g_pathmgr.open(checkpoint_path, "rb") as f:
-        ckpt = torch.load(f, map_location="cpu", weights_only=True)
+    """Load model checkpoint from file (supports .pt and .safetensors)."""
+    ckpt = _load_checkpoint_file(checkpoint_path)
     if "model" in ckpt and isinstance(ckpt["model"], dict):
         ckpt = ckpt["model"]
     sam3_image_ckpt = {
@@ -809,12 +843,11 @@ def build_sam3_video_model(
             compile_model=compile,
         )
 
-    # Load checkpoint if provided
+    # Load checkpoint if provided (supports .pt and .safetensors)
     if load_from_HF and checkpoint_path is None:
         checkpoint_path = download_ckpt_from_hf(hf_token=hf_token)
     if checkpoint_path is not None:
-        with g_pathmgr.open(checkpoint_path, "rb") as f:
-            ckpt = torch.load(f, map_location="cpu", weights_only=True)
+        ckpt = _load_checkpoint_file(checkpoint_path)
         if "model" in ckpt and isinstance(ckpt["model"], dict):
             ckpt = ckpt["model"]
 
