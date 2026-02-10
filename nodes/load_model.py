@@ -81,7 +81,7 @@ class LoadSAM3Model:
 
         # Check cache (use hash of token for privacy in cache key)
         token_hash = str(hash(hf_token))[:8] if hf_token else "notoken"
-        cache_key = f"{model_path}_{device}_{token_hash}_{use_gpu_cache}"
+        cache_key = f"{model_path}_{device}_{token_hash}"
         if cache_key in _MODEL_CACHE:
             print(f"[SAM3] Using cached model")
             cached_model = _MODEL_CACHE[cache_key]
