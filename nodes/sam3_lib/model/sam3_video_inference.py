@@ -1581,6 +1581,12 @@ class Sam3VideoInferenceWithInstanceInteractivity(Sam3VideoInference):
             new_mask_data = data_list[0].to(self.device)
 
         if self.rank == 0:
+            # Initialize cache if not present (needed for point prompts without prior propagation)
+            if "cached_frame_outputs" not in inference_state:
+                inference_state["cached_frame_outputs"] = {}
+            if frame_idx not in inference_state["cached_frame_outputs"]:
+                inference_state["cached_frame_outputs"][frame_idx] = {}
+
             obj_id_to_mask = self._build_tracker_output(
                 inference_state,
                 frame_idx,

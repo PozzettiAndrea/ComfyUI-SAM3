@@ -26,6 +26,8 @@ This is **optional** and only benefits video tracking performance. Image segment
 
 **Requirements:** NVIDIA GPU, conda/micromamba environment recommended.
 
+**Known Limitations:** RTX 50-series GPUs (RTX 5090, 5080, etc.) are not currently supported for GPU acceleration due to PyTorch lacking Blackwell architecture (sm_120) support. These GPUs will automatically fall back to CPU mode, which is 5-10x slower but fully functional. Track PyTorch support progress at [pytorch/pytorch#159207](https://github.com/pytorch/pytorch/issues/159207). Image segmentation is unaffected by this limitation.
+
 ## Troubleshooting
 
 ### SAM3 nodes not appearing in ComfyUI

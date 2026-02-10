@@ -176,6 +176,29 @@ def get_cuda_arch_list():
         device_name = torch.cuda.get_device_name(0)
         print(f"[ComfyUI-SAM3] Detected GPU: {device_name} (compute capability {compute_cap})")
 
+        # Check if GPU is too new for current PyTorch version
+        if major >= 12:
+            print("=" * 80)
+            print(f"[ComfyUI-SAM3] [ERROR] GPU compute capability {compute_cap} (sm_{major}{minor}) is not supported")
+            print(f"[ComfyUI-SAM3] Current PyTorch version does not support Blackwell architecture (RTX 50-series)")
+            print(f"[ComfyUI-SAM3]")
+            print(f"[ComfyUI-SAM3] IMPORTANT: This is OPTIONAL - ComfyUI-SAM3 works without GPU acceleration!")
+            print(f"[ComfyUI-SAM3]")
+            print(f"[ComfyUI-SAM3] WORKAROUNDS:")
+            print(f"[ComfyUI-SAM3] 1. Skip GPU acceleration (Recommended)")
+            print(f"[ComfyUI-SAM3]    - Video tracking will use CPU fallback (5-10x slower but fully functional)")
+            print(f"[ComfyUI-SAM3]    - Image segmentation is unaffected")
+            print(f"[ComfyUI-SAM3]    - Simply don't run speedup.py, just use the base installation")
+            print(f"[ComfyUI-SAM3]")
+            print(f"[ComfyUI-SAM3] 2. Wait for PyTorch to add official sm_{major}{minor} support")
+            print(f"[ComfyUI-SAM3]    - Track progress: https://github.com/pytorch/pytorch/issues/159207")
+            print(f"[ComfyUI-SAM3]    - Rerun speedup.py once support is available")
+            print(f"[ComfyUI-SAM3]")
+            print(f"[ComfyUI-SAM3] 3. Advanced users: Build PyTorch from source with sm_{major}{minor} support")
+            print(f"[ComfyUI-SAM3]    - See: https://pytorch.org/get-started/locally/#from-source")
+            print("=" * 80)
+            return None  # Abort compilation
+
         # Common architecture list covering most modern GPUs
         arch_list = []
 
