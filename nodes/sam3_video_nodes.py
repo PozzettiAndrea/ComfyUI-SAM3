@@ -9,6 +9,7 @@ from pathlib import Path
 import torch
 import numpy as np
 import folder_paths
+from .utils import get_comfy_models_dir
 
 from .sam3_lib.model_builder import build_sam3_video_predictor
 
@@ -57,6 +58,11 @@ class SAM3VideoModelLoader:
         # Hardcoded BPE path - using vendored tokenizer vocabulary
         bpe_path = Path(__file__).parent / "sam3_lib" / "bpe_simple_vocab_16e6.txt.gz"
         bpe_path = str(bpe_path)
+
+        if not checkpoint_path or not checkpoint_path.strip():
+            default_checkpoint_path = os.path.join(get_comfy_models_dir(), "sam3.pt")
+            if Path(default_checkpoint_path).exists():
+                checkpoint_path = default_checkpoint_path
 
         print(f"[SAM3 Video] Loading video model from {checkpoint_path if checkpoint_path else 'HuggingFace'}")
         print(f"[SAM3 Video] Using BPE tokenizer: {bpe_path}")
