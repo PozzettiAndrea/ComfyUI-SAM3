@@ -2,6 +2,11 @@
 Test that all nodes are properly registered and importable
 """
 import pytest
+import sys
+
+# Import directly from nodes submodule to bypass __init__.py
+# This is necessary because __init__.py skips imports during pytest
+sys.path.insert(0, '.')
 
 
 @pytest.mark.unit
@@ -15,18 +20,35 @@ def test_import_torch():
 @pytest.mark.unit
 def test_import_nodes():
     """Test that node mappings can be imported"""
-    from nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+    # Import directly from nodes module, not from __init__.py
+    from nodes.load_model import NODE_CLASS_MAPPINGS as LOAD_MAPPINGS
+    from nodes.segmentation import NODE_CLASS_MAPPINGS as SEG_MAPPINGS
+    from nodes.sam3_video_nodes import NODE_CLASS_MAPPINGS as VIDEO_MAPPINGS
 
-    assert isinstance(NODE_CLASS_MAPPINGS, dict)
-    assert isinstance(NODE_DISPLAY_NAME_MAPPINGS, dict)
-    assert len(NODE_CLASS_MAPPINGS) > 0
-    print(f"Loaded {len(NODE_CLASS_MAPPINGS)} nodes")
+    # Combine all mappings
+    all_mappings = {}
+    all_mappings.update(LOAD_MAPPINGS)
+    all_mappings.update(SEG_MAPPINGS)
+    all_mappings.update(VIDEO_MAPPINGS)
+
+    assert isinstance(all_mappings, dict)
+    assert len(all_mappings) > 0
+    print(f"Loaded {len(all_mappings)} nodes")
 
 
 @pytest.mark.unit
 def test_required_nodes_registered():
     """Test that all required nodes are registered"""
-    from nodes import NODE_CLASS_MAPPINGS
+    # Import directly from nodes module
+    from nodes.load_model import NODE_CLASS_MAPPINGS as LOAD_MAPPINGS
+    from nodes.segmentation import NODE_CLASS_MAPPINGS as SEG_MAPPINGS
+    from nodes.sam3_video_nodes import NODE_CLASS_MAPPINGS as VIDEO_MAPPINGS
+
+    # Combine all mappings
+    all_mappings = {}
+    all_mappings.update(LOAD_MAPPINGS)
+    all_mappings.update(SEG_MAPPINGS)
+    all_mappings.update(VIDEO_MAPPINGS)
 
     required_nodes = [
         'LoadSAM3Model',
@@ -41,7 +63,7 @@ def test_required_nodes_registered():
     ]
 
     for node in required_nodes:
-        assert node in NODE_CLASS_MAPPINGS, f'Missing node: {node}'
+        assert node in all_mappings, f'Missing node: {node}'
 
     print(f'✓ All {len(required_nodes)} required nodes registered successfully')
 
@@ -49,10 +71,26 @@ def test_required_nodes_registered():
 @pytest.mark.unit
 def test_node_display_names():
     """Test that all nodes have display names"""
-    from nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+    from nodes.load_model import NODE_CLASS_MAPPINGS as LOAD_MAPPINGS
+    from nodes.load_model import NODE_DISPLAY_NAME_MAPPINGS as LOAD_DISPLAY
+    from nodes.segmentation import NODE_CLASS_MAPPINGS as SEG_MAPPINGS
+    from nodes.segmentation import NODE_DISPLAY_NAME_MAPPINGS as SEG_DISPLAY
+    from nodes.sam3_video_nodes import NODE_CLASS_MAPPINGS as VIDEO_MAPPINGS
+    from nodes.sam3_video_nodes import NODE_DISPLAY_NAME_MAPPINGS as VIDEO_DISPLAY
 
-    for node_name in NODE_CLASS_MAPPINGS.keys():
-        assert node_name in NODE_DISPLAY_NAME_MAPPINGS, f'Missing display name for: {node_name}'
+    # Combine all mappings
+    all_mappings = {}
+    all_mappings.update(LOAD_MAPPINGS)
+    all_mappings.update(SEG_MAPPINGS)
+    all_mappings.update(VIDEO_MAPPINGS)
+
+    all_display = {}
+    all_display.update(LOAD_DISPLAY)
+    all_display.update(SEG_DISPLAY)
+    all_display.update(VIDEO_DISPLAY)
+
+    for node_name in all_mappings.keys():
+        assert node_name in all_display, f'Missing display name for: {node_name}'
 
     print('✓ All nodes have display names')
 
@@ -60,7 +98,7 @@ def test_node_display_names():
 @pytest.mark.unit
 def test_simplified_vs_advanced_session_params():
     """Test that simplified session node has fewer parameters than advanced"""
-    from nodes import NODE_CLASS_MAPPINGS
+    from nodes.sam3_video_nodes import NODE_CLASS_MAPPINGS
 
     simplified = NODE_CLASS_MAPPINGS['SAM3InitVideoSession']
     advanced = NODE_CLASS_MAPPINGS['SAM3InitVideoSessionAdvanced']
