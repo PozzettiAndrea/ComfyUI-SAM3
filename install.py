@@ -71,7 +71,7 @@ if __name__ == "__main__":
     print("="*80)
     print("[ComfyUI-SAM3] Installation script completed")
     print("")
-    print("[ComfyUI-SAM3] ℹ  For GPU acceleration (optional, 5-10x faster video tracking):")
+    print("[ComfyUI-SAM3] [INFO] For GPU acceleration (optional, 5-10x faster video tracking):")
     print("[ComfyUI-SAM3]    python speedup.py")
     print("[ComfyUI-SAM3]")
     print("[ComfyUI-SAM3] GPU acceleration is optional. ComfyUI-SAM3 works fine without it.")

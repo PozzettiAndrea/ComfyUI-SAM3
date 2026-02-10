@@ -24,13 +24,13 @@ print("\n2. Checking for nvcc in PATH:")
 try:
     result = subprocess.run(["nvcc", "--version"], capture_output=True, text=True, timeout=5)
     if result.returncode == 0:
-        print(f"   ✓ nvcc found: {result.stdout.split('release')[1].split(',')[0].strip() if 'release' in result.stdout else 'version unknown'}")
+        print(f"   [OK] nvcc found: {result.stdout.split('release')[1].split(',')[0].strip() if 'release' in result.stdout else 'version unknown'}")
     else:
-        print("   ✗ nvcc not found in PATH")
+        print("   [X] nvcc not found in PATH")
 except FileNotFoundError:
-    print("   ✗ nvcc command not found")
+    print("   [X] nvcc command not found")
 except Exception as e:
-    print(f"   ✗ Error running nvcc: {e}")
+    print(f"   [X] Error running nvcc: {e}")
 
 # Check site-packages
 print("\n3. Site-packages locations:")
@@ -55,21 +55,21 @@ for sp in sp_list:
                     # Check for bin directory
                     bin_dir = item / "bin"
                     if bin_dir.exists():
-                        print(f"       ✓ bin/ exists")
+                        print(f"       [OK] bin/ exists")
                         nvcc_path = bin_dir / "nvcc"
                         if nvcc_path.exists():
-                            print(f"       ✓ nvcc found: {nvcc_path}")
+                            print(f"       [OK] nvcc found: {nvcc_path}")
                         elif (bin_dir / "nvcc.exe").exists():
-                            print(f"       ✓ nvcc.exe found: {bin_dir / 'nvcc.exe'}")
+                            print(f"       [OK] nvcc.exe found: {bin_dir / 'nvcc.exe'}")
                         else:
-                            print(f"       ✗ nvcc not found in bin/")
+                            print(f"       [X] nvcc not found in bin/")
                             # List what's actually in bin/
                             if list(bin_dir.iterdir()):
                                 print(f"       Files in bin/:")
                                 for f in list(bin_dir.iterdir())[:10]:  # Show first 10 files
                                     print(f"         - {f.name}")
                     else:
-                        print(f"       ✗ bin/ not found")
+                        print(f"       [X] bin/ not found")
 
 # Check system CUDA installations
 print("\n5. Checking system CUDA installations:")
@@ -85,11 +85,11 @@ for cuda_path in system_paths:
     if os.path.exists(cuda_path):
         nvcc_path = os.path.join(cuda_path, "bin", "nvcc")
         if os.path.exists(nvcc_path):
-            print(f"   ✓ Found: {cuda_path}")
+            print(f"   [OK] Found: {cuda_path}")
         else:
             print(f"   ~ Exists but no nvcc: {cuda_path}")
     else:
-        print(f"   ✗ Not found: {cuda_path}")
+        print(f"   [X] Not found: {cuda_path}")
 
 # Check conda environment
 print("\n6. Conda environment:")
@@ -98,9 +98,9 @@ if "CONDA_PREFIX" in os.environ:
     print(f"   Running in conda env: {conda_prefix}")
     nvcc_path = os.path.join(conda_prefix, "bin", "nvcc")
     if os.path.exists(nvcc_path):
-        print(f"   ✓ nvcc found in conda: {nvcc_path}")
+        print(f"   [OK] nvcc found in conda: {nvcc_path}")
     else:
-        print(f"   ✗ nvcc not found in conda bin/")
+        print(f"   [X] nvcc not found in conda bin/")
 else:
     print("   Not running in conda environment")
 

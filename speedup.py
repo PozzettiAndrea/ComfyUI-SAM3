@@ -596,11 +596,11 @@ if __name__ == "__main__":
     print("="*80)
 
     if nms_success and cc_success:
-        print("[ComfyUI-SAM3] ✓ GPU acceleration setup completed successfully!")
+        print("[ComfyUI-SAM3] [OK] GPU acceleration setup completed successfully!")
         print("[ComfyUI-SAM3] Video tracking will use GPU-accelerated operations (5-10x faster)")
     elif nms_success or cc_success:
-        print("[ComfyUI-SAM3] ⚠ GPU acceleration partially installed")
+        print("[ComfyUI-SAM3] [WARNING] GPU acceleration partially installed")
         print("[ComfyUI-SAM3] Some operations will use CPU fallback")
     else:
-        print("[ComfyUI-SAM3] ℹ GPU acceleration not installed")
+        print("[ComfyUI-SAM3] [INFO] GPU acceleration not installed")
         print("[ComfyUI-SAM3] ComfyUI-SAM3 will use CPU fallbacks (slower but functional)")

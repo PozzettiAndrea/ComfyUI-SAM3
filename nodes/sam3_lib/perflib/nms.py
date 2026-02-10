@@ -72,7 +72,7 @@ def generic_nms(
             global _SHOWN_NMS_WARNING
             if not _SHOWN_NMS_WARNING:
                 print("\n" + "="*80)
-                print("⚠️  GPU-accelerated NMS not available - video tracking is 5-10x slower")
+                print("[WARNING] GPU-accelerated NMS not available - video tracking is 5-10x slower")
                 print("="*80)
                 print("To enable GPU acceleration, run:")
                 print("  cd custom_nodes/ComfyUI-SAM3")

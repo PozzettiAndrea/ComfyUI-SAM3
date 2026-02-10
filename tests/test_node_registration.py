@@ -62,7 +62,7 @@ def test_required_nodes_registered():
     for node in required_nodes:
         assert node in all_mappings, f'Missing node: {node}'
 
-    print(f'✓ All {len(required_nodes)} required nodes registered successfully')
+    print(f'[OK] All {len(required_nodes)} required nodes registered successfully')
 
 
 @pytest.mark.unit
@@ -89,7 +89,7 @@ def test_node_display_names():
     for node_name in all_mappings.keys():
         assert node_name in all_display, f'Missing display name for: {node_name}'
 
-    print('✓ All nodes have display names')
+    print('[OK] All nodes have display names')
 
 
 @pytest.mark.unit
@@ -105,8 +105,8 @@ def test_video_segmentation_node():
     assert 'video_frames' in required, 'Missing video_frames input'
     assert 'prompt_mode' in required, 'Missing prompt_mode input'
 
-    print(f'✓ SAM3VideoSegmentation has {len(required)} required parameters')
-    print(f'✓ SAM3VideoSegmentation has {len(inputs.get("optional", {}))} optional parameters')
+    print(f'[OK] SAM3VideoSegmentation has {len(required)} required parameters')
+    print(f'[OK] SAM3VideoSegmentation has {len(inputs.get("optional", {}))} optional parameters')
 
 
 @pytest.mark.unit
@@ -128,7 +128,7 @@ def test_package_structure():
         path = Path(file)
         assert path.exists(), f'Missing required file: {file}'
 
-    print('✓ Package structure is valid')
+    print('[OK] Package structure is valid')
 
 
 @pytest.mark.unit
@@ -146,6 +146,6 @@ def test_node_categories():
     assert 'SAM3' in category_counts or any('SAM3' in c for c in category_counts.keys()), \
         'No SAM3 category found'
 
-    print(f'✓ Nodes organized in {len(category_counts)} categories:')
+    print(f'[OK] Nodes organized in {len(category_counts)} categories:')
     for cat, count in sorted(category_counts.items()):
         print(f'  - {cat}: {count} nodes')

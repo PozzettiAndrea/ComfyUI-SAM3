@@ -15,7 +15,7 @@ Helper Nodes (Visual Prompt Creation):
 - SAM3CombinePoints: Combine multiple point prompts (up to 10)
 
 Interactive Features:
-- Right-click any node with IMAGE/MASK output → "Open in SAM3 Detector"
+- Right-click any node with IMAGE/MASK output -> "Open in SAM3 Detector"
 - Interactive point-and-click segmentation (left-click=positive, right-click=negative)
 
 Video Tracking:
@@ -23,8 +23,8 @@ Video Tracking:
 - SAM3PropagateVideo, SAM3VideoOutput, SAM3CloseVideoSession
 
 Workflow Example:
-  [SAM3CreateBox] → [SAM3CombineBoxes] → [SAM3Segmentation] ← [LoadImage]
-  [SAM3CreatePoint] → [SAM3CombinePoints] ↗
+  [SAM3CreateBox] -> [SAM3CombineBoxes] -> [SAM3Segmentation] <- [LoadImage]
+  [SAM3CreatePoint] -> [SAM3CombinePoints] -^
 
 All geometric refinement uses SAM3's grounding model approach.
 No JSON typing required - pure visual node-based workflow!
@@ -102,7 +102,7 @@ if not skip_init:
     if INIT_SUCCESS:
         print(f"[SAM3] [OK] Loaded successfully!")
         print(f"[SAM3] Available nodes: {', '.join(NODE_CLASS_MAPPINGS.keys())}")
-        print(f"[SAM3] Interactive SAM3 Detector: Right-click any IMAGE/MASK node → 'Open in SAM3 Detector'")
+        print(f"[SAM3] Interactive SAM3 Detector: Right-click any IMAGE/MASK node -> 'Open in SAM3 Detector'")
     else:
         print(f"[SAM3] [ERROR] Failed to load ({len(INIT_ERRORS)} error(s)):")
         for error in INIT_ERRORS:

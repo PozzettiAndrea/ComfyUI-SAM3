@@ -2,7 +2,7 @@
 """
 EXPERIMENTAL GPU Acceleration Setup for ComfyUI-SAM3 on Blackwell GPUs (RTX 50-series)
 
-⚠️  WARNING: THIS IS EXPERIMENTAL! ⚠️
+WARNING: THIS IS EXPERIMENTAL!
 
 This script attempts to compile GPU-accelerated CUDA extensions for RTX 50-series GPUs
 (compute capability 12.0 / Blackwell architecture) using experimental workarounds.
@@ -79,7 +79,7 @@ def get_blackwell_cuda_arch_list():
             print(f"[Blackwell] Please use the regular speedup.py script instead")
             return None
 
-        print(f"[Blackwell] ⚠️  EXPERIMENTAL COMPILATION FOR BLACKWELL GPU (sm_{major}{minor})")
+        print(f"[Blackwell] [WARNING] EXPERIMENTAL COMPILATION FOR BLACKWELL GPU (sm_{major}{minor})")
         print(f"[Blackwell]")
         print(f"[Blackwell] PyTorch does NOT officially support compute capability {compute_cap} yet")
         print(f"[Blackwell] This script will attempt experimental workarounds:")
@@ -219,7 +219,7 @@ def experimental_install_torch_generic_nms():
         print("-" * 80)
 
         if result.returncode == 0:
-            print("[Blackwell] ✓ torch_generic_nms compilation SUCCEEDED!")
+            print("[Blackwell] [OK] torch_generic_nms compilation SUCCEEDED!")
             print("[Blackwell]")
             print("[Blackwell] IMPORTANT: Compilation success doesn't guarantee runtime stability")
             print("[Blackwell] Please test video tracking in ComfyUI to verify it works")
@@ -228,7 +228,7 @@ def experimental_install_torch_generic_nms():
             print("[Blackwell]   - Use CPU fallback (just don't install the extension)")
             return True
         else:
-            print(f"[Blackwell] ✗ torch_generic_nms compilation FAILED (exit code {result.returncode})")
+            print(f"[Blackwell] [FAILED] torch_generic_nms compilation FAILED (exit code {result.returncode})")
             print("[Blackwell]")
             print("[Blackwell] This is expected for RTX 50-series GPUs")
             print("[Blackwell] The extension requires PyTorch sm_120 support")
@@ -335,7 +335,7 @@ def experimental_install_cc_torch():
         print("-" * 80)
 
         if result.returncode == 0:
-            print("[Blackwell] ✓ cc_torch compilation SUCCEEDED!")
+            print("[Blackwell] [OK] cc_torch compilation SUCCEEDED!")
             print("[Blackwell]")
             print("[Blackwell] IMPORTANT: Compilation success doesn't guarantee runtime stability")
             print("[Blackwell] Please test video tracking in ComfyUI to verify it works")
@@ -344,7 +344,7 @@ def experimental_install_cc_torch():
             print("[Blackwell]   - Use CPU fallback (automatic in perflib/connected_components.py)")
             return True
         else:
-            print(f"[Blackwell] ✗ cc_torch compilation FAILED (exit code {result.returncode})")
+            print(f"[Blackwell] [FAILED] cc_torch compilation FAILED (exit code {result.returncode})")
             print("[Blackwell]")
             print("[Blackwell] This is expected for RTX 50-series GPUs")
             print("[Blackwell] Fallback: Use CPU connected components (scikit-image)")
@@ -363,7 +363,7 @@ if __name__ == "__main__":
         description="EXPERIMENTAL GPU acceleration for ComfyUI-SAM3 on RTX 50-series",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-⚠️  WARNING: EXPERIMENTAL CODE ⚠️
+WARNING: EXPERIMENTAL CODE
 
 This script is for advanced users willing to test experimental workarounds
 for RTX 50-series (Blackwell) GPU acceleration.
@@ -403,15 +403,15 @@ To use stable CPU fallback:
 
     print("[Blackwell] EXPERIMENTAL GPU Acceleration for RTX 50-series")
     print("=" * 80)
-    print("[Blackwell] ⚠️  THIS IS EXPERIMENTAL AND MAY NOT WORK ⚠️")
+    print("[Blackwell] [WARNING] THIS IS EXPERIMENTAL AND MAY NOT WORK")
     print("[Blackwell]")
     print("[Blackwell] This will attempt to compile CUDA extensions for Blackwell GPUs")
     print("[Blackwell] PyTorch doesn't officially support sm_120 yet")
     print("[Blackwell]")
     print("[Blackwell] What might happen:")
-    print("[Blackwell]   ✓ Compilation succeeds, runtime works → GREAT! Report your success!")
-    print("[Blackwell]   ✓ Compilation succeeds, runtime crashes → Uninstall and use CPU fallback")
-    print("[Blackwell]   ✗ Compilation fails → Expected, use CPU fallback")
+    print("[Blackwell]   [OK] Compilation succeeds, runtime works -> GREAT! Report your success!")
+    print("[Blackwell]   [OK] Compilation succeeds, runtime crashes -> Uninstall and use CPU fallback")
+    print("[Blackwell]   [X] Compilation fails -> Expected, use CPU fallback")
     print("[Blackwell]")
     print("[Blackwell] These extensions are OPTIONAL")
     print("[Blackwell] ComfyUI-SAM3 works fine without them using CPU fallbacks")
@@ -434,7 +434,7 @@ To use stable CPU fallback:
 
     # Final summary
     if nms_success and cc_success:
-        print("[Blackwell] ✓✓ BOTH extensions compiled successfully!")
+        print("[Blackwell] [OK] BOTH extensions compiled successfully!")
         print("[Blackwell]")
         print("[Blackwell] NEXT STEPS:")
         print("[Blackwell] 1. Test video tracking in ComfyUI")
@@ -446,19 +446,19 @@ To use stable CPU fallback:
         print("[Blackwell]   (CPU fallback will activate automatically)")
 
     elif nms_success or cc_success:
-        print("[Blackwell] ⚠ Partial success")
+        print("[Blackwell] [WARNING] Partial success")
         if nms_success:
-            print("[Blackwell]   ✓ torch_generic_nms compiled")
-            print("[Blackwell]   ✗ cc_torch failed")
+            print("[Blackwell]   [OK] torch_generic_nms compiled")
+            print("[Blackwell]   [X] cc_torch failed")
         else:
-            print("[Blackwell]   ✗ torch_generic_nms failed")
-            print("[Blackwell]   ✓ cc_torch compiled")
+            print("[Blackwell]   [X] torch_generic_nms failed")
+            print("[Blackwell]   [OK] cc_torch compiled")
         print("[Blackwell]")
         print("[Blackwell] Some operations will use CPU fallback")
         print("[Blackwell] Test in ComfyUI to see if this works for your use case")
 
     else:
-        print("[Blackwell] ✗ Compilation failed for both extensions")
+        print("[Blackwell] [FAILED] Compilation failed for both extensions")
         print("[Blackwell]")
         print("[Blackwell] This is EXPECTED for RTX 50-series GPUs")
         print("[Blackwell] PyTorch doesn't support sm_120 architecture yet")

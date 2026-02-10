@@ -121,18 +121,18 @@ jobs:
           python -c "
           try:
               import torch_generic_nms
-              print('✓ torch_generic_nms compiled successfully')
+              print('[OK] torch_generic_nms compiled successfully')
           except ImportError as e:
-              print(f'✗ torch_generic_nms import failed: {e}')
+              print(f'[X] torch_generic_nms import failed: {e}')
               exit(1)
           " || echo "torch_generic_nms compilation verification failed (non-critical)"
 
           python -c "
           try:
               import cc_torch
-              print('✓ cc_torch compiled successfully')
+              print('[OK] cc_torch compiled successfully')
           except ImportError as e:
-              print(f'✗ cc_torch import failed: {e}')
+              print(f'[X] cc_torch import failed: {e}')
               exit(1)
           " || echo "cc_torch compilation verification failed (non-critical)"
 
