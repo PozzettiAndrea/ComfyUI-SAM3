@@ -126,11 +126,150 @@ class SAM3PointCollector:
         return img_base64
 
 
+class SAM3BBoxCollector:
+    """
+    Interactive BBox Collector for SAM3
+
+    Displays image canvas in the node where users can click and drag to add:
+    - Positive bounding boxes (Left-click and drag) - cyan rectangles
+    - Negative bounding boxes (Shift+Left-click and drag or Right-click and drag) - red rectangles
+
+    Outputs bbox arrays to feed into SAM3Segmentation node.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE", {
+                    "tooltip": "Image to display in interactive canvas. Click and drag to draw positive bboxes (cyan), Shift+Click/Right-click and drag to draw negative bboxes (red). Bounding boxes are automatically normalized to image dimensions."
+                }),
+                "bboxes": ("STRING", {"multiline": False, "default": "[]"}),
+                "neg_bboxes": ("STRING", {"multiline": False, "default": "[]"}),
+            },
+        }
+
+    RETURN_TYPES = ("SAM3_BOXES_PROMPT", "SAM3_BOXES_PROMPT")
+    RETURN_NAMES = ("positive_bboxes", "negative_bboxes")
+    FUNCTION = "collect_bboxes"
+    CATEGORY = "SAM3"
+    OUTPUT_NODE = True  # Makes node executable even without outputs connected
+
+    def collect_bboxes(self, image, bboxes, neg_bboxes):
+        """
+        Collect bounding boxes from interactive canvas
+
+        Args:
+            image: ComfyUI image tensor [B, H, W, C]
+            bboxes: Positive BBoxes JSON array (hidden widget)
+            neg_bboxes: Negative BBoxes JSON array (hidden widget)
+
+        Returns:
+            Tuple of (positive_bboxes, negative_bboxes) as separate SAM3_BOXES_PROMPT outputs
+        """
+        # Parse bboxes from JSON
+        try:
+            pos_bbox_list = json.loads(bboxes) if bboxes and bboxes.strip() else []
+            neg_bbox_list = json.loads(neg_bboxes) if neg_bboxes and neg_bboxes.strip() else []
+        except json.JSONDecodeError:
+            pos_bbox_list = []
+            neg_bbox_list = []
+
+        print(f"[SAM3 BBox Collector] Collected {len(pos_bbox_list)} positive, {len(neg_bbox_list)} negative bboxes")
+
+        # Get image dimensions for normalization
+        img_height, img_width = image.shape[1], image.shape[2]
+        print(f"[SAM3 BBox Collector] Image dimensions: {img_width}x{img_height}")
+
+        # Convert to SAM3_BOXES_PROMPT format with boxes and labels
+        positive_boxes = []
+        positive_labels = []
+        negative_boxes = []
+        negative_labels = []
+
+        # Add positive bboxes (label = True)
+        for bbox in pos_bbox_list:
+            # Normalize bbox coordinates to 0-1 range
+            x1_norm = bbox['x1'] / img_width
+            y1_norm = bbox['y1'] / img_height
+            x2_norm = bbox['x2'] / img_width
+            y2_norm = bbox['y2'] / img_height
+
+            # Convert from [x1, y1, x2, y2] to [center_x, center_y, width, height]
+            # SAM3 expects boxes in center format
+            center_x = (x1_norm + x2_norm) / 2
+            center_y = (y1_norm + y2_norm) / 2
+            width = x2_norm - x1_norm
+            height = y2_norm - y1_norm
+
+            positive_boxes.append([center_x, center_y, width, height])
+            positive_labels.append(True)  # Positive boxes
+            print(f"[SAM3 BBox Collector]   Positive BBox: ({bbox['x1']:.1f}, {bbox['y1']:.1f}, {bbox['x2']:.1f}, {bbox['y2']:.1f}) -> center=({center_x:.3f}, {center_y:.3f}) size=({width:.3f}, {height:.3f})")
+
+        # Add negative bboxes (label = False)
+        for bbox in neg_bbox_list:
+            # Normalize bbox coordinates to 0-1 range
+            x1_norm = bbox['x1'] / img_width
+            y1_norm = bbox['y1'] / img_height
+            x2_norm = bbox['x2'] / img_width
+            y2_norm = bbox['y2'] / img_height
+
+            # Convert from [x1, y1, x2, y2] to [center_x, center_y, width, height]
+            # SAM3 expects boxes in center format
+            center_x = (x1_norm + x2_norm) / 2
+            center_y = (y1_norm + y2_norm) / 2
+            width = x2_norm - x1_norm
+            height = y2_norm - y1_norm
+
+            negative_boxes.append([center_x, center_y, width, height])
+            negative_labels.append(False)  # Negative boxes
+            print(f"[SAM3 BBox Collector]   Negative BBox: ({bbox['x1']:.1f}, {bbox['y1']:.1f}, {bbox['x2']:.1f}, {bbox['y2']:.1f}) -> center=({center_x:.3f}, {center_y:.3f}) size=({width:.3f}, {height:.3f})")
+
+        print(f"[SAM3 BBox Collector] Output: {len(positive_boxes)} positive, {len(negative_boxes)} negative bboxes")
+
+        # Format as SAM3_BOXES_PROMPT (dict with 'boxes' and 'labels' keys)
+        positive_prompt = {
+            "boxes": positive_boxes,
+            "labels": positive_labels
+        }
+        negative_prompt = {
+            "boxes": negative_boxes,
+            "labels": negative_labels
+        }
+
+        # Send image back to widget as base64
+        img_base64 = self.tensor_to_base64(image)
+
+        return {
+            "ui": {"bg_image": [img_base64]},
+            "result": (positive_prompt, negative_prompt)
+        }
+
+    def tensor_to_base64(self, tensor):
+        """Convert ComfyUI image tensor to base64 string for JavaScript widget"""
+        # Convert from [B, H, W, C] to PIL Image
+        # Take first image if batch
+        img_array = tensor[0].cpu().numpy()
+        # Convert from 0-1 float to 0-255 uint8
+        img_array = (img_array * 255).astype(np.uint8)
+        pil_img = Image.fromarray(img_array)
+
+        # Convert to base64
+        buffered = io.BytesIO()
+        pil_img.save(buffered, format="JPEG", quality=75)
+        img_bytes = buffered.getvalue()
+        img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+
+        return img_base64
+
+
 # Node mappings for ComfyUI registration
 NODE_CLASS_MAPPINGS = {
     "SAM3PointCollector": SAM3PointCollector,
+    "SAM3BBoxCollector": SAM3BBoxCollector,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3PointCollector": "SAM3 Point Collector",
+    "SAM3BBoxCollector": "SAM3 BBox Collector 📦",
 }
