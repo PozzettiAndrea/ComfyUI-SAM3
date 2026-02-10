@@ -345,13 +345,186 @@ class SAM3BBoxCollector:
         return img_base64
 
 
+class SAM3MultiRegionCollector:
+    """
+    Interactive Multi-Region Collector for SAM3
+
+    Displays image canvas in the node where users can:
+    - Click/Right-click: Add positive/negative POINTS
+    - Shift + Click/Drag: Add positive/negative BOXES
+
+    Supports multiple prompt regions via tab bar.
+    Each prompt region has its own set of points and boxes.
+
+    Outputs a list of prompts for multi-object segmentation.
+    """
+    # Class-level cache for output results
+    _cache = {}
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE", {
+                    "tooltip": "Image to display in interactive canvas. Click to add points, Shift+drag to draw boxes. Use tab bar to manage multiple prompt regions."
+                }),
+                "multi_prompts_store": ("STRING", {"multiline": False, "default": "[]"}),
+            },
+        }
+
+    RETURN_TYPES = ("SAM3_MULTI_PROMPTS",)
+    RETURN_NAMES = ("multi_prompts",)
+    FUNCTION = "collect_prompts"
+    CATEGORY = "SAM3"
+    OUTPUT_NODE = True
+
+    @classmethod
+    def IS_CHANGED(cls, image, multi_prompts_store):
+        import hashlib
+        h = hashlib.md5()
+        h.update(str(image.shape).encode())
+        h.update(multi_prompts_store.encode())
+        return h.hexdigest()
+
+    def collect_prompts(self, image, multi_prompts_store):
+        """
+        Collect multiple prompt regions from interactive canvas.
+
+        Args:
+            image: ComfyUI image tensor [B, H, W, C]
+            multi_prompts_store: JSON string containing all prompt regions
+
+        Returns:
+            List of prompt dicts, each with positive/negative points/boxes
+        """
+        import hashlib
+        h = hashlib.md5()
+        h.update(str(image.shape).encode())
+        h.update(multi_prompts_store.encode())
+        cache_key = h.hexdigest()
+
+        # Check cache
+        if cache_key in SAM3MultiRegionCollector._cache:
+            cached = SAM3MultiRegionCollector._cache[cache_key]
+            print(f"[SAM3 Multi-Region] CACHE HIT - returning cached result for key={cache_key[:8]}")
+            img_base64 = self.tensor_to_base64(image)
+            return {
+                "ui": {"bg_image": [img_base64]},
+                "result": cached
+            }
+
+        print(f"[SAM3 Multi-Region] CACHE MISS - computing new result for key={cache_key[:8]}")
+
+        # Parse stored prompts
+        try:
+            raw_prompts = json.loads(multi_prompts_store) if multi_prompts_store.strip() else []
+        except json.JSONDecodeError:
+            raw_prompts = []
+
+        img_height, img_width = image.shape[1], image.shape[2]
+        print(f"[SAM3 Multi-Region] Image dimensions: {img_width}x{img_height}")
+        print(f"[SAM3 Multi-Region] Processing {len(raw_prompts)} prompt regions")
+
+        # Convert to normalized output format
+        multi_prompts = []
+        for idx, raw_prompt in enumerate(raw_prompts):
+            prompt = {
+                "id": idx,
+                "positive_points": {"points": [], "labels": []},
+                "negative_points": {"points": [], "labels": []},
+                "positive_boxes": {"boxes": [], "labels": []},
+                "negative_boxes": {"boxes": [], "labels": []},
+            }
+
+            # Normalize positive points
+            for pt in raw_prompt.get("positive_points", []):
+                norm_x = pt["x"] / img_width
+                norm_y = pt["y"] / img_height
+                prompt["positive_points"]["points"].append([norm_x, norm_y])
+                prompt["positive_points"]["labels"].append(1)
+
+            # Normalize negative points
+            for pt in raw_prompt.get("negative_points", []):
+                norm_x = pt["x"] / img_width
+                norm_y = pt["y"] / img_height
+                prompt["negative_points"]["points"].append([norm_x, norm_y])
+                prompt["negative_points"]["labels"].append(0)
+
+            # Normalize positive boxes (convert x1,y1,x2,y2 to center format)
+            for box in raw_prompt.get("positive_boxes", []):
+                x1_norm = box["x1"] / img_width
+                y1_norm = box["y1"] / img_height
+                x2_norm = box["x2"] / img_width
+                y2_norm = box["y2"] / img_height
+                cx = (x1_norm + x2_norm) / 2
+                cy = (y1_norm + y2_norm) / 2
+                w = x2_norm - x1_norm
+                h = y2_norm - y1_norm
+                prompt["positive_boxes"]["boxes"].append([cx, cy, w, h])
+                prompt["positive_boxes"]["labels"].append(True)
+
+            # Normalize negative boxes
+            for box in raw_prompt.get("negative_boxes", []):
+                x1_norm = box["x1"] / img_width
+                y1_norm = box["y1"] / img_height
+                x2_norm = box["x2"] / img_width
+                y2_norm = box["y2"] / img_height
+                cx = (x1_norm + x2_norm) / 2
+                cy = (y1_norm + y2_norm) / 2
+                w = x2_norm - x1_norm
+                h = y2_norm - y1_norm
+                prompt["negative_boxes"]["boxes"].append([cx, cy, w, h])
+                prompt["negative_boxes"]["labels"].append(False)
+
+            # Count items for logging
+            pos_pts = len(prompt["positive_points"]["points"])
+            neg_pts = len(prompt["negative_points"]["points"])
+            pos_boxes = len(prompt["positive_boxes"]["boxes"])
+            neg_boxes = len(prompt["negative_boxes"]["boxes"])
+            print(f"[SAM3 Multi-Region]   Prompt {idx}: {pos_pts} pos pts, {neg_pts} neg pts, {pos_boxes} pos boxes, {neg_boxes} neg boxes")
+
+            # Only include prompts with content
+            if (prompt["positive_points"]["points"] or
+                prompt["negative_points"]["points"] or
+                prompt["positive_boxes"]["boxes"] or
+                prompt["negative_boxes"]["boxes"]):
+                multi_prompts.append(prompt)
+
+        print(f"[SAM3 Multi-Region] Output: {len(multi_prompts)} non-empty prompts")
+
+        # Cache and return
+        result = (multi_prompts,)
+        SAM3MultiRegionCollector._cache[cache_key] = result
+        img_base64 = self.tensor_to_base64(image)
+
+        return {
+            "ui": {"bg_image": [img_base64]},
+            "result": result
+        }
+
+    def tensor_to_base64(self, tensor):
+        """Convert ComfyUI image tensor to base64 string for JavaScript widget"""
+        img_array = tensor[0].cpu().numpy()
+        img_array = (img_array * 255).astype(np.uint8)
+        pil_img = Image.fromarray(img_array)
+
+        buffered = io.BytesIO()
+        pil_img.save(buffered, format="JPEG", quality=75)
+        img_bytes = buffered.getvalue()
+        img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+
+        return img_base64
+
+
 # Node mappings for ComfyUI registration
 NODE_CLASS_MAPPINGS = {
     "SAM3PointCollector": SAM3PointCollector,
     "SAM3BBoxCollector": SAM3BBoxCollector,
+    "SAM3MultiRegionCollector": SAM3MultiRegionCollector,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3PointCollector": "SAM3 Point Collector",
     "SAM3BBoxCollector": "SAM3 BBox Collector 📦",
+    "SAM3MultiRegionCollector": "SAM3 Multi-Region Collector 🎯",
 }
