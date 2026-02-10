@@ -87,7 +87,7 @@ def masks_to_comfy_mask(masks):
         masks: torch.Tensor [N, H, W] or [N, 1, H, W] binary masks
 
     Returns:
-        ComfyUI mask tensor [N, H, W] in range [0, 1]
+        ComfyUI mask tensor [N, H, W] in range [0, 1] on CPU
     """
     if isinstance(masks, torch.Tensor):
         # Ensure float type and range [0, 1]
@@ -99,7 +99,8 @@ def masks_to_comfy_mask(masks):
         if masks.ndim == 4 and masks.shape[1] == 1:
             masks = masks.squeeze(1)
 
-        return masks
+        # Move to CPU to ensure compatibility with downstream nodes
+        return masks.cpu()
     elif isinstance(masks, np.ndarray):
         masks = torch.from_numpy(masks).float()
         if masks.max() > 1.0:
@@ -109,6 +110,7 @@ def masks_to_comfy_mask(masks):
         if masks.ndim == 4 and masks.shape[1] == 1:
             masks = masks.squeeze(1)
 
+        # Already on CPU since from numpy
         return masks
 
     return masks
