@@ -27,7 +27,8 @@ def test_sam3_cpu_inference():
         pytest.skip("HF_TOKEN not set - skipping inference test")
 
     # Import SAM3 nodes
-    from nodes.sam3_image import SAM3Segmentation, LoadSAM3Model
+    from nodes.load_model import LoadSAM3Model
+    from nodes.segmentation import SAM3Segmentation
 
     # Get path to test image
     script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -133,7 +134,7 @@ def test_sam3_model_cache():
     if not hf_token:
         pytest.skip("HF_TOKEN not set - skipping cache test")
 
-    from nodes.sam3_image import LoadSAM3Model
+    from nodes.load_model import LoadSAM3Model
 
     print("\n[TEST] Testing model caching...")
 
