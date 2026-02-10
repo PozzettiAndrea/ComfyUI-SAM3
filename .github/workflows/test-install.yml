@@ -114,7 +114,7 @@ jobs:
 
       - name: Compile CUDA extensions
         run: |
-          python install.py --compile-only
+          python speedup.py --compile-only --cuda-arch 8.9
 
       - name: Verify compiled extensions exist
         run: |
@@ -206,7 +206,7 @@ jobs:
 
       - name: Compile CUDA extensions with speedup.py
         run: |
-          python speedup.py --compile-only
+          python speedup.py --compile-only --cuda-arch 8.9
         shell: pwsh
 
       - name: Verify compiled extensions

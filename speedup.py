@@ -9,8 +9,9 @@ This script installs GPU-accelerated CUDA extensions for faster video tracking:
 These are OPTIONAL. ComfyUI-SAM3 works fine without them using CPU fallbacks.
 
 Usage:
-    python speedup.py              # Install GPU extensions
-    python speedup.py --compile-only  # Compile even without GPU present (for CI)
+    python speedup.py                           # Install GPU extensions
+    python speedup.py --compile-only            # Compile even without GPU present (for CI)
+    python speedup.py --compile-only --cuda-arch 8.9  # Compile for specific architecture (for CI)
     
 For Comfyui_Portable:
     cd H:\AI\ComfyUI_windows_portable\ComfyUI\custom_nodes\comfyui-sam3 # Open Terminal within comfyui-sam3 folder
@@ -38,8 +39,9 @@ if current_dir not in sys.path:
 # Import shared functions
 import speedup_common
 
-# Global flag for compile-only mode
+# Global flags for compile-only mode and manual CUDA architecture
 COMPILE_ONLY = False
+CUDA_ARCH_OVERRIDE = None
 
 
 def find_cuda_home():
@@ -173,15 +175,24 @@ def check_nvcc_available():
         return False
 
 
-def get_cuda_arch_list():
+def get_cuda_arch_list(override=None):
     """
     Detect GPU compute capability and return TORCH_CUDA_ARCH_LIST string.
     Returns None if detection fails.
+
+    Args:
+        override: Optional string to use instead of auto-detection (e.g., '8.6')
     """
+    # If override is provided, use it directly (for CI without GPU)
+    if override:
+        print(f"[ComfyUI-SAM3] Using manually specified CUDA architecture: {override}")
+        return override
+
     try:
         import torch
         if not torch.cuda.is_available():
             print("[ComfyUI-SAM3] [WARNING] CUDA not available in PyTorch")
+            print("[ComfyUI-SAM3] [INFO] Use --cuda-arch to specify architecture manually (e.g., --cuda-arch 8.6)")
             return None
 
         # Get compute capability of current device
@@ -485,8 +496,8 @@ def try_install_torch_generic_nms():
     Install torch_generic_nms for GPU-accelerated video tracking.
     Provides 5-10x faster NMS compared to CPU fallback.
     """
-    # Get CUDA architecture list
-    cuda_arch_list = get_cuda_arch_list()
+    # Get CUDA architecture list (use override if provided)
+    cuda_arch_list = get_cuda_arch_list(CUDA_ARCH_OVERRIDE)
     if not cuda_arch_list:
         print("[ComfyUI-SAM3] [INFO] Skipping GPU NMS compilation (no compatible GPU detected)")
         print("[ComfyUI-SAM3] Video tracking will use CPU fallback (slower but functional)")
@@ -515,8 +526,8 @@ def try_install_cc_torch():
     Install cc_torch for GPU-accelerated connected components.
     Used for hole filling in video tracking masks.
     """
-    # Get CUDA architecture list
-    cuda_arch_list = get_cuda_arch_list()
+    # Get CUDA architecture list (use override if provided)
+    cuda_arch_list = get_cuda_arch_list(CUDA_ARCH_OVERRIDE)
     if not cuda_arch_list:
         print("[ComfyUI-SAM3] [INFO] Skipping GPU connected components (no compatible GPU detected)")
         print("[ComfyUI-SAM3] Video tracking will use CPU fallback (slower but functional)")
@@ -573,9 +584,16 @@ if __name__ == "__main__":
         action="store_true",
         help="Compile CUDA extensions even without GPU present (for CI testing)"
     )
+    parser.add_argument(
+        "--cuda-arch",
+        type=str,
+        default=None,
+        help="Specify CUDA architecture manually (e.g., '8.6' or '8.9'). Required for --compile-only without GPU."
+    )
     args = parser.parse_args()
 
     COMPILE_ONLY = args.compile_only
+    CUDA_ARCH_OVERRIDE = args.cuda_arch
 
     if COMPILE_ONLY:
         print("[ComfyUI-SAM3] Running in COMPILE-ONLY mode (will skip GPU runtime checks)")
