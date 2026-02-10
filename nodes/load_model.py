@@ -151,7 +151,7 @@ class LoadSAM3Model:
         return {
             "required": {
                 "model_path": ("STRING", {
-                    "default": "models/sam3/sam3.pt",
+                    "default": "models/sam3/sam3.safetensors",
                     "tooltip": "Path to SAM3 model checkpoint (relative to ComfyUI root or absolute)"
                 }),
             },
@@ -306,13 +306,16 @@ class LoadSAM3Model:
         print(f"[SAM3] Target: {target_path}")
 
         try:
-            SAM3_MODEL_ID = "facebook/sam3"
-            SAM3_CKPT_NAME = "sam3.pt"
+            SAM3_MODEL_ID = "1038lab/sam3"
+            SAM3_CKPT_NAME = "sam3.safetensors"
+
+            # Token is optional for public repo
+            token = hf_token.strip() if hf_token else None
 
             hf_hub_download(
                 repo_id=SAM3_MODEL_ID,
                 filename=SAM3_CKPT_NAME,
-                token=hf_token.strip(),
+                token=token,
                 local_dir=str(target_path.parent),
                 local_dir_use_symlinks=False
             )
@@ -325,19 +328,11 @@ class LoadSAM3Model:
             print(f"[SAM3] Model downloaded successfully to: {target_path}")
 
         except Exception as e:
-            if "401" in str(e) or "authentication" in str(e).lower() or "gated" in str(e).lower():
-                raise RuntimeError(
-                    f"[SAM3] Authentication failed. Please ensure:\n"
-                    f"1. You have requested access at: https://huggingface.co/facebook/sam3\n"
-                    f"2. Your access has been approved (check your email)\n"
-                    f"3. Your token is valid (get it from: https://huggingface.co/settings/tokens)\n"
-                    f"Error: {e}"
-                )
-            else:
-                raise RuntimeError(
-                    f"[SAM3] Failed to download model from HuggingFace.\n"
-                    f"Error: {e}"
-                )
+            raise RuntimeError(
+                f"[SAM3] Failed to download model from HuggingFace.\n"
+                f"Repo: {SAM3_MODEL_ID}\n"
+                f"Error: {e}"
+            )
 
 
 # Register the node

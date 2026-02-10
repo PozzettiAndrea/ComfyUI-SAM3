@@ -6,7 +6,14 @@ from typing import Optional
 import torch
 import torch.nn as nn
 from huggingface_hub import hf_hub_download
-from iopath.common.file_io import g_pathmgr
+
+# iopath is optional - fall back to regular file operations
+try:
+    from iopath.common.file_io import g_pathmgr
+    IOPATH_AVAILABLE = True
+except ImportError:
+    IOPATH_AVAILABLE = False
+    g_pathmgr = None
 
 # Optional safetensors support
 try:
@@ -40,8 +47,12 @@ def _load_checkpoint_file(checkpoint_path: str) -> dict:
         return {"model": state_dict}
     else:
         print(f"[SAM3] Loading PyTorch checkpoint: {checkpoint_path}")
-        with g_pathmgr.open(checkpoint_path, "rb") as f:
-            return torch.load(f, map_location="cpu", weights_only=True)
+        if IOPATH_AVAILABLE:
+            with g_pathmgr.open(checkpoint_path, "rb") as f:
+                return torch.load(f, map_location="cpu", weights_only=True)
+        else:
+            with open(checkpoint_path, "rb") as f:
+                return torch.load(f, map_location="cpu", weights_only=True)
 from .model.decoder import (
     TransformerDecoder,
     TransformerDecoderLayer,
@@ -689,25 +700,19 @@ def download_ckpt_from_hf(hf_token=None):
     Download SAM3 checkpoint from HuggingFace
 
     Args:
-        hf_token: Optional HuggingFace authentication token for gated models
+        hf_token: Optional HuggingFace authentication token (not needed for public repo)
 
     Returns:
         Path to downloaded checkpoint
     """
-    SAM3_MODEL_ID = "facebook/sam3"
-    SAM3_CKPT_NAME = "sam3.pt"
-    SAM3_CFG_NAME = "config.json"
+    SAM3_MODEL_ID = "1038lab/sam3"
+    SAM3_CKPT_NAME = "sam3.safetensors"
 
-    # Download config and checkpoint with authentication if token provided
-    _ = hf_hub_download(
-        repo_id=SAM3_MODEL_ID,
-        filename=SAM3_CFG_NAME,
-        token=hf_token
-    )
+    # Download checkpoint (public repo, no token needed)
     checkpoint_path = hf_hub_download(
         repo_id=SAM3_MODEL_ID,
         filename=SAM3_CKPT_NAME,
-        token=hf_token
+        token=hf_token  # kept for compatibility but not required
     )
     return checkpoint_path
 
