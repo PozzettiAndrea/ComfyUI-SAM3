@@ -30,8 +30,7 @@ from .model.model_misc import (
 )
 from .model.necks import Sam3DualViTDetNeck
 from .model.position_encoding import PositionEmbeddingSine
-# SAM3InteractiveImagePredictor is only imported when enable_inst_interactivity=True
-# from .model.sam1_task_predictor import SAM3InteractiveImagePredictor
+from .model.sam1_task_predictor import SAM3InteractiveImagePredictor
 from .model.sam3_image import Sam3Image, Sam3ImageOnVideoMultiGPU
 from .model.sam3_tracking_predictor import Sam3TrackerPredictor
 from .model.sam3_video_inference import Sam3VideoInferenceWithInstanceInteractivity
@@ -527,12 +526,29 @@ def _load_checkpoint(model, checkpoint_path):
                 if "tracker" in k
             }
         )
-    missing_keys, _ = model.load_state_dict(sam3_image_ckpt, strict=False)
+    # Debug: show what we're loading
+    inst_keys = [k for k in sam3_image_ckpt.keys() if 'inst_interactive_predictor' in k]
+    print(f"[SAM3] Loading checkpoint with {len(sam3_image_ckpt)} keys ({len(inst_keys)} for inst_interactive_predictor)")
+
+    missing_keys, unexpected_keys = model.load_state_dict(sam3_image_ckpt, strict=False)
+
+    # Check for missing inst_interactive_predictor keys
+    critical_missing = [k for k in missing_keys if 'inst_interactive_predictor' in k]
+    if critical_missing:
+        print(f"[SAM3] WARNING: Missing inst_interactive_predictor keys: {len(critical_missing)}")
+        for k in critical_missing[:10]:
+            print(f"[SAM3]   MISSING: {k}")
+
+    # Check for unexpected keys
+    if unexpected_keys:
+        inst_unexpected = [k for k in unexpected_keys if 'inst_interactive_predictor' in k]
+        if inst_unexpected:
+            print(f"[SAM3] WARNING: Unexpected inst_interactive_predictor keys: {len(inst_unexpected)}")
+            for k in inst_unexpected[:5]:
+                print(f"[SAM3]   UNEXPECTED: {k}")
+
     if len(missing_keys) > 0:
-        print(
-            f"loaded {checkpoint_path} and found "
-            f"missing and/or unexpected keys:\n{missing_keys=}"
-        )
+        print(f"[SAM3] Total missing keys: {len(missing_keys)}")
 
 
 def _setup_device_and_mode(model, device, eval_mode):
@@ -605,12 +621,9 @@ def build_sam3_image_model(
     # Create geometry encoder
     input_geometry_encoder = _create_geometry_encoder()
     if enable_inst_interactivity:
-        # Instance interactivity requires additional dependencies not included in this vendored version
-        raise NotImplementedError(
-            "enable_inst_interactivity=True is not supported in this vendored version. "
-            "This feature requires training dependencies and video tracking components. "
-            "For image segmentation, use enable_inst_interactivity=False."
-        )
+        # Build the tracker base model for SAM2-style point/box segmentation
+        sam3_tracker_base = build_tracker(apply_temporal_disambiguation=False)
+        inst_predictor = SAM3InteractiveImagePredictor(sam3_tracker_base)
     else:
         inst_predictor = None
     # Create the SAM3 model
