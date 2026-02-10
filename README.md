@@ -2,6 +2,9 @@
 
 ComfyUI integration for Meta's SAM3 (Segment Anything Model 3) - enabling open-vocabulary image and video segmentation using natural language text prompts.
 
+
+https://github.com/user-attachments/assets/323df482-1f05-4c69-8681-9bfb4073f766
+
 ## Installation
 
 Install via ComfyUI Manager or clone to `ComfyUI/custom_nodes/`:
