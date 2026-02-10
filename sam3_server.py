@@ -182,8 +182,12 @@ async def sam3_detect(request):
 
         # Run detection with points if we have any
         if len(all_points) > 0:
+            # Normalize pixel coordinates to [0, 1] range
+            img_width, img_height = image.size
+            normalized_points = [[x / img_width, y / img_height] for x, y in all_points]
+
             print(f"[SAM3 Server] Running point prompt detection...")
-            state = processor.add_point_prompt(all_points, all_labels, state)
+            state = processor.add_point_prompt(normalized_points, all_labels, state)
 
             # Get masks from state
             masks = state.get("masks", None)
