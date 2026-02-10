@@ -114,7 +114,8 @@ class Sam3VideoInference(Sam3VideoBase):
         """Construct an initial `BatchedDatapoint` instance as input."""
         # 1) img_batch
         num_frames = len(images)
-        device = self.device
+        # Get actual current device from model parameters (handles dynamic device changes)
+        device = next(self.parameters()).device
 
         # 2) find_text_batch
         # "<text placeholder>" will be replaced by the actual text prompt when adding prompts
