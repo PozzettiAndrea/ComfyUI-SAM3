@@ -41,7 +41,7 @@ import sys
 import traceback
 
 # Version info
-__version__ = "2.1.0"
+__version__ = "3.0.0"  # Major refactor for memory management
 
 # Track initialization status
 INIT_SUCCESS = False
@@ -63,6 +63,18 @@ skip_init = is_pytest and not force_init
 
 if not skip_init:
     print(f"[SAM3] ComfyUI-SAM3 v{__version__} initializing...")
+
+    # Step 0: Register sam3 model folder with ComfyUI
+    try:
+        import folder_paths
+        sam3_model_dir = os.path.join(folder_paths.models_dir, "sam3")
+        os.makedirs(sam3_model_dir, exist_ok=True)
+        folder_paths.add_model_folder_path("sam3", sam3_model_dir)
+        print(f"[SAM3] [OK] Registered model folder: {sam3_model_dir}")
+    except Exception as e:
+        error_msg = f"Failed to register model folder: {str(e)}"
+        INIT_ERRORS.append(error_msg)
+        print(f"[SAM3] [WARNING] {error_msg}")
 
     # Step 1: Import node classes
     try:

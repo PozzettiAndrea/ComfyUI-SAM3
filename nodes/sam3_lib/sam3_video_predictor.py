@@ -20,6 +20,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def print_vram(label: str):
+    """Print current VRAM usage for debugging memory leaks."""
+    if torch.cuda.is_available():
+        alloc = torch.cuda.memory_allocated() / 1024**3
+        reserved = torch.cuda.memory_reserved() / 1024**3
+        print(f"[VRAM] {label}: {alloc:.2f}GB allocated, {reserved:.2f}GB reserved")
+
+
 class Sam3VideoPredictor:
     # a global dictionary that holds all inference states for this model (key is session_id)
     _ALL_INFERENCE_STATES = {}
@@ -111,12 +119,14 @@ class Sam3VideoPredictor:
         session. If it is not defined, the start_session function will create
         a session id and return it.
         """
+        print_vram("Before init_state")
         # get an initial inference_state from the model
         inference_state = self.model.init_state(
             resource_path=resource_path,
             async_loading_frames=self.async_loading_frames,
             video_loader_type=self.video_loader_type,
         )
+        print_vram("After init_state")
         if not session_id:
             session_id = str(uuid.uuid4())
         self._ALL_INFERENCE_STATES[session_id] = {
@@ -124,6 +134,7 @@ class Sam3VideoPredictor:
             "session_id": session_id,
             "start_time": time.time(),
         }
+        print(f"[SAM3 Video] Active sessions in _ALL_INFERENCE_STATES: {len(self._ALL_INFERENCE_STATES)}")
         logger.debug(
             f"started new session {session_id}; {self._get_session_stats()}; "
             f"{self._get_torch_and_gpu_properties()}"
@@ -240,6 +251,8 @@ class Sam3VideoPredictor:
         Close a session. This method is idempotent and can be called multiple
         times on the same "session_id".
         """
+        print_vram(f"Before close_session ({session_id[:8]})")
+        print(f"[SAM3 Video] Sessions before close: {len(self._ALL_INFERENCE_STATES)}")
         session = self._ALL_INFERENCE_STATES.pop(session_id, None)
         if session is None:
             logger.warning(
@@ -249,7 +262,11 @@ class Sam3VideoPredictor:
         else:
             del session
             gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             logger.info(f"removed session {session_id}; {self._get_session_stats()}")
+        print_vram(f"After close_session ({session_id[:8]})")
+        print(f"[SAM3 Video] Sessions after close: {len(self._ALL_INFERENCE_STATES)}")
         return {"is_success": True}
 
     def _get_session(self, session_id):

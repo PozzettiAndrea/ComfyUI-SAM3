@@ -1,8 +1,8 @@
 {
   "id": "video-point-prompt-example",
   "revision": 0,
-  "last_node_id": 23,
-  "last_link_id": 30,
+  "last_node_id": 24,
+  "last_link_id": 33,
   "nodes": [
     {
       "id": 9,
@@ -91,108 +91,6 @@
       }
     },
     {
-      "id": 20,
-      "type": "SAM3InitVideo",
-      "pos": [
-        528.1799482793933,
-        117.3074223033617
-      ],
-      "size": [
-        270,
-        102
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "video_model",
-          "type": "SAM3_VIDEO_MODEL",
-          "link": 18
-        },
-        {
-          "name": "video_frames",
-          "type": "IMAGE",
-          "link": 19
-        }
-      ],
-      "outputs": [
-        {
-          "name": "video_state",
-          "type": "SAM3_VIDEO_STATE",
-          "links": [
-            20
-          ]
-        },
-        {
-          "name": "session_id",
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-sam3",
-        "ver": "28cb1a8a7275a65d6e5cddcdf851aa40b75c2646",
-        "Node name for S&R": "SAM3InitVideo"
-      },
-      "widgets_values": [
-        0.3,
-        0.4
-      ]
-    },
-    {
-      "id": 21,
-      "type": "SAM3AddVideoPointPrompt",
-      "pos": [
-        913.798220893647,
-        95.64926035093357
-      ],
-      "size": [
-        291.0806640625,
-        122
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "video_state",
-          "type": "SAM3_VIDEO_STATE",
-          "link": 20
-        },
-        {
-          "name": "positive_points",
-          "shape": 7,
-          "type": "SAM3_POINTS_PROMPT",
-          "link": 21
-        },
-        {
-          "name": "negative_points",
-          "shape": 7,
-          "type": "SAM3_POINTS_PROMPT",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "video_state",
-          "type": "SAM3_VIDEO_STATE",
-          "links": [
-            22
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-sam3",
-        "ver": "28cb1a8a7275a65d6e5cddcdf851aa40b75c2646",
-        "Node name for S&R": "SAM3AddVideoPointPrompt"
-      },
-      "widgets_values": [
-        0,
-        1
-      ]
-    },
-    {
       "id": 22,
       "type": "SAM3Propagate",
       "pos": [
@@ -215,7 +113,7 @@
         {
           "name": "video_state",
           "type": "SAM3_VIDEO_STATE",
-          "link": 22
+          "link": 33
         }
       ],
       "outputs": [
@@ -470,9 +368,7 @@
         {
           "name": "positive_points",
           "type": "SAM3_POINTS_PROMPT",
-          "links": [
-            21
-          ]
+          "links": []
         },
         {
           "name": "negative_points",
@@ -491,6 +387,97 @@
         "[]",
         "[]",
         ""
+      ]
+    },
+    {
+      "id": 20,
+      "type": "SAM3InitVideo",
+      "pos": [
+        528.1799482793933,
+        117.3074223033617
+      ],
+      "size": [
+        270,
+        102
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video_model",
+          "type": "SAM3_VIDEO_MODEL",
+          "link": 18
+        },
+        {
+          "name": "video_frames",
+          "type": "IMAGE",
+          "link": 19
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video_state",
+          "type": "SAM3_VIDEO_STATE",
+          "links": [
+            32
+          ]
+        },
+        {
+          "name": "session_id",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "28cb1a8a7275a65d6e5cddcdf851aa40b75c2646",
+        "Node name for S&R": "SAM3InitVideo"
+      },
+      "widgets_values": [
+        0.3,
+        0.4
+      ]
+    },
+    {
+      "id": 24,
+      "type": "SAM3AddVideoTextPrompt",
+      "pos": [
+        992.8951174859608,
+        133.2448558124435
+      ],
+      "size": [
+        284.8462890625,
+        106
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video_state",
+          "type": "SAM3_VIDEO_STATE",
+          "link": 32
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video_state",
+          "type": "SAM3_VIDEO_STATE",
+          "links": [
+            33
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "28cb1a8a7275a65d6e5cddcdf851aa40b75c2646",
+        "Node name for S&R": "SAM3AddVideoTextPrompt"
+      },
+      "widgets_values": [
+        "child",
+        0,
+        1
       ]
     }
   ],
@@ -526,30 +513,6 @@
       20,
       1,
       "IMAGE"
-    ],
-    [
-      20,
-      20,
-      0,
-      21,
-      0,
-      "SAM3_VIDEO_STATE"
-    ],
-    [
-      21,
-      17,
-      0,
-      21,
-      1,
-      "SAM3_POINTS_PROMPT"
-    ],
-    [
-      22,
-      21,
-      0,
-      22,
-      1,
-      "SAM3_VIDEO_STATE"
     ],
     [
       23,
@@ -590,16 +553,32 @@
       13,
       0,
       "IMAGE"
+    ],
+    [
+      32,
+      20,
+      0,
+      24,
+      0,
+      "SAM3_VIDEO_STATE"
+    ],
+    [
+      33,
+      24,
+      0,
+      22,
+      1,
+      "SAM3_VIDEO_STATE"
     ]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.5316757352018406,
+      "scale": 0.9418959971299086,
       "offset": [
-        290.6612657919434,
-        373.32743635559746
+        -489.9178467016479,
+        21.772263926898127
       ]
     },
     "frontendVersion": "1.30.6",
