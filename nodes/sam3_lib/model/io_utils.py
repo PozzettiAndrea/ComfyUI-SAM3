@@ -535,7 +535,6 @@ class AsyncVideoFileLoaderWithTorchCodec:
         use_rand_seek_in_loading=False,
     ):
         # Check and possibly infer the output device (and also get its GPU id when applicable)
-        assert gpu_device is None or gpu_device.type == "cuda"
         gpu_id = (
             gpu_device.index
             if gpu_device is not None and gpu_device.index is not None

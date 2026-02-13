@@ -10,8 +10,6 @@ import torch
 import numpy as np
 import gc
 
-import comfy.model_management
-
 from .utils import (
     comfy_image_to_pil,
     pil_to_comfy_image,
@@ -19,7 +17,6 @@ from .utils import (
     visualize_masks_on_image,
     tensor_to_list,
 )
-from .sam3_model_patcher import SAM3ModelPatcher
 
 
 class SAM3Grounding:
@@ -108,6 +105,7 @@ class SAM3Grounding:
             Tuple of (masks, visualization, boxes_json, scores_json)
         """
         # Use ComfyUI's model management to load model to GPU
+        import comfy.model_management
         comfy.model_management.load_models_gpu([sam3_model])
 
         # Access processor from the patcher
@@ -572,6 +570,7 @@ class SAM3Segmentation:
         import json
 
         # Use ComfyUI's model management to load model to GPU
+        import comfy.model_management
         comfy.model_management.load_models_gpu([sam3_model])
 
         processor = sam3_model.processor
@@ -822,6 +821,7 @@ class SAM3MultipromptSegmentation:
         import json
 
         # Use ComfyUI's model management to load model to GPU
+        import comfy.model_management
         comfy.model_management.load_models_gpu([sam3_model])
 
         processor = sam3_model.processor
