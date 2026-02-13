@@ -100,6 +100,7 @@ class SAM3VideoSegmentation:
     - text: Track objects by text description (comma-separated for multiple)
     - point: Track objects by clicking points (positive/negative)
     - box: Track objects by drawing boxes (positive/negative)
+    - multi: Track multiple prompt regions (points/boxes) with SAM3_MULTI_PROMPTS
 
     Note: SAM3 video does NOT support combining different prompt types.
     Each mode is mutually exclusive.
@@ -107,7 +108,7 @@ class SAM3VideoSegmentation:
     # Class-level cache for video state results
     _cache = {}
 
-    PROMPT_MODES = ["text", "point", "box"]
+    PROMPT_MODES = ["text", "point", "box", "multi"]
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -118,7 +119,7 @@ class SAM3VideoSegmentation:
                 }),
                 "prompt_mode": (cls.PROMPT_MODES, {
                     "default": "text",
-                    "tooltip": "Prompt type: text (describe objects), point (click on objects), or box (draw rectangles)"
+                    "tooltip": "Prompt type: text (describe objects), point (click on objects), box (draw rectangles), or multi (multiple prompt regions)"
                 }),
             },
             "optional": {
@@ -142,6 +143,10 @@ class SAM3VideoSegmentation:
                 "negative_boxes": ("SAM3_BOXES_PROMPT", {
                     "tooltip": "[box mode] Negative boxes - draw around areas to exclude"
                 }),
+                # Multi mode inputs
+                "multi_prompts": ("SAM3_MULTI_PROMPTS", {
+                    "tooltip": "[multi mode] Multiple prompt regions (points/boxes) for multi-object tracking"
+                }),
                 # Common inputs
                 "frame_idx": ("INT", {
                     "default": 0,
@@ -162,6 +167,7 @@ class SAM3VideoSegmentation:
     def IS_CHANGED(cls, video_frames, prompt_mode="text", text_prompt="",
                    positive_points=None, negative_points=None,
                    positive_boxes=None, negative_boxes=None,
+                   multi_prompts=None,
                    frame_idx=0, score_threshold=0.3):
         # Use a stable hash based on video content
         # Don't use float(mean()) - it has floating point precision issues on GPU
@@ -190,6 +196,7 @@ class SAM3VideoSegmentation:
             str(negative_points),
             str(positive_boxes),
             str(negative_boxes),
+            str(multi_prompts),
             frame_idx,
             score_threshold,
         ))
@@ -207,6 +214,7 @@ class SAM3VideoSegmentation:
     def segment(self, video_frames, prompt_mode="text", text_prompt="",
                 positive_points=None, negative_points=None,
                 positive_boxes=None, negative_boxes=None,
+                multi_prompts=None,
                 frame_idx=0, score_threshold=0.3):
         """Initialize video state and add prompts based on selected mode."""
         # Create cache key from inputs
@@ -226,6 +234,7 @@ class SAM3VideoSegmentation:
         h.update(str(id(negative_points)).encode() if negative_points else b"none")
         h.update(str(id(positive_boxes)).encode() if positive_boxes else b"none")
         h.update(str(id(negative_boxes)).encode() if negative_boxes else b"none")
+        h.update(str(id(multi_prompts)).encode() if multi_prompts else b"none")
         h.update(str(frame_idx).encode())
         h.update(str(score_threshold).encode())
         cache_key = h.hexdigest()
@@ -254,6 +263,11 @@ class SAM3VideoSegmentation:
 
         # 2. Add prompts based on mode (mutually exclusive)
         obj_id = 1
+
+        # If multi_prompts is provided, prefer multi mode even if prompt_mode differs
+        if multi_prompts and prompt_mode != "multi":
+            print("[SAM3 Video] Detected multi_prompts input - overriding prompt_mode to 'multi'")
+            prompt_mode = "multi"
 
         if prompt_mode == "text":
             # Text mode: parse comma-separated text prompts
@@ -325,6 +339,83 @@ class SAM3VideoSegmentation:
 
             if not has_boxes:
                 print("[SAM3 Video] Warning: box mode selected but no boxes provided")
+
+        elif prompt_mode == "multi":
+            if not multi_prompts or len(multi_prompts) == 0:
+                print("[SAM3 Video] Warning: multi mode selected but no multi_prompts provided")
+            else:
+                # Detect mixed prompt types (points and boxes). SAM3 video may not support mixing.
+                has_any_points = False
+                has_any_boxes = False
+                for prompt in multi_prompts:
+                    if prompt.get("positive_points", {}).get("points") or prompt.get("negative_points", {}).get("points"):
+                        has_any_points = True
+                    if prompt.get("positive_boxes", {}).get("boxes") or prompt.get("negative_boxes", {}).get("boxes"):
+                        has_any_boxes = True
+
+                if has_any_points and has_any_boxes:
+                    print("[SAM3 Video] Warning: multi_prompts contains both points and boxes. "
+                          "SAM3 video may not support mixing prompt types; results may be unstable.")
+
+                for prompt in multi_prompts:
+                    # Resolve object id (use provided id if present, otherwise assign sequential)
+                    prompt_obj_id = prompt.get("id", None)
+                    if prompt_obj_id is None:
+                        prompt_obj_id = obj_id
+                        obj_id += 1
+                    else:
+                        try:
+                            prompt_obj_id = int(prompt_obj_id)
+                        except Exception:
+                            prompt_obj_id = obj_id
+                            obj_id += 1
+
+                    # Points for this object
+                    all_points = []
+                    all_labels = []
+                    pos_points = prompt.get("positive_points", {}).get("points", [])
+                    neg_points = prompt.get("negative_points", {}).get("points", [])
+                    for pt in pos_points:
+                        all_points.append([float(pt[0]), float(pt[1])])
+                        all_labels.append(1)
+                    for pt in neg_points:
+                        all_points.append([float(pt[0]), float(pt[1])])
+                        all_labels.append(0)
+
+                    if all_points:
+                        point_prompt = VideoPrompt.create_point(frame_idx, prompt_obj_id, all_points, all_labels)
+                        video_state = video_state.with_prompt(point_prompt)
+                        print(f"[SAM3 Video] Added multi point prompt: obj={prompt_obj_id}, "
+                              f"positive={len(pos_points)}, negative={len(neg_points)}")
+
+                    # Boxes for this object (can be multiple)
+                    pos_boxes = prompt.get("positive_boxes", {}).get("boxes", [])
+                    neg_boxes = prompt.get("negative_boxes", {}).get("boxes", [])
+
+                    for box_data in pos_boxes:
+                        cx, cy, w, h = box_data
+                        x1 = cx - w/2
+                        y1 = cy - h/2
+                        x2 = cx + w/2
+                        y2 = cy + h/2
+                        box_prompt = VideoPrompt.create_box(frame_idx, prompt_obj_id, [x1, y1, x2, y2], is_positive=True)
+                        video_state = video_state.with_prompt(box_prompt)
+                        print(f"[SAM3 Video] Added multi positive box: obj={prompt_obj_id}, "
+                              f"box=[{x1:.3f}, {y1:.3f}, {x2:.3f}, {y2:.3f}]")
+
+                    for box_data in neg_boxes:
+                        cx, cy, w, h = box_data
+                        x1 = cx - w/2
+                        y1 = cy - h/2
+                        x2 = cx + w/2
+                        y2 = cy + h/2
+                        box_prompt = VideoPrompt.create_box(frame_idx, prompt_obj_id, [x1, y1, x2, y2], is_positive=False)
+                        video_state = video_state.with_prompt(box_prompt)
+                        print(f"[SAM3 Video] Added multi negative box: obj={prompt_obj_id}, "
+                              f"box=[{x1:.3f}, {y1:.3f}, {x2:.3f}, {y2:.3f}]")
+
+                    if not all_points and not pos_boxes and not neg_boxes:
+                        print(f"[SAM3 Video] Warning: empty prompt region for obj={prompt_obj_id}")
 
         # Validate at least one prompt was added
         if len(video_state.prompts) == 0:
