@@ -18,7 +18,6 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 import folder_paths
-import comfy.model_management
 
 from .video_state import (
     SAM3VideoState,
@@ -32,7 +31,6 @@ from .inference_reconstructor import (
     invalidate_session,
     clear_inference_cache,
 )
-from .sam3_model_patcher import SAM3ModelWrapper, SAM3ModelPatcher
 
 
 # =============================================================================
@@ -56,6 +54,8 @@ def _get_autocast_dtype():
 
 def _get_autocast_context():
     """Get autocast context manager based on GPU capability."""
+    if not torch.cuda.is_available():
+        return torch.no_grad()
     dtype = _get_autocast_dtype()
     if dtype is not None:
         return torch.autocast(device_type="cuda", dtype=dtype)

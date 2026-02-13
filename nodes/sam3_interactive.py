@@ -525,6 +525,6 @@ NODE_CLASS_MAPPINGS = {
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3PointCollector": "SAM3 Point Collector",
-    "SAM3BBoxCollector": "SAM3 BBox Collector 📦",
-    "SAM3MultiRegionCollector": "SAM3 Multi-Region Collector 🎯",
+    "SAM3BBoxCollector": "SAM3 BBox Collector",
+    "SAM3MultiRegionCollector": "SAM3 Multi-Region Collector",
 }

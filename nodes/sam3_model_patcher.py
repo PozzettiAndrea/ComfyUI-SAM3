@@ -10,7 +10,6 @@ This module provides ComfyUI-compatible wrappers that integrate with:
 import torch
 import logging
 import gc
-import comfy.model_management
 from comfy.model_patcher import ModelPatcher
 
 
@@ -48,6 +47,7 @@ class SAM3ModelWrapper:
     def model_size(self):
         """Return model size in bytes (cached for performance)."""
         if self._model_size is None:
+            import comfy.model_management
             self._model_size = comfy.model_management.module_size(self.model)
         return self._model_size
 
@@ -215,6 +215,74 @@ class SAM3ModelPatcher(ModelPatcher):
             pass
 
 
+class SAM3UnifiedModel(SAM3ModelPatcher):
+    """
+    Unified SAM3 model that supports both image segmentation and video tracking.
+
+    Inherits from SAM3ModelPatcher for ComfyUI integration.
+    Exposes both image interface (processor, sam3_wrapper) and video interface
+    (handle_stream_request, model).
+    """
+
+    def __init__(self, video_predictor, processor, load_device, offload_device):
+        self._video_predictor = video_predictor
+        self._processor = processor
+        self._load_device = load_device
+        self._offload_device = offload_device
+        self._model = None
+
+        detector_model = video_predictor.model.detector
+        wrapper = SAM3ModelWrapper(detector_model, processor, load_device, offload_device)
+        super().__init__(wrapper)
+
+    @property
+    def processor(self):
+        return self._processor
+
+    @property
+    def model(self):
+        return self._video_predictor.model
+
+    @model.setter
+    def model(self, value):
+        self._model = value
+
+    def __getattr__(self, name):
+        if name == '_video_predictor':
+            raise AttributeError(name)
+        if hasattr(self._video_predictor, name):
+            return getattr(self._video_predictor, name)
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+    def start_session(self, *args, **kwargs):
+        return self._video_predictor.start_session(*args, **kwargs)
+
+    def close_session(self, *args, **kwargs):
+        return self._video_predictor.close_session(*args, **kwargs)
+
+    def handle_stream_request(self, request):
+        return self._video_predictor.handle_stream_request(request)
+
+    def handle_request(self, request):
+        return self._video_predictor.handle_request(request)
+
+    def patch_model(self, device_to=None, lowvram_model_memory=0, load_weights=True, force_patch_weights=False):
+        result = super().patch_model(device_to, lowvram_model_memory, load_weights, force_patch_weights)
+        if device_to is None:
+            device_to = self._load_device
+        self._video_predictor.model.to(device_to)
+        return result
+
+    def unpatch_model(self, device_to=None, unpatch_weights=True):
+        super().unpatch_model(device_to, unpatch_weights)
+        if device_to is None:
+            device_to = self._offload_device
+        self._video_predictor.model.to(device_to)
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+
 def create_sam3_model_patcher(model, processor, device="cuda"):
     """
     Factory function to create a SAM3ModelPatcher.
@@ -227,6 +295,7 @@ def create_sam3_model_patcher(model, processor, device="cuda"):
     Returns:
         SAM3ModelPatcher instance ready for ComfyUI
     """
+    import comfy.model_management
     load_device = comfy.model_management.get_torch_device()
     offload_device = comfy.model_management.unet_offload_device()
 

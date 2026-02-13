@@ -841,9 +841,7 @@ class Sam3VideoInference(Sam3VideoBase):
             return
         self._warm_up_complete = False
         if self.device.type != "cuda":
-            raise RuntimeError(
-                f"The model must be on CUDA for warm-up compilation, got {self.device=}."
-            )
+            return
 
         # temporally set to single GPU temporarily for warm-up compilation
         orig_rank = self.rank
