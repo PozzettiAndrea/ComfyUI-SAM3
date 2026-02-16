@@ -437,7 +437,6 @@ def _create_tracker_transformer():
         dropout=0.1,
         rope_theta=10000.0,
         feat_sizes=[72, 72],
-        use_fa3=False,
         use_rope_real=False,
     )
 
@@ -451,7 +450,6 @@ def _create_tracker_transformer():
         rope_theta=10000.0,
         feat_sizes=[72, 72],
         rope_k_repeat=True,
-        use_fa3=False,
         use_rope_real=False,
     )
 
@@ -751,6 +749,7 @@ def build_sam3_video_model(
     device="cuda" if torch.cuda.is_available() else "cpu",
     compile=False,
     enable_inst_interactivity: bool = False,
+    attention_backend: str = "auto",
 ):
     """
     Build SAM3 dense tracking model.
@@ -762,6 +761,9 @@ def build_sam3_video_model(
     Returns:
         Sam3VideoInferenceWithInstanceInteractivity: The instantiated dense tracking model
     """
+    from .attention_dispatch import set_backend as set_attention_backend
+    set_attention_backend(attention_backend)
+
     if bpe_path is None:
         # Path to bundled BPE tokenizer vocabulary in sam3_lib/
         bpe_path = os.path.join(

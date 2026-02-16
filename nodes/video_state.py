@@ -354,3 +354,66 @@ def create_video_state(
         config=config or VideoConfig(),
         prompts=(),
     )
+
+
+def create_video_state_from_file(
+    video_path: str,
+    config: Optional[VideoConfig] = None,
+    session_id: Optional[str] = None,
+) -> SAM3VideoState:
+    """
+    Create a new video state from a video file.
+
+    Memory-efficient: extracts frames one at a time using cv2,
+    saving each as JPEG to a temp directory. Only 1 frame in RAM at a time.
+
+    Args:
+        video_path: Path to video file (mp4, mov, avi, mkv, webm)
+        config: Optional tracking configuration
+        session_id: Optional custom session ID (UUID generated if None)
+
+    Returns:
+        SAM3VideoState ready for use
+    """
+    import cv2
+    from PIL import Image as PILImage
+
+    session_uuid = session_id if session_id else str(uuid.uuid4())
+    temp_dir = create_temp_dir(session_uuid)
+
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        raise ValueError(f"Could not open video file: {video_path}")
+
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    print(f"[SAM3 Video] Extracting frames from {video_path} ({total_frames} frames, {width}x{height})")
+
+    frame_idx = 0
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        # BGR → RGB, save as JPEG (only 1 frame in RAM at a time)
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img = PILImage.fromarray(frame_rgb)
+        img.save(os.path.join(temp_dir, f"{frame_idx:05d}.jpg"))
+        frame_idx += 1
+    cap.release()
+
+    if frame_idx == 0:
+        raise ValueError(f"No frames could be read from video: {video_path}")
+
+    print(f"[SAM3 Video] Extracted {frame_idx} frames to {temp_dir}")
+
+    return SAM3VideoState(
+        session_uuid=session_uuid,
+        temp_dir=temp_dir,
+        num_frames=frame_idx,
+        height=height,
+        width=width,
+        config=config or VideoConfig(),
+        prompts=(),
+    )

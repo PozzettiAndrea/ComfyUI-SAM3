@@ -224,12 +224,13 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
     (handle_stream_request, model).
     """
 
-    def __init__(self, video_predictor, processor, load_device, offload_device):
+    def __init__(self, video_predictor, processor, load_device, offload_device, memory_mode="cpu_offload"):
         self._video_predictor = video_predictor
         self._processor = processor
         self._load_device = load_device
         self._offload_device = offload_device
         self._model = None
+        self._memory_mode = memory_mode
 
         detector_model = video_predictor.model.detector
         wrapper = SAM3ModelWrapper(detector_model, processor, load_device, offload_device)
@@ -265,6 +266,26 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
 
     def handle_request(self, request):
         return self._video_predictor.handle_request(request)
+
+    @property
+    def memory_mode(self):
+        return self._memory_mode
+
+    def handle_post_inference_memory(self):
+        """Handle model memory after inference based on memory_mode setting."""
+        if self._memory_mode == "cache_gpu":
+            return
+        if self._memory_mode == "unload":
+            self.unpatch_model()
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            return
+        # cpu_offload (default)
+        self.unpatch_model()
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
     def patch_model(self, device_to=None, lowvram_model_memory=0, load_weights=True, force_patch_weights=False):
         result = super().patch_model(device_to, lowvram_model_memory, load_weights, force_patch_weights)

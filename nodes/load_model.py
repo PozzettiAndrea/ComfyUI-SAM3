@@ -30,6 +30,20 @@ class LoadSAM3Model:
                     "tooltip": "Path to SAM3 model checkpoint (relative to ComfyUI root or absolute). Auto-downloads if not found."
                 }),
             },
+            "optional": {
+                "attention": (["auto", "sdpa", "flash_attn", "sage"], {
+                    "default": "auto",
+                    "tooltip": "Attention backend. auto: best available (sage > flash_attn > sdpa). sdpa: PyTorch native. flash_attn: Tri Dao's FlashAttention (FA2/FA3, requires flash-attn package). sage: SageAttention (auto-detects v3 for Blackwell or v2, requires sageattention/sageattn3 package)."
+                }),
+                "memory_mode": (["cpu_offload", "cache_gpu", "unload"], {
+                    "default": "cpu_offload",
+                    "tooltip": "Memory after inference. cpu_offload: move to CPU (default). cache_gpu: keep in VRAM (fastest repeated runs). unload: aggressively free all VRAM."
+                }),
+                "compile": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Enable torch.compile for faster inference. Model loading takes longer (pre-compiles all code paths), but inference is significantly faster on every run."
+                }),
+            },
         }
 
     RETURN_TYPES = ("SAM3_MODEL",)
@@ -37,7 +51,8 @@ class LoadSAM3Model:
     FUNCTION = "load_model"
     CATEGORY = "SAM3"
 
-    def load_model(self, model_path):
+    def load_model(self, model_path, attention="auto", memory_mode="cpu_offload",
+                   compile=False):
         from .sam3_model_patcher import SAM3UnifiedModel
         from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
         from .sam3_lib.model.sam3_image_processor import Sam3Processor
@@ -60,12 +75,22 @@ class LoadSAM3Model:
         bpe_path = str(Path(__file__).parent / "sam3_lib" / "bpe_simple_vocab_16e6.txt.gz")
 
         print(f"[SAM3] Loading model from: {checkpoint_path}")
+        if compile:
+            print(f"[SAM3] torch.compile enabled")
 
         video_predictor = Sam3VideoPredictor(
             checkpoint_path=str(checkpoint_path),
             bpe_path=bpe_path,
             enable_inst_interactivity=True,
+            attention_backend=attention,
+            compile=compile,
         )
+
+        # Run compilation warmup to pre-compile all code paths
+        if compile:
+            print("[SAM3] Running compilation warmup (this may take a few minutes on first run)...")
+            video_predictor.model.warm_up_compilation()
+            print("[SAM3] Compilation warmup complete")
 
         detector = video_predictor.model.detector
         processor = Sam3Processor(
@@ -79,7 +104,8 @@ class LoadSAM3Model:
             video_predictor=video_predictor,
             processor=processor,
             load_device=load_device,
-            offload_device=offload_device
+            offload_device=offload_device,
+            memory_mode=memory_mode,
         )
 
         print(f"[SAM3] Model ready ({unified_model.model_size() / 1024 / 1024:.1f} MB)")

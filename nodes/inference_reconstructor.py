@@ -19,12 +19,25 @@ from typing import Optional, Dict, Any
 from .video_state import SAM3VideoState, VideoPrompt
 
 
-def print_vram(label: str):
-    """Print current VRAM usage for debugging memory leaks."""
+def print_mem(label: str):
+    """Print current RAM and VRAM usage for debugging memory leaks."""
+    import psutil
+    process = psutil.Process()
+    rss = process.memory_info().rss / 1024**3
+    sys_used = psutil.virtual_memory().used / 1024**3
+    sys_total = psutil.virtual_memory().total / 1024**3
+    ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
     if torch.cuda.is_available():
         alloc = torch.cuda.memory_allocated() / 1024**3
         reserved = torch.cuda.memory_reserved() / 1024**3
-        print(f"[VRAM] {label}: {alloc:.2f}GB allocated, {reserved:.2f}GB reserved")
+        print(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
+    else:
+        print(f"[MEM] {label}: {ram_str}")
+
+
+# Backward compat alias
+def print_vram(label: str):
+    print_mem(label)
 
 
 class InferenceReconstructor:
@@ -80,7 +93,7 @@ class InferenceReconstructor:
                 return cached
 
         print(f"[SAM3 Video] Reconstructing inference state for {video_state.session_uuid[:8]}")
-        print_vram("Before start_session")
+        print_mem("Before start_session")
 
         # CRITICAL: Close ALL existing sessions to prevent VRAM leak
         # _ALL_INFERENCE_STATES is a class variable that persists across model reloads
@@ -92,7 +105,7 @@ class InferenceReconstructor:
                     model.close_session(old_session_id)
                 except Exception as e:
                     print(f"[SAM3 Video] Warning: Failed to close session {old_session_id[:8]}: {e}")
-            print_vram("After closing old sessions")
+            print_mem("After closing old sessions")
 
         # Apply config to model
         self._apply_config(model, video_state.config)
@@ -102,12 +115,12 @@ class InferenceReconstructor:
             resource_path=video_state.temp_dir,
             session_id=video_state.session_uuid
         )
-        print_vram("After start_session")
+        print_mem("After start_session")
 
         # Re-apply all prompts in order using session_id
         for prompt in video_state.prompts:
             self._apply_prompt(model, video_state.session_uuid, prompt)
-            print_vram(f"After apply prompt obj={prompt.obj_id}")
+            print_mem(f"After apply prompt obj={prompt.obj_id}")
 
         # Store with weak reference
         # Create a wrapper to allow weak referencing

@@ -211,7 +211,7 @@ def load_video_frames_from_image_folder(
     img_std = torch.tensor(img_std, dtype=float_dtype)[:, None, None]
 
     if async_loading_frames:
-        lazy_images = AsyncImageFrameLoader(
+        lazy_images = LazyImageFrameLoader(
             img_paths, image_size, offload_video_to_cpu, device, img_mean, img_std
         )
         return lazy_images, lazy_images.video_height, lazy_images.video_width
@@ -365,6 +365,69 @@ def _load_img_as_tensor(img_path, image_size):
     img = TF.resize(img, size=(image_size, image_size))
     img = TF.to_tensor(img)
     return img, orig_height, orig_width
+
+
+class LazyImageFrameLoader:
+    """
+    Truly lazy frame loader — loads frames from disk ONLY when accessed.
+    No background preloading thread. Frames stay on CPU to preserve VRAM.
+
+    Uses LRU cache eviction: only max_cached_frames frames are kept in CPU RAM
+    at a time. When a new frame is loaded and the cache is full, the least
+    recently used frame is evicted. This bounds memory usage for long videos.
+    """
+
+    def __init__(self, img_paths, image_size, offload_video_to_cpu, device,
+                 img_mean, img_std, max_cached_frames=64):
+        self.img_paths = img_paths
+        self.image_size = image_size
+        self.offload_video_to_cpu = offload_video_to_cpu
+        self.device = device
+        self.img_mean = img_mean
+        self.img_std = img_std
+        self.images = {}  # sparse dict instead of full list — only cached frames
+        self._access_order = []  # LRU tracking: most recent at end
+        self.max_cached_frames = max(4, max_cached_frames)  # minimum 4 cached
+        self.video_height = None
+        self.video_width = None
+        self._num_frames = len(img_paths)
+        self._load_count = 0
+        print(f"[SAM3 LazyLoader] Initialized: {self._num_frames} frames, "
+              f"max_cached={self.max_cached_frames}, offload_to_cpu={offload_video_to_cpu}")
+        # No background thread — load frame 0 to get dimensions
+        self.__getitem__(0)
+
+    def _evict_if_needed(self):
+        """Evict least recently used frames if cache exceeds max size."""
+        while len(self.images) > self.max_cached_frames and self._access_order:
+            evict_idx = self._access_order.pop(0)
+            self.images.pop(evict_idx, None)
+
+    def __getitem__(self, index):
+        img = self.images.get(index)
+        if img is not None:
+            # Move to end of access order (most recently used)
+            if index in self._access_order:
+                self._access_order.remove(index)
+            self._access_order.append(index)
+            return img
+
+        img, video_height, video_width = _load_img_as_tensor(
+            self.img_paths[index], self.image_size
+        )
+        self.video_height = video_height
+        self.video_width = video_width
+        # Always keep on CPU — moved to GPU per-frame during inference
+        img = img.to(dtype=_get_float_dtype(self.device))
+        img -= self.img_mean
+        img /= self.img_std
+        self.images[index] = img
+        self._access_order.append(index)
+        self._evict_if_needed()
+        return img
+
+    def __len__(self):
+        return self._num_frames
 
 
 class AsyncImageFrameLoader:

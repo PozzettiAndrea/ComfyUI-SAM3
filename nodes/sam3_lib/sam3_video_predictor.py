@@ -20,12 +20,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def print_vram(label: str):
-    """Print current VRAM usage for debugging memory leaks."""
+def print_mem(label: str):
+    """Print current RAM and VRAM usage for debugging memory leaks."""
+    import psutil
+    process = psutil.Process()
+    rss = process.memory_info().rss / 1024**3
+    sys_used = psutil.virtual_memory().used / 1024**3
+    sys_total = psutil.virtual_memory().total / 1024**3
+    ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
     if torch.cuda.is_available():
         alloc = torch.cuda.memory_allocated() / 1024**3
         reserved = torch.cuda.memory_reserved() / 1024**3
-        print(f"[VRAM] {label}: {alloc:.2f}GB allocated, {reserved:.2f}GB reserved")
+        print(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
+    else:
+        print(f"[MEM] {label}: {ram_str}")
+
+
+def print_vram(label: str):
+    print_mem(label)
 
 
 class Sam3VideoPredictor:
@@ -39,13 +51,16 @@ class Sam3VideoPredictor:
         has_presence_token=True,
         geo_encoder_use_img_cross_attn=True,
         strict_state_dict_loading=True,
-        async_loading_frames=False,
+        async_loading_frames=True,
         video_loader_type="cv2",
         apply_temporal_disambiguation: bool = True,
         enable_inst_interactivity=False,
+        attention_backend: str = "auto",
+        compile: bool = False,
     ):
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
+        self._compile = compile
         from .model_builder import build_sam3_video_model
 
         # Determine device
@@ -65,6 +80,8 @@ class Sam3VideoPredictor:
                 strict_state_dict_loading=strict_state_dict_loading,
                 apply_temporal_disambiguation=apply_temporal_disambiguation,
                 enable_inst_interactivity=enable_inst_interactivity,
+                attention_backend=attention_backend,
+                compile=compile,
             )
             .to(self.device)
             .eval()
@@ -131,6 +148,7 @@ class Sam3VideoPredictor:
         # get an initial inference_state from the model
         inference_state = self.model.init_state(
             resource_path=resource_path,
+            offload_video_to_cpu=True,
             async_loading_frames=self.async_loading_frames,
             video_loader_type=self.video_loader_type,
         )

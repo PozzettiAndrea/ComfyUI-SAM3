@@ -11,6 +11,7 @@ from .rope import apply_rotary_enc, apply_rotary_enc_real, compute_axial_cis
 from torch import nn, Tensor
 
 from .common import MLPBlock
+from ..attention_dispatch import dispatch_attention
 
 
 class TwoWayTransformer(nn.Module):
@@ -195,14 +196,12 @@ class Attention(nn.Module):
         downsample_rate: int = 1,
         dropout: float = 0.0,
         kv_in_dim: int = None,
-        use_fa3: bool = False,
     ) -> None:
         super().__init__()
         self.embedding_dim = embedding_dim
         self.kv_in_dim = kv_in_dim if kv_in_dim is not None else embedding_dim
         self.internal_dim = embedding_dim // downsample_rate
         self.num_heads = num_heads
-        self.use_fa3 = use_fa3
         assert (
             self.internal_dim % num_heads == 0
         ), "num_heads must divide embedding_dim."
@@ -236,26 +235,7 @@ class Attention(nn.Module):
         v = self._separate_heads(v, self.num_heads)
 
         dropout_p = self.dropout_p if self.training else 0.0
-        # Attention
-        # with torch.backends.cuda.sdp_kernel(
-        #     enable_flash=USE_FLASH_ATTN,
-        #     # if Flash attention kernel is off, then math kernel needs to be enabled
-        #     enable_math=(OLD_GPU and dropout_p > 0.0) or MATH_KERNEL_ON,
-        #     enable_mem_efficient=OLD_GPU,
-        # ):
-        # Let's trust the dispatcher....
-        if self.use_fa3:
-            from .perflib.fa3 import flash_attn_func
-
-            assert dropout_p == 0.0
-            out = flash_attn_func(
-                q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
-            ).transpose(1, 2)
-        else:
-            torch.backends.cuda.enable_flash_sdp(True)
-            torch.backends.cuda.enable_math_sdp(True)
-            torch.backends.cuda.enable_mem_efficient_sdp(True)
-            out = F.scaled_dot_product_attention(q, k, v, dropout_p=dropout_p)
+        out = dispatch_attention(q, k, v, dropout_p=dropout_p)
 
         out = self._recombine_heads(out)
         out = self.out_proj(out)
@@ -331,26 +311,7 @@ class RoPEAttention(Attention):
             )
 
         dropout_p = self.dropout_p if self.training else 0.0
-        # Attention
-        # with torch.backends.cuda.sdp_kernel(
-        #     enable_flash=USE_FLASH_ATTN,
-        #     # if Flash attention kernel is off, then math kernel needs to be enabled
-        #     enable_math=(OLD_GPU and dropout_p > 0.0) or MATH_KERNEL_ON,
-        #     enable_mem_efficient=OLD_GPU,
-        # ):
-        # Let's trust the dispatcher....
-        if self.use_fa3:
-            from .perflib.fa3 import flash_attn_func
-
-            assert dropout_p == 0.0
-            out = flash_attn_func(
-                q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
-            ).transpose(1, 2)
-        else:
-            torch.backends.cuda.enable_flash_sdp(True)
-            torch.backends.cuda.enable_math_sdp(True)
-            torch.backends.cuda.enable_mem_efficient_sdp(True)
-            out = F.scaled_dot_product_attention(q, k, v, dropout_p=dropout_p)
+        out = dispatch_attention(q, k, v, dropout_p=dropout_p)
 
         out = self._recombine_heads(out)
         out = self.out_proj(out)
