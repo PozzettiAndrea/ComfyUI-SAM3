@@ -137,13 +137,14 @@ class SAM3Grounding:
             positive_boxes, negative_boxes, max_detections
         )
 
-        # Offload model to CPU if requested
+        # Handle post-inference memory based on model's memory_mode
         if offload_model:
-            print("[SAM3 Grounding] Offloading model to CPU to free VRAM...")
             sam3_model.unpatch_model()
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
+        else:
+            sam3_model.handle_post_inference_memory()
 
         return result
 
@@ -744,13 +745,14 @@ class SAM3Segmentation:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        # Offload model to CPU if requested
+        # Handle post-inference memory based on model's memory_mode
         if offload_model:
-            print("[SAM3 Segmentation] Offloading model to CPU to free VRAM...")
             sam3_model.unpatch_model()
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
+        else:
+            sam3_model.handle_post_inference_memory()
 
         return (comfy_masks, low_res_tensor, vis_tensor, boxes_json, scores_json)
 
@@ -975,13 +977,14 @@ class SAM3MultipromptSegmentation:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        # Offload model if requested
+        # Handle post-inference memory based on model's memory_mode
         if offload_model:
-            print("[SAM3 Multiprompt] Offloading model to CPU to free VRAM...")
             sam3_model.unpatch_model()
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
+        else:
+            sam3_model.handle_post_inference_memory()
 
         return (comfy_masks, vis_tensor)
 

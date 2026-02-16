@@ -24,6 +24,7 @@ from .video_state import (
     VideoPrompt,
     VideoConfig,
     create_video_state,
+    create_video_state_from_file,
     cleanup_temp_dir,
 )
 from .inference_reconstructor import (
@@ -66,18 +67,32 @@ def _get_autocast_context():
 # VRAM Debug Utility
 # =============================================================================
 
-def print_vram(label: str, detailed: bool = False):
-    """Print current VRAM usage for debugging memory leaks."""
+def print_mem(label: str, detailed: bool = False):
+    """Print current RAM and VRAM usage for debugging memory leaks."""
+    import psutil
+    process = psutil.Process()
+    rss = process.memory_info().rss / 1024**3
+    sys_total = psutil.virtual_memory().total / 1024**3
+    sys_used = psutil.virtual_memory().used / 1024**3
+    ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
+
     if torch.cuda.is_available():
         alloc = torch.cuda.memory_allocated() / 1024**3
         reserved = torch.cuda.memory_reserved() / 1024**3
-        print(f"[VRAM] {label}: {alloc:.2f}GB allocated, {reserved:.2f}GB reserved")
+        print(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
         if detailed:
-            # Print memory stats breakdown
             stats = torch.cuda.memory_stats()
-            print(f"[VRAM]   Active: {stats.get('active_bytes.all.current', 0) / 1024**3:.2f}GB")
-            print(f"[VRAM]   Inactive: {stats.get('inactive_split_bytes.all.current', 0) / 1024**3:.2f}GB")
-            print(f"[VRAM]   Allocated retries: {stats.get('num_alloc_retries', 0)}")
+            print(f"[MEM]   Active: {stats.get('active_bytes.all.current', 0) / 1024**3:.2f}GB")
+            print(f"[MEM]   Inactive: {stats.get('inactive_split_bytes.all.current', 0) / 1024**3:.2f}GB")
+            print(f"[MEM]   Allocated retries: {stats.get('num_alloc_retries', 0)}")
+    else:
+        print(f"[MEM] {label}: {ram_str}")
+
+
+# Keep backward compat alias
+def print_vram(label: str, detailed: bool = False):
+    """Alias for print_mem."""
+    print_mem(label, detailed)
 
 
 # =============================================================================
@@ -113,15 +128,18 @@ class SAM3VideoSegmentation:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "video_frames": ("IMAGE", {
-                    "tooltip": "Video frames as batch of images [N, H, W, C]"
-                }),
                 "prompt_mode": (cls.PROMPT_MODES, {
                     "default": "text",
                     "tooltip": "Prompt type: text (describe objects), point (click on objects), or box (draw rectangles)"
                 }),
             },
             "optional": {
+                "video_frames": ("IMAGE", {
+                    "tooltip": "Video frames as batch of images [N, H, W, C]"
+                }),
+                "video": ("VIDEO", {
+                    "tooltip": "Video from ComfyUI Load Video node. Memory-efficient: frames extracted one at a time without loading entire video into RAM. Takes priority over video_frames if both connected."
+                }),
                 # Text mode inputs
                 "text_prompt": ("STRING", {
                     "default": "",
@@ -159,7 +177,8 @@ class SAM3VideoSegmentation:
         }
 
     @classmethod
-    def IS_CHANGED(cls, video_frames, prompt_mode="text", text_prompt="",
+    def IS_CHANGED(cls, prompt_mode="text", video_frames=None, video=None,
+                   text_prompt="",
                    positive_points=None, negative_points=None,
                    positive_boxes=None, negative_boxes=None,
                    frame_idx=0, score_threshold=0.3):
@@ -167,18 +186,38 @@ class SAM3VideoSegmentation:
         # Don't use float(mean()) - it has floating point precision issues on GPU
         import hashlib
 
-        # Create a stable hash from video frame content
-        # Use shape + corner pixels from first and last frame (deterministic bytes, no float issues)
         h = hashlib.md5()
-        h.update(str(video_frames.shape).encode())
 
-        # Sample corner pixels from first and last frame
-        first_frame = video_frames[0].cpu().numpy()
-        last_frame = video_frames[-1].cpu().numpy()
-        h.update(first_frame[0, 0, :].tobytes())      # top-left
-        h.update(first_frame[-1, -1, :].tobytes())    # bottom-right
-        h.update(last_frame[0, 0, :].tobytes())
-        h.update(last_frame[-1, -1, :].tobytes())
+        if video is not None:
+            # Hash the VIDEO object's source path + metadata (avoids loading frames into RAM)
+            try:
+                source = video.get_stream_source()
+                if isinstance(source, str):
+                    import os
+                    h.update(source.encode())
+                    try:
+                        h.update(str(os.path.getmtime(source)).encode())
+                        h.update(str(os.path.getsize(source)).encode())
+                    except OSError:
+                        h.update(b"file_error")
+                else:
+                    # BytesIO — hash frame count + dimensions
+                    h.update(str(video.get_frame_count()).encode())
+                    h.update(str(video.get_dimensions()).encode())
+            except Exception:
+                h.update(str(id(video)).encode())
+        elif video_frames is not None:
+            # Create a stable hash from video frame content
+            # Use shape + corner pixels from first and last frame (deterministic bytes, no float issues)
+            h.update(str(video_frames.shape).encode())
+            first_frame = video_frames[0].cpu().numpy()
+            last_frame = video_frames[-1].cpu().numpy()
+            h.update(first_frame[0, 0, :].tobytes())      # top-left
+            h.update(first_frame[-1, -1, :].tobytes())    # bottom-right
+            h.update(last_frame[0, 0, :].tobytes())
+            h.update(last_frame[-1, -1, :].tobytes())
+        else:
+            h.update(b"no_input")
 
         video_hash = h.hexdigest()
 
@@ -204,22 +243,41 @@ class SAM3VideoSegmentation:
     FUNCTION = "segment"
     CATEGORY = "SAM3/video"
 
-    def segment(self, video_frames, prompt_mode="text", text_prompt="",
+    def segment(self, prompt_mode="text", video_frames=None, video=None,
+                text_prompt="",
                 positive_points=None, negative_points=None,
                 positive_boxes=None, negative_boxes=None,
                 frame_idx=0, score_threshold=0.3):
         """Initialize video state and add prompts based on selected mode."""
         # Create cache key from inputs
         import hashlib
+        import os
         h = hashlib.md5()
-        h.update(str(video_frames.shape).encode())
-        # Sample corner pixels for video identity
-        first_frame = video_frames[0].cpu().numpy()
-        last_frame = video_frames[-1].cpu().numpy()
-        h.update(first_frame[0, 0, :].tobytes())
-        h.update(first_frame[-1, -1, :].tobytes())
-        h.update(last_frame[0, 0, :].tobytes())
-        h.update(last_frame[-1, -1, :].tobytes())
+
+        if video is not None:
+            try:
+                source = video.get_stream_source()
+                if isinstance(source, str):
+                    h.update(source.encode())
+                    try:
+                        h.update(str(os.path.getmtime(source)).encode())
+                        h.update(str(os.path.getsize(source)).encode())
+                    except OSError:
+                        pass
+                else:
+                    h.update(str(video.get_frame_count()).encode())
+                    h.update(str(video.get_dimensions()).encode())
+            except Exception:
+                h.update(str(id(video)).encode())
+        elif video_frames is not None:
+            h.update(str(video_frames.shape).encode())
+            first_frame = video_frames[0].cpu().numpy()
+            last_frame = video_frames[-1].cpu().numpy()
+            h.update(first_frame[0, 0, :].tobytes())
+            h.update(first_frame[-1, -1, :].tobytes())
+            h.update(last_frame[0, 0, :].tobytes())
+            h.update(last_frame[-1, -1, :].tobytes())
+
         h.update(prompt_mode.encode())
         h.update(text_prompt.encode())
         h.update(str(id(positive_points)).encode() if positive_points else b"none")
@@ -237,16 +295,43 @@ class SAM3VideoSegmentation:
             return (cached,)
 
         print(f"[SAM3 Video] CACHE MISS - computing new video_state for key={cache_key[:8]}")
-        print_vram("Before video segmentation")
+        print_mem("Before video segmentation")
 
-        # 1. Initialize video state
+        # 1. Initialize video state from VIDEO object, image frames, or raise error
         config = VideoConfig(
             score_threshold_detection=score_threshold,
         )
-        video_state = create_video_state(
-            video_frames=video_frames,
-            config=config,
-        )
+
+        if video is not None:
+            # Try streaming extraction from file source (most memory-efficient)
+            try:
+                source = video.get_stream_source()
+                if isinstance(source, str) and os.path.isfile(source):
+                    video_state = create_video_state_from_file(
+                        video_path=source,
+                        config=config,
+                    )
+                else:
+                    # BytesIO or non-file source — materialize frames
+                    components = video.get_components()
+                    video_state = create_video_state(
+                        video_frames=components.images,
+                        config=config,
+                    )
+            except Exception:
+                # Fallback: get components and extract frames
+                components = video.get_components()
+                video_state = create_video_state(
+                    video_frames=components.images,
+                    config=config,
+                )
+        elif video_frames is not None:
+            video_state = create_video_state(
+                video_frames=video_frames,
+                config=config,
+            )
+        else:
+            raise ValueError("Either video_frames or video input must be provided.")
 
         print(f"[SAM3 Video] Initialized session {video_state.session_uuid[:8]}")
         print(f"[SAM3 Video] Frames: {video_state.num_frames}, Size: {video_state.width}x{video_state.height}")
@@ -331,7 +416,7 @@ class SAM3VideoSegmentation:
             print(f"[SAM3 Video] Warning: No prompts added for mode '{prompt_mode}'")
 
         print(f"[SAM3 Video] Total prompts: {len(video_state.prompts)}")
-        print_vram("After video segmentation")
+        print_mem("After video segmentation")
 
         # Cache the result
         SAM3VideoSegmentation._cache[cache_key] = video_state
@@ -411,13 +496,14 @@ class SAM3Propagate:
             print(f"[SAM3 Propagate] CACHE HIT - returning cached result for session={video_state.session_uuid[:8]}")
             # Still need to handle offload if requested
             if offload_model:
-                print("[SAM3 Video] Offloading model to CPU to free VRAM...")
                 if hasattr(sam3_model, 'model'):
                     sam3_model.model.cpu()
                 gc.collect()
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
-                print_vram("After model offload")
+                print_mem("After model offload")
+            else:
+                sam3_model.handle_post_inference_memory()
             return cached
 
         print(f"[SAM3 Propagate] CACHE MISS - running propagation for session={video_state.session_uuid[:8]}")
@@ -432,7 +518,7 @@ class SAM3Propagate:
 
         print(f"[SAM3 Video] Starting propagation: frames {start_frame} to {end_frame if end_frame >= 0 else 'end'}")
         print(f"[SAM3 Video] Prompts: {len(video_state.prompts)}")
-        print_vram("Before propagation start")
+        print_mem("Before propagation start")
 
         # Determine frame range
         if end_frame < 0:
@@ -455,10 +541,10 @@ class SAM3Propagate:
         # Use autocast with dtype based on GPU capability (bf16 for Ampere+, fp16 for Volta/Turing)
         autocast_context = _get_autocast_context()
         with autocast_context:
-            print_vram("Before reconstruction (in autocast)")
+            print_mem("Before reconstruction (in autocast)")
             # Reconstruct inference state from immutable state
             inference_state = get_inference_state(sam3_model, video_state)
-            print_vram("After reconstruction")
+            print_mem("After reconstruction")
 
             # Run propagation
             try:
@@ -496,9 +582,9 @@ class SAM3Propagate:
                             scores_dict[frame_idx] = probs
                             break
 
-                    # Periodic cleanup and VRAM monitoring
+                    # Periodic cleanup and memory monitoring
                     if frame_idx % 10 == 0:
-                        print_vram(f"Frame {frame_idx}")
+                        print_mem(f"Propagation frame {frame_idx}/{video_state.num_frames}")
                         gc.collect()
 
             except Exception as e:
@@ -507,7 +593,7 @@ class SAM3Propagate:
                 traceback.print_exc()
                 raise
 
-        print_vram("After propagation loop")
+        print_mem("After propagation loop")
         print(f"[SAM3 Video] Propagation complete: {len(masks_dict)} frames processed")
         print(f"[SAM3 Video] Frames with scores: {len(scores_dict)}")
 
@@ -516,18 +602,18 @@ class SAM3Propagate:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        # Offload model to CPU if requested (Issue #28)
+        # Handle post-inference memory based on model's memory_mode
         if offload_model:
-            print("[SAM3 Video] Offloading model to CPU to free VRAM...")
             if hasattr(sam3_model, 'model'):
                 sam3_model.model.cpu()
-            # Clear inference state cache to free GPU memory
             from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
             Sam3VideoPredictor._ALL_INFERENCE_STATES.clear()
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
-            print_vram("After model offload")
+            print_mem("After model offload")
+        else:
+            sam3_model.handle_post_inference_memory()
 
         # Cache the result
         result = (masks_dict, scores_dict, video_state)
@@ -704,7 +790,7 @@ class SAM3VideoOutput:
             return SAM3VideoOutput._cache[cache_key]
 
         print(f"[SAM3 Video Output] CACHE MISS - streaming extraction for session={video_state.session_uuid[:8]}")
-        print_vram("Before extract")
+        print_mem("Before extract")
         h, w = video_state.height, video_state.width
         num_frames = video_state.num_frames
 
@@ -887,7 +973,7 @@ class SAM3VideoOutput:
 
         print(f"[SAM3 Video] Output: {all_masks.shape[0]} masks, shape {all_masks.shape}")
         print(f"[SAM3 Video] Objects tracked: {num_objects}, plot_all_masks: {plot_all_masks}")
-        print_vram("After extract")
+        print_mem("After extract")
 
         # Cache the result (tensors backed by mmap files - minimal RAM)
         result = (all_masks, all_frames, all_vis)

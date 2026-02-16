@@ -19,6 +19,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
 
+from ..attention_dispatch import dispatch_attention
+
 try:
     from timm.layers import DropPath, Mlp, trunc_normal_
 except ModuleNotFoundError:
@@ -499,7 +501,11 @@ class Attention(nn.Module):
             q = q.reshape(B, self.num_heads, H * W, -1)
             k = k.reshape(B, self.num_heads, H * W, -1)
 
-        x = F.scaled_dot_product_attention(q, k, v)
+        if self.use_rel_pos:
+            # concat_rel_pos changes Q/K head_dim — must use SDPA
+            x = F.scaled_dot_product_attention(q, k, v)
+        else:
+            x = dispatch_attention(q, k, v)
 
         if ndim == 4:
             x = (
