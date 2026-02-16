@@ -20,6 +20,7 @@ Speed tiers by GPU generation:
 import logging
 import torch
 import torch.nn.functional as F
+import comfy.model_management
 
 logger = logging.getLogger("SAM3")
 
@@ -35,7 +36,7 @@ def _get_gpu_arch():
     """Return (major, minor) compute capability, cached after first call."""
     global _gpu_arch
     if _gpu_arch is None:
-        if torch.cuda.is_available():
+        if comfy.model_management.get_torch_device().type == "cuda":
             _gpu_arch = torch.cuda.get_device_capability()
         else:
             _gpu_arch = (0, 0)

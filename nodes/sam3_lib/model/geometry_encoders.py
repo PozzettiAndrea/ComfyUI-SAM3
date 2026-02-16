@@ -656,8 +656,8 @@ class SequenceGeometryEncoder(nn.Module):
             # We need to denormalize, and convert to [x, y, x, y]
             boxes_xyxy = box_cxcywh_to_xyxy(boxes)
             scale = torch.tensor([W, H, W, H], dtype=boxes_xyxy.dtype)
-            # Only pin_memory if CUDA is available (requires accelerator)
-            if torch.cuda.is_available():
+            # Only pin_memory if device is CUDA (requires accelerator)
+            if boxes_xyxy.device.type == "cuda":
                 scale = scale.pin_memory().to(device=boxes_xyxy.device, non_blocking=True)
             else:
                 scale = scale.to(device=boxes_xyxy.device)

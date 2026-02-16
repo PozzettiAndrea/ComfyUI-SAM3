@@ -10,6 +10,7 @@ This module provides ComfyUI-compatible wrappers that integrate with:
 import torch
 import logging
 import gc
+import comfy.model_management
 from comfy.model_patcher import ModelPatcher
 
 
@@ -160,8 +161,7 @@ class SAM3ModelPatcher(ModelPatcher):
 
         # Force cleanup
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
     def model_patches_to(self, device):
         """SAM3 doesn't use patches, so this is a no-op."""
@@ -278,14 +278,12 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
         if self._memory_mode == "unload":
             self.unpatch_model()
             gc.collect()
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
+            comfy.model_management.soft_empty_cache()
             return
         # cpu_offload (default)
         self.unpatch_model()
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
     def patch_model(self, device_to=None, lowvram_model_memory=0, load_weights=True, force_patch_weights=False):
         result = super().patch_model(device_to, lowvram_model_memory, load_weights, force_patch_weights)
@@ -300,8 +298,7 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
             device_to = self._offload_device
         self._video_predictor.model.to(device_to)
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
 
 def create_sam3_model_patcher(model, processor, device="cuda"):

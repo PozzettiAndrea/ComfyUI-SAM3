@@ -1,6 +1,9 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates. All Rights Reserved
 
+import logging
 import torch
+
+log = logging.getLogger("sam3")
 
 
 def recursive_fn_factory(fn):
@@ -84,7 +87,7 @@ def shape_logging_wrapper(fn, keep_kwargs, enable_logging=False):
         if shapes not in seen_shapes:
             seen_shapes.add(shapes)
             if enable_logging:
-                print(f"[ShapeLogger] New input shapes for {fn.__qualname__}: {shapes}")
+                log.info(f"New input shapes for {fn.__qualname__}: {shapes}")
         return fn(*args, **kwargs)
 
     # Allow toggling the flag at runtime

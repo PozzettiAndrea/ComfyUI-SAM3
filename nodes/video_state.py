@@ -11,6 +11,7 @@ Key design principles:
 3. Inference state is reconstructed on-demand
 4. Temp directories are automatically cleaned up via atexit
 """
+import logging
 import os
 import uuid
 import shutil
@@ -20,6 +21,8 @@ import atexit
 from dataclasses import dataclass, field
 from typing import Tuple, Optional, Dict, Any, List
 from pathlib import Path
+
+log = logging.getLogger("sam3")
 
 
 # =============================================================================
@@ -36,9 +39,9 @@ def _cleanup_temp_dirs():
         try:
             if os.path.exists(path):
                 shutil.rmtree(path, ignore_errors=True)
-                print(f"[SAM3 Video] Cleaned up temp dir: {path}")
+                log.info(f"Cleaned up temp dir: {path}")
         except Exception as e:
-            print(f"[SAM3 Video] Failed to cleanup {path}: {e}")
+            log.warning(f"Failed to cleanup {path}: {e}")
     _TEMP_DIR_REGISTRY.clear()
 
 
@@ -334,7 +337,7 @@ def create_video_state(
     height = video_frames.shape[1]
     width = video_frames.shape[2]
 
-    print(f"[SAM3 Video] Saving {num_frames} frames to {temp_dir}")
+    log.info(f"Saving {num_frames} frames to {temp_dir}")
 
     for i in range(num_frames):
         frame = video_frames[i].cpu().numpy()
@@ -343,7 +346,7 @@ def create_video_state(
         img = Image.fromarray(frame)
         img.save(os.path.join(temp_dir, f"{i:05d}.jpg"))
 
-    print(f"[SAM3 Video] Frames saved successfully")
+    log.info("Frames saved successfully")
 
     return SAM3VideoState(
         session_uuid=session_uuid,
@@ -389,7 +392,7 @@ def create_video_state_from_file(
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    print(f"[SAM3 Video] Extracting frames from {video_path} ({total_frames} frames, {width}x{height})")
+    log.info(f"Extracting frames from {video_path} ({total_frames} frames, {width}x{height})")
 
     frame_idx = 0
     while True:
@@ -406,7 +409,7 @@ def create_video_state_from_file(
     if frame_idx == 0:
         raise ValueError(f"No frames could be read from video: {video_path}")
 
-    print(f"[SAM3 Video] Extracted {frame_idx} frames to {temp_dir}")
+    log.info(f"Extracted {frame_idx} frames to {temp_dir}")
 
     return SAM3VideoState(
         session_uuid=session_uuid,

@@ -2,6 +2,8 @@
 
 import logging
 
+log = logging.getLogger("sam3")
+
 import torch
 import torch.nn.functional as F
 
@@ -164,8 +166,8 @@ class Sam3TrackerBase(torch.nn.Module):
             return torch.zeros(len(rel_pos_list), self.mem_dim, device=device)
 
         t_diff_max = max_abs_pos - 1 if max_abs_pos is not None else 1
-        # Only pin_memory if CUDA is available
-        if torch.cuda.is_available():
+        # Only pin_memory if device is CUDA (requires accelerator)
+        if device is not None and device.type == "cuda":
             pos_enc = (
                 torch.tensor(rel_pos_list).pin_memory().to(device=device, non_blocking=True)
                 / t_diff_max
@@ -1089,7 +1091,7 @@ class Sam3TrackerBase(torch.nn.Module):
             past_out = output_dict["non_cond_frame_outputs"].get(past_frame_idx, None)
 
             if past_out is not None:
-                print(past_out.get("eff_iou_score", 0))
+                log.info(past_out.get("eff_iou_score", 0))
                 if (
                     self.use_memory_selection
                     and past_out.get("eff_iou_score", 0) < self.mf_threshold

@@ -223,15 +223,15 @@ def inference_context():
         with inference_context():
             # ... inference code ...
 
-    This ensures gc.collect() and torch.cuda.empty_cache() are called
+    This ensures gc.collect() and soft_empty_cache() are called
     after inference, even if an exception occurs.
     """
+    import comfy.model_management
     try:
         yield
     finally:
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
 
 def cleanup_gpu_memory():
@@ -240,6 +240,6 @@ def cleanup_gpu_memory():
 
     Call this after inference to ensure VRAM is freed.
     """
+    import comfy.model_management
     gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
+    comfy.model_management.soft_empty_cache()
