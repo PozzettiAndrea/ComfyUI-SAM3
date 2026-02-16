@@ -26,6 +26,7 @@ logger = logging.getLogger("SAM3")
 
 _active_backend = "sdpa"
 _gpu_arch = None  # cached (major, minor) tuple
+_backend_unsupported_dims = {}  # {backend_name: set(head_dims)} — skip try/except for known failures
 
 
 # ---------------------------------------------------------------------------
@@ -255,21 +256,29 @@ def _dispatch_flash_attn_fp8(q, k, v):
 
 @torch.compiler.disable
 def _dispatch_sage3(q, k, v):
-    """SageAttention v3 — Blackwell FP4. Hidden from torch.compile."""
+    """SageAttention v3 -- Blackwell FP4. Hidden from torch.compile."""
+    head_dim = q.shape[-1]
+    if head_dim in _backend_unsupported_dims.get("sage3", set()):
+        return F.scaled_dot_product_attention(q, k, v)
     try:
         from sageattn3 import sageattn3
         return sageattn3(q, k, v)
     except Exception as e:
-        logger.warning(f"sage3 failed ({e}), falling back to sdpa")
+        _backend_unsupported_dims.setdefault("sage3", set()).add(head_dim)
+        logger.warning(f"sage3 doesn't support head_dim={head_dim}, using sdpa for these layers")
         return F.scaled_dot_product_attention(q, k, v)
 
 
 @torch.compiler.disable
 def _dispatch_sage2(q, k, v):
-    """SageAttention v2 — INT8. Hidden from torch.compile."""
+    """SageAttention v2 -- INT8. Hidden from torch.compile."""
+    head_dim = q.shape[-1]
+    if head_dim in _backend_unsupported_dims.get("sage2", set()):
+        return F.scaled_dot_product_attention(q, k, v)
     try:
         from sageattention import sageattn
         return sageattn(q, k, v)
     except Exception as e:
-        logger.warning(f"sage2 failed ({e}), falling back to sdpa")
+        _backend_unsupported_dims.setdefault("sage2", set()).add(head_dim)
+        logger.warning(f"sage2 doesn't support head_dim={head_dim}, using sdpa for these layers")
         return F.scaled_dot_product_attention(q, k, v)
