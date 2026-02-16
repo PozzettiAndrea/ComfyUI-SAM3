@@ -10,10 +10,13 @@ from open_clip and openAI CLIP.
 import gzip
 import html
 import io
+import logging
 import os
 import string
 from functools import lru_cache
 from typing import List, Optional, Union
+
+log = logging.getLogger("sam3")
 
 import ftfy
 import regex as re
@@ -196,7 +199,8 @@ class SimpleTokenizer(object):
                     j = word.index(first, i)
                     new_word.extend(word[i:j])
                     i = j
-                except:
+                except Exception as e:
+                    log.debug("BPE token pair not found, extending remainder: %s", e)
                     new_word.extend(word[i:])
                     break
                 if word[i] == first and i < len(word) - 1 and word[i + 1] == second:

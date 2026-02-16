@@ -12,12 +12,15 @@ Modifications for SAM3:
 - Outputs point arrays for use with SAM3Segmentation node
 """
 
+import logging
 import torch
 import numpy as np
 import json
 import io
 import base64
 from PIL import Image
+
+log = logging.getLogger("sam3")
 
 
 class SAM3PointCollector:
@@ -62,8 +65,8 @@ class SAM3PointCollector:
         h.update(coordinates.encode())
         h.update(neg_coordinates.encode())
         result = h.hexdigest()
-        print(f"[IS_CHANGED DEBUG] SAM3PointCollector: shape={image.shape}, coords={coordinates}, neg_coords={neg_coordinates}")
-        print(f"[IS_CHANGED DEBUG] SAM3PointCollector: returning hash={result}")
+        log.debug(f"IS_CHANGED SAM3PointCollector: shape={image.shape}, coords={coordinates}, neg_coords={neg_coordinates}")
+        log.debug(f"IS_CHANGED SAM3PointCollector: returning hash={result}")
         return result
 
     def collect_points(self, image, points_store, coordinates, neg_coordinates):
@@ -90,7 +93,7 @@ class SAM3PointCollector:
         # Check if we have cached result
         if cache_key in SAM3PointCollector._cache:
             cached = SAM3PointCollector._cache[cache_key]
-            print(f"[SAM3 Point Collector] CACHE HIT - returning cached result for key={cache_key[:8]}")
+            log.info(f"CACHE HIT - returning cached result for key={cache_key[:8]}")
             # Still need to return UI update
             img_base64 = self.tensor_to_base64(image)
             return {
@@ -98,7 +101,7 @@ class SAM3PointCollector:
                 "result": cached  # Return the SAME objects
             }
 
-        print(f"[SAM3 Point Collector] CACHE MISS - computing new result for key={cache_key[:8]}")
+        log.info(f"CACHE MISS - computing new result for key={cache_key[:8]}")
 
         # Parse coordinates from JSON
         try:
@@ -108,11 +111,11 @@ class SAM3PointCollector:
             pos_coords = []
             neg_coords = []
 
-        print(f"[SAM3 Point Collector] Collected {len(pos_coords)} positive, {len(neg_coords)} negative points")
+        log.info(f"Collected {len(pos_coords)} positive, {len(neg_coords)} negative points")
 
         # Get image dimensions for normalization
         img_height, img_width = image.shape[1], image.shape[2]
-        print(f"[SAM3 Point Collector] Image dimensions: {img_width}x{img_height}")
+        log.info(f"Image dimensions: {img_width}x{img_height}")
 
         # Convert to SAM3 point format - separate positive and negative outputs
         # SAM3 expects normalized coordinates (0-1), so divide by image dimensions
@@ -125,7 +128,7 @@ class SAM3PointCollector:
             normalized_y = p['y'] / img_height
             positive_points["points"].append([normalized_x, normalized_y])
             positive_points["labels"].append(1)
-            print(f"[SAM3 Point Collector]   Positive point: ({p['x']:.1f}, {p['y']:.1f}) -> ({normalized_x:.3f}, {normalized_y:.3f})")
+            log.info(f"  Positive point: ({p['x']:.1f}, {p['y']:.1f}) -> ({normalized_x:.3f}, {normalized_y:.3f})")
 
         # Add negative points (label = 0) - normalize to 0-1
         for n in neg_coords:
@@ -133,9 +136,9 @@ class SAM3PointCollector:
             normalized_y = n['y'] / img_height
             negative_points["points"].append([normalized_x, normalized_y])
             negative_points["labels"].append(0)
-            print(f"[SAM3 Point Collector]   Negative point: ({n['x']:.1f}, {n['y']:.1f}) -> ({normalized_x:.3f}, {normalized_y:.3f})")
+            log.info(f"  Negative point: ({n['x']:.1f}, {n['y']:.1f}) -> ({normalized_x:.3f}, {normalized_y:.3f})")
 
-        print(f"[SAM3 Point Collector] Output: {len(positive_points['points'])} positive, {len(negative_points['points'])} negative")
+        log.info(f"Output: {len(positive_points['points'])} positive, {len(negative_points['points'])} negative")
 
         # Cache the result
         result = (positive_points, negative_points)
@@ -208,8 +211,8 @@ class SAM3BBoxCollector:
         h.update(bboxes.encode())
         h.update(neg_bboxes.encode())
         result = h.hexdigest()
-        print(f"[IS_CHANGED DEBUG] SAM3BBoxCollector: shape={image.shape}, bboxes={bboxes}, neg_bboxes={neg_bboxes}")
-        print(f"[IS_CHANGED DEBUG] SAM3BBoxCollector: returning hash={result}")
+        log.debug(f"IS_CHANGED SAM3BBoxCollector: shape={image.shape}, bboxes={bboxes}, neg_bboxes={neg_bboxes}")
+        log.debug(f"IS_CHANGED SAM3BBoxCollector: returning hash={result}")
         return result
 
     def collect_bboxes(self, image, bboxes, neg_bboxes):
@@ -235,7 +238,7 @@ class SAM3BBoxCollector:
         # Check if we have cached result
         if cache_key in SAM3BBoxCollector._cache:
             cached = SAM3BBoxCollector._cache[cache_key]
-            print(f"[SAM3 BBox Collector] CACHE HIT - returning cached result for key={cache_key[:8]}")
+            log.info(f"CACHE HIT - returning cached result for key={cache_key[:8]}")
             # Still need to return UI update
             img_base64 = self.tensor_to_base64(image)
             return {
@@ -243,7 +246,7 @@ class SAM3BBoxCollector:
                 "result": cached  # Return the SAME objects
             }
 
-        print(f"[SAM3 BBox Collector] CACHE MISS - computing new result for key={cache_key[:8]}")
+        log.info(f"CACHE MISS - computing new result for key={cache_key[:8]}")
 
         # Parse bboxes from JSON
         try:
@@ -253,11 +256,11 @@ class SAM3BBoxCollector:
             pos_bbox_list = []
             neg_bbox_list = []
 
-        print(f"[SAM3 BBox Collector] Collected {len(pos_bbox_list)} positive, {len(neg_bbox_list)} negative bboxes")
+        log.info(f"Collected {len(pos_bbox_list)} positive, {len(neg_bbox_list)} negative bboxes")
 
         # Get image dimensions for normalization
         img_height, img_width = image.shape[1], image.shape[2]
-        print(f"[SAM3 BBox Collector] Image dimensions: {img_width}x{img_height}")
+        log.info(f"Image dimensions: {img_width}x{img_height}")
 
         # Convert to SAM3_BOXES_PROMPT format with boxes and labels
         positive_boxes = []
@@ -282,7 +285,7 @@ class SAM3BBoxCollector:
 
             positive_boxes.append([center_x, center_y, width, height])
             positive_labels.append(True)  # Positive boxes
-            print(f"[SAM3 BBox Collector]   Positive BBox: ({bbox['x1']:.1f}, {bbox['y1']:.1f}, {bbox['x2']:.1f}, {bbox['y2']:.1f}) -> center=({center_x:.3f}, {center_y:.3f}) size=({width:.3f}, {height:.3f})")
+            log.info(f"  Positive BBox: ({bbox['x1']:.1f}, {bbox['y1']:.1f}, {bbox['x2']:.1f}, {bbox['y2']:.1f}) -> center=({center_x:.3f}, {center_y:.3f}) size=({width:.3f}, {height:.3f})")
 
         # Add negative bboxes (label = False)
         for bbox in neg_bbox_list:
@@ -301,9 +304,9 @@ class SAM3BBoxCollector:
 
             negative_boxes.append([center_x, center_y, width, height])
             negative_labels.append(False)  # Negative boxes
-            print(f"[SAM3 BBox Collector]   Negative BBox: ({bbox['x1']:.1f}, {bbox['y1']:.1f}, {bbox['x2']:.1f}, {bbox['y2']:.1f}) -> center=({center_x:.3f}, {center_y:.3f}) size=({width:.3f}, {height:.3f})")
+            log.info(f"  Negative BBox: ({bbox['x1']:.1f}, {bbox['y1']:.1f}, {bbox['x2']:.1f}, {bbox['y2']:.1f}) -> center=({center_x:.3f}, {center_y:.3f}) size=({width:.3f}, {height:.3f})")
 
-        print(f"[SAM3 BBox Collector] Output: {len(positive_boxes)} positive, {len(negative_boxes)} negative bboxes")
+        log.info(f"Output: {len(positive_boxes)} positive, {len(negative_boxes)} negative bboxes")
 
         # Format as SAM3_BOXES_PROMPT (dict with 'boxes' and 'labels' keys)
         positive_prompt = {
@@ -406,14 +409,14 @@ class SAM3MultiRegionCollector:
         # Check cache
         if cache_key in SAM3MultiRegionCollector._cache:
             cached = SAM3MultiRegionCollector._cache[cache_key]
-            print(f"[SAM3 Multi-Region] CACHE HIT - returning cached result for key={cache_key[:8]}")
+            log.info(f"CACHE HIT - returning cached result for key={cache_key[:8]}")
             img_base64 = self.tensor_to_base64(image)
             return {
                 "ui": {"bg_image": [img_base64]},
                 "result": cached
             }
 
-        print(f"[SAM3 Multi-Region] CACHE MISS - computing new result for key={cache_key[:8]}")
+        log.info(f"CACHE MISS - computing new result for key={cache_key[:8]}")
 
         # Parse stored prompts
         try:
@@ -422,8 +425,8 @@ class SAM3MultiRegionCollector:
             raw_prompts = []
 
         img_height, img_width = image.shape[1], image.shape[2]
-        print(f"[SAM3 Multi-Region] Image dimensions: {img_width}x{img_height}")
-        print(f"[SAM3 Multi-Region] Processing {len(raw_prompts)} prompt regions")
+        log.info(f"Image dimensions: {img_width}x{img_height}")
+        log.info(f"Processing {len(raw_prompts)} prompt regions")
 
         # Convert to normalized output format
         multi_prompts = []
@@ -481,7 +484,7 @@ class SAM3MultiRegionCollector:
             neg_pts = len(prompt["negative_points"]["points"])
             pos_boxes = len(prompt["positive_boxes"]["boxes"])
             neg_boxes = len(prompt["negative_boxes"]["boxes"])
-            print(f"[SAM3 Multi-Region]   Prompt {idx}: {pos_pts} pos pts, {neg_pts} neg pts, {pos_boxes} pos boxes, {neg_boxes} neg boxes")
+            log.info(f"  Prompt {idx}: {pos_pts} pos pts, {neg_pts} neg pts, {pos_boxes} pos boxes, {neg_boxes} neg boxes")
 
             # Only include prompts with content
             if (prompt["positive_points"]["points"] or
@@ -490,7 +493,7 @@ class SAM3MultiRegionCollector:
                 prompt["negative_boxes"]["boxes"]):
                 multi_prompts.append(prompt)
 
-        print(f"[SAM3 Multi-Region] Output: {len(multi_prompts)} non-empty prompts")
+        log.info(f"Output: {len(multi_prompts)} non-empty prompts")
 
         # Cache and return
         result = (multi_prompts,)

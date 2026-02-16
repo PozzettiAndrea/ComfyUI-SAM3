@@ -1,11 +1,15 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates. All Rights Reserved
 
+import logging
 import os
 from copy import deepcopy
+
+log = logging.getLogger("sam3")
 from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np
 import torch
+import comfy.model_management
 
 from .model_misc import SAM3Output
 
@@ -550,7 +554,7 @@ class Sam3Image(torch.nn.Module):
         find_target = input.find_targets[0]
 
         if find_input.input_points is not None and find_input.input_points.numel() > 0:
-            print("Warning: Point prompts are ignored in PCS.")
+            log.warning("Point prompts are ignored in PCS.")
 
         num_interactive_steps = 0 if self.training else self.num_interactive_steps_val
         geometric_prompt = Prompt(
@@ -843,7 +847,7 @@ class Sam3ImageOnVideoMultiGPU(Sam3Image):
             assert len(feats["backbone_fpn"]) == 3  # SAM2 backbone always have 3 levels
             # cast the SAM2 backbone features to bfloat16 for all-gather (this is usually
             # a no-op, SAM2 backbone features are likely already in bfloat16 due to AMP)
-            if torch.cuda.is_available():
+            if comfy.model_management.get_torch_device().type == "cuda":
                 backbone_fpn_bf16 = [x.to(torch.bfloat16) for x in feats["backbone_fpn"]]
             else:
                 backbone_fpn_bf16 = list(feats["backbone_fpn"])

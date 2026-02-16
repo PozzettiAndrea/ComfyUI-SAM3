@@ -5,6 +5,7 @@ from typing import Optional
 
 import torch
 from torch import nn
+import comfy.model_management
 
 
 class PositionEmbeddingSine(nn.Module):
@@ -44,8 +45,8 @@ class PositionEmbeddingSine(nn.Module):
                 (precompute_resolution // 32, precompute_resolution // 32),
             ]
             for size in precompute_sizes:
-                # Use CPU for precomputation (will be moved to correct device during forward)
-                device = "cuda" if torch.cuda.is_available() else "cpu"
+                # Use ComfyUI device for precomputation (will be moved to correct device during forward)
+                device = comfy.model_management.get_torch_device()
                 tensors = torch.zeros((1, 1) + size, device=device)
                 self.forward(tensors)
                 # further clone and detach it in the cache (just to be safe)

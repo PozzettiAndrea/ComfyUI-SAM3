@@ -12,10 +12,14 @@ Key design principles:
 5. No manual SAM3CloseVideoSession needed
 """
 import gc
+import logging
 import torch
 import numpy as np
+import comfy.model_management
 from pathlib import Path
 from typing import Optional, Tuple
+
+log = logging.getLogger("sam3")
 
 import folder_paths
 
@@ -42,7 +46,7 @@ def _get_autocast_dtype():
     Get appropriate autocast dtype based on GPU capability.
     Returns None if autocast should not be used.
     """
-    if not torch.cuda.is_available():
+    if comfy.model_management.get_torch_device().type != "cuda":
         return None
     major, _ = torch.cuda.get_device_capability()
     if major >= 8:  # Ampere+ supports bf16
@@ -55,7 +59,7 @@ def _get_autocast_dtype():
 
 def _get_autocast_context():
     """Get autocast context manager based on GPU capability."""
-    if not torch.cuda.is_available():
+    if comfy.model_management.get_torch_device().type != "cuda":
         return torch.no_grad()
     dtype = _get_autocast_dtype()
     if dtype is not None:
@@ -68,7 +72,7 @@ def _get_autocast_context():
 # =============================================================================
 
 def print_mem(label: str, detailed: bool = False):
-    """Print current RAM and VRAM usage for debugging memory leaks."""
+    """Log current RAM and VRAM usage for debugging memory leaks."""
     import psutil
     process = psutil.Process()
     rss = process.memory_info().rss / 1024**3
@@ -76,17 +80,17 @@ def print_mem(label: str, detailed: bool = False):
     sys_used = psutil.virtual_memory().used / 1024**3
     ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
 
-    if torch.cuda.is_available():
+    if comfy.model_management.get_torch_device().type == "cuda":
         alloc = torch.cuda.memory_allocated() / 1024**3
         reserved = torch.cuda.memory_reserved() / 1024**3
-        print(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
+        log.info(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
         if detailed:
             stats = torch.cuda.memory_stats()
-            print(f"[MEM]   Active: {stats.get('active_bytes.all.current', 0) / 1024**3:.2f}GB")
-            print(f"[MEM]   Inactive: {stats.get('inactive_split_bytes.all.current', 0) / 1024**3:.2f}GB")
-            print(f"[MEM]   Allocated retries: {stats.get('num_alloc_retries', 0)}")
+            log.info(f"[MEM]   Active: {stats.get('active_bytes.all.current', 0) / 1024**3:.2f}GB")
+            log.info(f"[MEM]   Inactive: {stats.get('inactive_split_bytes.all.current', 0) / 1024**3:.2f}GB")
+            log.info(f"[MEM]   Allocated retries: {stats.get('num_alloc_retries', 0)}")
     else:
-        print(f"[MEM] {label}: {ram_str}")
+        log.info(f"[MEM] {label}: {ram_str}")
 
 
 # Keep backward compat alias
@@ -232,10 +236,10 @@ class SAM3VideoSegmentation:
             frame_idx,
             score_threshold,
         ))
-        print(f"[IS_CHANGED DEBUG] SAM3VideoSegmentation: video_hash={video_hash}, prompt_mode={prompt_mode}")
-        print(f"[IS_CHANGED DEBUG] SAM3VideoSegmentation: positive_points={positive_points}")
-        print(f"[IS_CHANGED DEBUG] SAM3VideoSegmentation: negative_points={negative_points}")
-        print(f"[IS_CHANGED DEBUG] SAM3VideoSegmentation: returning hash={result}")
+        log.info(f"IS_CHANGED SAM3VideoSegmentation: video_hash={video_hash}, prompt_mode={prompt_mode}")
+        log.info(f"IS_CHANGED SAM3VideoSegmentation: positive_points={positive_points}")
+        log.info(f"IS_CHANGED SAM3VideoSegmentation: negative_points={negative_points}")
+        log.info(f"IS_CHANGED SAM3VideoSegmentation: returning hash={result}")
         return result
 
     RETURN_TYPES = ("SAM3_VIDEO_STATE",)
@@ -291,10 +295,10 @@ class SAM3VideoSegmentation:
         # Check if we have cached result
         if cache_key in SAM3VideoSegmentation._cache:
             cached = SAM3VideoSegmentation._cache[cache_key]
-            print(f"[SAM3 Video] CACHE HIT - returning cached video_state for key={cache_key[:8]}, session={cached.session_uuid[:8]}")
+            log.info(f"CACHE HIT - returning cached video_state for key={cache_key[:8]}, session={cached.session_uuid[:8]}")
             return (cached,)
 
-        print(f"[SAM3 Video] CACHE MISS - computing new video_state for key={cache_key[:8]}")
+        log.info(f"CACHE MISS - computing new video_state for key={cache_key[:8]}")
         print_mem("Before video segmentation")
 
         # 1. Initialize video state from VIDEO object, image frames, or raise error
@@ -333,9 +337,9 @@ class SAM3VideoSegmentation:
         else:
             raise ValueError("Either video_frames or video input must be provided.")
 
-        print(f"[SAM3 Video] Initialized session {video_state.session_uuid[:8]}")
-        print(f"[SAM3 Video] Frames: {video_state.num_frames}, Size: {video_state.width}x{video_state.height}")
-        print(f"[SAM3 Video] Prompt mode: {prompt_mode}")
+        log.info(f"Initialized session {video_state.session_uuid[:8]}")
+        log.info(f"Frames: {video_state.num_frames}, Size: {video_state.width}x{video_state.height}")
+        log.info(f"Prompt mode: {prompt_mode}")
 
         # 2. Add prompts based on mode (mutually exclusive)
         obj_id = 1
@@ -348,10 +352,10 @@ class SAM3VideoSegmentation:
                     if text:
                         prompt = VideoPrompt.create_text(frame_idx, obj_id, text)
                         video_state = video_state.with_prompt(prompt)
-                        print(f"[SAM3 Video] Added text prompt: obj={obj_id}, text='{text}'")
+                        log.info(f"Added text prompt: obj={obj_id}, text='{text}'")
                         obj_id += 1
             else:
-                print("[SAM3 Video] Warning: text mode selected but no text_prompt provided")
+                log.warning("text mode selected but no text_prompt provided")
 
         elif prompt_mode == "point":
             # Point mode: combine positive and negative points
@@ -373,10 +377,10 @@ class SAM3VideoSegmentation:
                 video_state = video_state.with_prompt(prompt)
                 pos_count = len(positive_points.get("points", [])) if positive_points else 0
                 neg_count = len(negative_points.get("points", [])) if negative_points else 0
-                print(f"[SAM3 Video] Added point prompt: obj={obj_id}, "
-                      f"positive={pos_count}, negative={neg_count}")
+                log.info(f"Added point prompt: obj={obj_id}, "
+                         f"positive={pos_count}, negative={neg_count}")
             else:
-                print("[SAM3 Video] Warning: point mode selected but no points provided")
+                log.warning("point mode selected but no points provided")
 
         elif prompt_mode == "box":
             # Box mode: add positive and/or negative boxes
@@ -391,8 +395,8 @@ class SAM3VideoSegmentation:
                 y2 = cy + h/2
                 prompt = VideoPrompt.create_box(frame_idx, obj_id, [x1, y1, x2, y2], is_positive=True)
                 video_state = video_state.with_prompt(prompt)
-                print(f"[SAM3 Video] Added positive box: obj={obj_id}, "
-                      f"box=[{x1:.3f}, {y1:.3f}, {x2:.3f}, {y2:.3f}]")
+                log.info(f"Added positive box: obj={obj_id}, "
+                         f"box=[{x1:.3f}, {y1:.3f}, {x2:.3f}, {y2:.3f}]")
                 has_boxes = True
 
             if negative_boxes and negative_boxes.get("boxes"):
@@ -404,18 +408,18 @@ class SAM3VideoSegmentation:
                 y2 = cy + h/2
                 prompt = VideoPrompt.create_box(frame_idx, obj_id, [x1, y1, x2, y2], is_positive=False)
                 video_state = video_state.with_prompt(prompt)
-                print(f"[SAM3 Video] Added negative box: obj={obj_id}, "
-                      f"box=[{x1:.3f}, {y1:.3f}, {x2:.3f}, {y2:.3f}]")
+                log.info(f"Added negative box: obj={obj_id}, "
+                         f"box=[{x1:.3f}, {y1:.3f}, {x2:.3f}, {y2:.3f}]")
                 has_boxes = True
 
             if not has_boxes:
-                print("[SAM3 Video] Warning: box mode selected but no boxes provided")
+                log.warning("box mode selected but no boxes provided")
 
         # Validate at least one prompt was added
         if len(video_state.prompts) == 0:
-            print(f"[SAM3 Video] Warning: No prompts added for mode '{prompt_mode}'")
+            log.warning(f"No prompts added for mode '{prompt_mode}'")
 
-        print(f"[SAM3 Video] Total prompts: {len(video_state.prompts)}")
+        log.info(f"Total prompts: {len(video_state.prompts)}")
         print_mem("After video segmentation")
 
         # Cache the result
@@ -481,8 +485,8 @@ class SAM3Propagate:
         # it returns the same object, so id() will match
         # This is more reliable than hashing content since video_state is immutable
         result = (id(video_state), start_frame, end_frame, direction)
-        print(f"[IS_CHANGED DEBUG] SAM3Propagate: video_state id={id(video_state)}, session={video_state.session_uuid if video_state else None}")
-        print(f"[IS_CHANGED DEBUG] SAM3Propagate: returning {result}")
+        log.info(f"IS_CHANGED SAM3Propagate: video_state id={id(video_state)}, session={video_state.session_uuid if video_state else None}")
+        log.info(f"IS_CHANGED SAM3Propagate: returning {result}")
         return result
 
     def propagate(self, sam3_model, video_state, start_frame=0, end_frame=-1, direction="forward", offload_model=False):
@@ -493,31 +497,30 @@ class SAM3Propagate:
         # Check if we have cached result
         if cache_key in SAM3Propagate._cache:
             cached = SAM3Propagate._cache[cache_key]
-            print(f"[SAM3 Propagate] CACHE HIT - returning cached result for session={video_state.session_uuid[:8]}")
+            log.info(f"Propagate CACHE HIT - returning cached result for session={video_state.session_uuid[:8]}")
             # Still need to handle offload if requested
             if offload_model:
                 if hasattr(sam3_model, 'model'):
                     sam3_model.model.cpu()
                 gc.collect()
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
+                comfy.model_management.soft_empty_cache()
                 print_mem("After model offload")
             else:
                 sam3_model.handle_post_inference_memory()
             return cached
 
-        print(f"[SAM3 Propagate] CACHE MISS - running propagation for session={video_state.session_uuid[:8]}")
+        log.info(f"Propagate CACHE MISS - running propagation for session={video_state.session_uuid[:8]}")
 
         if len(video_state.prompts) == 0:
             raise ValueError("[SAM3 Video] No prompts added. Add point, box, or text prompts before propagating.")
 
         # Ensure model is on GPU before inference (may have been offloaded)
         if hasattr(sam3_model, 'model') and hasattr(sam3_model.model, 'to'):
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            device = comfy.model_management.get_torch_device()
             sam3_model.model.to(device)
 
-        print(f"[SAM3 Video] Starting propagation: frames {start_frame} to {end_frame if end_frame >= 0 else 'end'}")
-        print(f"[SAM3 Video] Prompts: {len(video_state.prompts)}")
+        log.info(f"Starting propagation: frames {start_frame} to {end_frame if end_frame >= 0 else 'end'}")
+        log.info(f"Prompts: {len(video_state.prompts)}")
         print_mem("Before propagation start")
 
         # Determine frame range
@@ -588,19 +591,16 @@ class SAM3Propagate:
                         gc.collect()
 
             except Exception as e:
-                print(f"[SAM3 Video] Propagation error: {e}")
-                import traceback
-                traceback.print_exc()
+                log.error(f"Propagation error: {e}", exc_info=True)
                 raise
 
         print_mem("After propagation loop")
-        print(f"[SAM3 Video] Propagation complete: {len(masks_dict)} frames processed")
-        print(f"[SAM3 Video] Frames with scores: {len(scores_dict)}")
+        log.info(f"Propagation complete: {len(masks_dict)} frames processed")
+        log.info(f"Frames with scores: {len(scores_dict)}")
 
         # Clean up
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
         # Handle post-inference memory based on model's memory_mode
         if offload_model:
@@ -609,8 +609,7 @@ class SAM3Propagate:
             from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
             Sam3VideoPredictor._ALL_INFERENCE_STATES.clear()
             gc.collect()
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
+            comfy.model_management.soft_empty_cache()
             print_mem("After model offload")
         else:
             sam3_model.handle_post_inference_memory()
@@ -786,16 +785,16 @@ class SAM3VideoOutput:
 
         # Check if we have cached result
         if cache_key in SAM3VideoOutput._cache:
-            print(f"[SAM3 Video Output] CACHE HIT - returning cached result for session={video_state.session_uuid[:8]}")
+            log.info(f"Video Output CACHE HIT - returning cached result for session={video_state.session_uuid[:8]}")
             return SAM3VideoOutput._cache[cache_key]
 
-        print(f"[SAM3 Video Output] CACHE MISS - streaming extraction for session={video_state.session_uuid[:8]}")
+        log.info(f"Video Output CACHE MISS - streaming extraction for session={video_state.session_uuid[:8]}")
         print_mem("Before extract")
         h, w = video_state.height, video_state.width
         num_frames = video_state.num_frames
 
         if not masks:
-            print("[SAM3 Video] No masks to extract")
+            log.info("No masks to extract")
             empty_mask = torch.zeros(num_frames, h, w)
             empty_frames = torch.zeros(num_frames, h, w, 3)
             return (empty_mask, empty_frames, empty_frames)
@@ -819,7 +818,7 @@ class SAM3VideoOutput:
         vis_mmap = np.memmap(vis_path, dtype='float32', mode='w+',
                              shape=(num_frames, h, w, 3))
 
-        print(f"[SAM3 Video] Streaming {num_frames} frames to disk: {mmap_dir}")
+        log.info(f"Streaming {num_frames} frames to disk: {mmap_dir}")
 
         # Color palette for multiple objects (RGB, 0-1 range)
         colors = [
@@ -957,7 +956,7 @@ class SAM3VideoOutput:
                 frame_mmap.flush()
                 vis_mmap.flush()
                 gc.collect()
-                print(f"[SAM3 Video] Processed {frame_idx}/{num_frames} frames")
+                log.info(f"Processed {frame_idx}/{num_frames} frames")
 
         # Final flush
         mask_mmap.flush()
@@ -971,8 +970,8 @@ class SAM3VideoOutput:
         all_frames = torch.from_numpy(frame_mmap)
         all_vis = torch.from_numpy(vis_mmap)
 
-        print(f"[SAM3 Video] Output: {all_masks.shape[0]} masks, shape {all_masks.shape}")
-        print(f"[SAM3 Video] Objects tracked: {num_objects}, plot_all_masks: {plot_all_masks}")
+        log.info(f"Output: {all_masks.shape[0]} masks, shape {all_masks.shape}")
+        log.info(f"Objects tracked: {num_objects}, plot_all_masks: {plot_all_masks}")
         print_mem("After extract")
 
         # Cache the result (tensors backed by mmap files - minimal RAM)

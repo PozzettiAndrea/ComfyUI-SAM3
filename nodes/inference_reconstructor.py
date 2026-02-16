@@ -11,28 +11,32 @@ Key design principles:
 3. Cache is invalidated when prompts change
 4. All reconstruction is from immutable state
 """
+import logging
 import weakref
 import gc
 import torch
+import comfy.model_management
 from typing import Optional, Dict, Any
+
+log = logging.getLogger("sam3")
 
 from .video_state import SAM3VideoState, VideoPrompt
 
 
 def print_mem(label: str):
-    """Print current RAM and VRAM usage for debugging memory leaks."""
+    """Log current RAM and VRAM usage for debugging memory leaks."""
     import psutil
     process = psutil.Process()
     rss = process.memory_info().rss / 1024**3
     sys_used = psutil.virtual_memory().used / 1024**3
     sys_total = psutil.virtual_memory().total / 1024**3
     ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
-    if torch.cuda.is_available():
+    if comfy.model_management.get_torch_device().type == "cuda":
         alloc = torch.cuda.memory_allocated() / 1024**3
         reserved = torch.cuda.memory_reserved() / 1024**3
-        print(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
+        log.info(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
     else:
-        print(f"[MEM] {label}: {ram_str}")
+        log.info(f"[MEM] {label}: {ram_str}")
 
 
 # Backward compat alias
@@ -89,22 +93,22 @@ class InferenceReconstructor:
         if not force_reconstruct and cache_key in self._cache:
             cached = self._cache.get(cache_key)
             if cached is not None:
-                print(f"[SAM3 Video] Using cached inference state for {video_state.session_uuid[:8]}")
+                log.info(f"Using cached inference state for {video_state.session_uuid[:8]}")
                 return cached
 
-        print(f"[SAM3 Video] Reconstructing inference state for {video_state.session_uuid[:8]}")
+        log.info(f"Reconstructing inference state for {video_state.session_uuid[:8]}")
         print_mem("Before start_session")
 
         # CRITICAL: Close ALL existing sessions to prevent VRAM leak
         # _ALL_INFERENCE_STATES is a class variable that persists across model reloads
         existing_sessions = list(model._ALL_INFERENCE_STATES.keys())
         if existing_sessions:
-            print(f"[SAM3 Video] Closing {len(existing_sessions)} old sessions to free VRAM")
+            log.info(f"Closing {len(existing_sessions)} old sessions to free VRAM")
             for old_session_id in existing_sessions:
                 try:
                     model.close_session(old_session_id)
                 except Exception as e:
-                    print(f"[SAM3 Video] Warning: Failed to close session {old_session_id[:8]}: {e}")
+                    log.warning(f"Failed to close session {old_session_id[:8]}: {e}")
             print_mem("After closing old sessions")
 
         # Apply config to model
@@ -152,8 +156,8 @@ class InferenceReconstructor:
             points_list = [list(p) for p in points]
             labels_list = list(labels)
 
-            print(f"[SAM3 Video] Applying point prompt: frame={prompt.frame_idx}, obj={prompt.obj_id}")
-            print(f"[SAM3 Video] Points to model: {points_list}, labels: {labels_list}")
+            log.info(f"Applying point prompt: frame={prompt.frame_idx}, obj={prompt.obj_id}")
+            log.info(f"Points to model: {points_list}, labels: {labels_list}")
 
             model.add_prompt(
                 session_id=session_id,
@@ -180,8 +184,8 @@ class InferenceReconstructor:
             points = [[x1, y1], [x2, y2]]
             labels = [2, 3]  # Special box corner labels used by SAM tracker
 
-            print(f"[SAM3 Video] Applying box as corner points: frame={prompt.frame_idx}, obj={prompt.obj_id}")
-            print(f"[SAM3 Video] Box [{x1:.3f}, {y1:.3f}, {x2:.3f}, {y2:.3f}] -> points with labels [2, 3]")
+            log.info(f"Applying box as corner points: frame={prompt.frame_idx}, obj={prompt.obj_id}")
+            log.info(f"Box [{x1:.3f}, {y1:.3f}, {x2:.3f}, {y2:.3f}] -> points with labels [2, 3]")
 
             model.add_prompt(
                 session_id=session_id,
@@ -194,7 +198,7 @@ class InferenceReconstructor:
         elif prompt.prompt_type == "text":
             text = prompt.data[0]
 
-            print(f"[SAM3 Video] Applying text prompt: frame={prompt.frame_idx}, obj={prompt.obj_id}")
+            log.info(f"Applying text prompt: frame={prompt.frame_idx}, obj={prompt.obj_id}")
 
             model.add_prompt(
                 session_id=session_id,
@@ -223,15 +227,14 @@ class InferenceReconstructor:
             except KeyError:
                 pass
 
-        print(f"[SAM3 Video] Invalidated cache for {session_uuid[:8]}")
+        log.info(f"Invalidated cache for {session_uuid[:8]}")
 
     def clear_all(self):
         """Clear all cached inference states."""
         self._cache.clear()
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-        print("[SAM3 Video] Cleared all inference state cache")
+        comfy.model_management.soft_empty_cache()
+        log.info("Cleared all inference state cache")
 
 
 class InferenceStateWrapper:
@@ -260,7 +263,7 @@ class InferenceStateWrapper:
 
     def __del__(self):
         """Cleanup when wrapper is garbage collected."""
-        print(f"[SAM3 Video] Inference state for {self._session_uuid[:8]} garbage collected")
+        log.info(f"Inference state for {self._session_uuid[:8]} garbage collected")
 
 
 # =============================================================================

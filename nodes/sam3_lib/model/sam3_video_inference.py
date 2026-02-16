@@ -23,13 +23,14 @@ from ..perflib.masks_ops import masks_to_boxes as perf_masks_to_boxes
 from torchvision.ops import masks_to_boxes
 from tqdm.auto import tqdm
 from functools import wraps
+import comfy.model_management
 
 logger = get_logger(__name__)
 
 
 def _get_autocast_dtype():
     """Get appropriate autocast dtype based on GPU capability."""
-    if not torch.cuda.is_available():
+    if comfy.model_management.get_torch_device().type != "cuda":
         return None
     major, _ = torch.cuda.get_device_capability()
     if major >= 8:  # Ampere+ supports bf16
@@ -509,8 +510,8 @@ class Sam3VideoInference(Sam3VideoBase):
             # slice those valid entries from the original outputs
             keep_idx = torch.nonzero(keep, as_tuple=True)[0]
 
-            # Only pin_memory if CUDA is available
-            if torch.cuda.is_available():
+            # Only pin_memory if device is CUDA (requires accelerator)
+            if out_binary_masks.device.type == "cuda":
                 keep_idx_gpu = keep_idx.pin_memory().to(
                     device=out_binary_masks.device, non_blocking=True
                 )

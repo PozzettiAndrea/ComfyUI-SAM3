@@ -1,7 +1,10 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates. All Rights Reserved
 
 import contextlib
+import logging
 import os
+
+log = logging.getLogger("sam3")
 import queue
 import re
 import time
@@ -16,6 +19,7 @@ from PIL import Image
 
 from ..logger import get_logger
 from tqdm import tqdm
+import comfy.model_management
 
 logger = get_logger(__name__)
 
@@ -48,7 +52,7 @@ def load_resource_as_video_frames(
     Alternatively, if input is a list of PIL images, convert its format
     """
     if device is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = comfy.model_management.get_torch_device()
     float_dtype = _get_float_dtype(device)
     if isinstance(resource_path, list):
         img_mean = torch.tensor(img_mean, dtype=float_dtype)[:, None, None]
@@ -112,7 +116,7 @@ def load_image_as_single_frame_video(
 ):
     """Load an image as a single-frame video."""
     if device is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = comfy.model_management.get_torch_device()
     float_dtype = _get_float_dtype(device)
     images, image_height, image_width = _load_img_as_tensor(image_path, image_size)
     images = images.unsqueeze(0).to(float_dtype)
@@ -144,7 +148,7 @@ def load_video_frames(
     the model and are loaded to GPU if offload_video_to_cpu=False. This is used by the demo.
     """
     if device is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = comfy.model_management.get_torch_device()
     assert isinstance(video_path, str)
     if video_path.startswith("<load-dummy-video"):
         # Check for pattern <load-dummy-video-N> where N is an integer
@@ -300,7 +304,7 @@ def load_video_frames_from_video_file_using_cv2(
     import cv2  # delay OpenCV import to avoid unnecessary dependency
 
     if device is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = comfy.model_management.get_torch_device()
     float_dtype = _get_float_dtype(device)
 
     # Initialize video capture
@@ -392,8 +396,8 @@ class LazyImageFrameLoader:
         self.video_width = None
         self._num_frames = len(img_paths)
         self._load_count = 0
-        print(f"[SAM3 LazyLoader] Initialized: {self._num_frames} frames, "
-              f"max_cached={self.max_cached_frames}, offload_to_cpu={offload_video_to_cpu}")
+        log.info(f"LazyLoader initialized: {self._num_frames} frames, "
+                 f"max_cached={self.max_cached_frames}, offload_to_cpu={offload_video_to_cpu}")
         # No background thread — load frame 0 to get dimensions
         self.__getitem__(0)
 
@@ -601,14 +605,14 @@ class AsyncVideoFileLoaderWithTorchCodec:
         gpu_id = (
             gpu_device.index
             if gpu_device is not None and gpu_device.index is not None
-            else (torch.cuda.current_device() if torch.cuda.is_available() else None)
+            else (torch.cuda.current_device() if comfy.model_management.get_torch_device().type == "cuda" else None)
         )
         if device is not None:
             out_device = device
         elif offload_video_to_cpu:
             out_device = torch.device("cpu")
         else:
-            out_device = torch.device("cuda") if gpu_device is None else gpu_device
+            out_device = comfy.model_management.get_torch_device() if gpu_device is None else gpu_device
         self.out_device = out_device
         float_dtype = _get_float_dtype(out_device)
         self.gpu_acceleration = gpu_acceleration and out_device.type == "cuda"

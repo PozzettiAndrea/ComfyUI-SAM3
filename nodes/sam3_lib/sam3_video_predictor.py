@@ -17,23 +17,24 @@ import torch
 
 # Adapted imports for vendored version
 import logging
+import comfy.model_management
 logger = logging.getLogger(__name__)
 
 
 def print_mem(label: str):
-    """Print current RAM and VRAM usage for debugging memory leaks."""
+    """Log current RAM and VRAM usage for debugging memory leaks."""
     import psutil
     process = psutil.Process()
     rss = process.memory_info().rss / 1024**3
     sys_used = psutil.virtual_memory().used / 1024**3
     sys_total = psutil.virtual_memory().total / 1024**3
     ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
-    if torch.cuda.is_available():
+    if comfy.model_management.get_torch_device().type == "cuda":
         alloc = torch.cuda.memory_allocated() / 1024**3
         reserved = torch.cuda.memory_reserved() / 1024**3
-        print(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
+        logger.info(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
     else:
-        print(f"[MEM] {label}: {ram_str}")
+        logger.info(f"[MEM] {label}: {ram_str}")
 
 
 def print_vram(label: str):
@@ -64,10 +65,7 @@ class Sam3VideoPredictor:
         from .model_builder import build_sam3_video_model
 
         # Determine device
-        if torch.cuda.is_available():
-            self.device = torch.device("cuda")
-        else:
-            self.device = torch.device("cpu")
+        self.device = comfy.model_management.get_torch_device()
 
         logger.info(f"Sam3VideoPredictor using device: {self.device}")
 
@@ -160,7 +158,7 @@ class Sam3VideoPredictor:
             "session_id": session_id,
             "start_time": time.time(),
         }
-        print(f"[SAM3 Video] Active sessions in _ALL_INFERENCE_STATES: {len(self._ALL_INFERENCE_STATES)}")
+        logger.info(f"Active sessions in _ALL_INFERENCE_STATES: {len(self._ALL_INFERENCE_STATES)}")
         logger.debug(
             f"started new session {session_id}; {self._get_session_stats()}; "
             f"{self._get_torch_and_gpu_properties()}"
@@ -278,7 +276,7 @@ class Sam3VideoPredictor:
         times on the same "session_id".
         """
         print_vram(f"Before close_session ({session_id[:8]})")
-        print(f"[SAM3 Video] Sessions before close: {len(self._ALL_INFERENCE_STATES)}")
+        logger.info(f"Sessions before close: {len(self._ALL_INFERENCE_STATES)}")
         session = self._ALL_INFERENCE_STATES.pop(session_id, None)
         if session is None:
             logger.warning(
@@ -288,11 +286,10 @@ class Sam3VideoPredictor:
         else:
             del session
             gc.collect()
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
+            comfy.model_management.soft_empty_cache()
             logger.info(f"removed session {session_id}; {self._get_session_stats()}")
         print_vram(f"After close_session ({session_id[:8]})")
-        print(f"[SAM3 Video] Sessions after close: {len(self._ALL_INFERENCE_STATES)}")
+        logger.info(f"Sessions after close: {len(self._ALL_INFERENCE_STATES)}")
         return {"is_success": True}
 
     def _get_session(self, session_id):
@@ -310,7 +307,7 @@ class Sam3VideoPredictor:
             f"'{session_id}' ({session['state']['num_frames']} frames)"
             for session_id, session in self._ALL_INFERENCE_STATES.items()
         ]
-        if torch.cuda.is_available():
+        if comfy.model_management.get_torch_device().type == "cuda":
             mem_stats = (
                 f"GPU memory: {torch.cuda.memory_allocated() // 1024**2} MiB used and "
                 f"{torch.cuda.memory_reserved() // 1024**2} MiB reserved"
@@ -324,7 +321,7 @@ class Sam3VideoPredictor:
 
     def _get_torch_and_gpu_properties(self):
         """Get a string for PyTorch and GPU properties (for logging and debugging)."""
-        if torch.cuda.is_available():
+        if comfy.model_management.get_torch_device().type == "cuda":
             torch_and_gpu_str = (
                 f"torch: {torch.__version__} with CUDA arch {torch.cuda.get_arch_list()}, "
                 f"GPU device: {torch.cuda.get_device_properties(torch.cuda.current_device())}"

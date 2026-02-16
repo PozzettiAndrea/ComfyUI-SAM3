@@ -5,6 +5,8 @@ import logging
 import numpy as np
 import torch
 
+log = logging.getLogger("sam3")
+
 from .masks_ops import mask_iou
 
 
@@ -71,17 +73,14 @@ def generic_nms(
             # GPU NMS not available - show one-time warning with install instructions
             global _SHOWN_NMS_WARNING
             if not _SHOWN_NMS_WARNING:
-                print("\n" + "="*80)
-                print("[WARNING] GPU-accelerated NMS not available - video tracking is 5-10x slower")
-                print("="*80)
-                print("To enable GPU acceleration, run:")
-                print("  cd custom_nodes/ComfyUI-SAM3")
-                print("  python install.py")
-                print("="*80 + "\n")
+                log.warning(
+                    "GPU-accelerated NMS not available - video tracking is 5-10x slower. "
+                    "To enable GPU acceleration, run: cd custom_nodes/ComfyUI-SAM3 && python install.py"
+                )
                 _SHOWN_NMS_WARNING = True
 
             # Fall back to CPU implementation
-            logging.debug("GPU NMS not available, falling back to CPU implementation")
+            log.debug("GPU NMS not available, falling back to CPU implementation")
             return generic_nms_cpu(ious, scores, iou_threshold)
 
     return generic_nms_cpu(ious, scores, iou_threshold)

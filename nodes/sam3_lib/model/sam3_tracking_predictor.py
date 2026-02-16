@@ -4,6 +4,7 @@ import logging
 from collections import OrderedDict
 
 import torch
+import comfy.model_management
 
 from ..model.sam3_tracker_base import concat_points, NO_OBJ_SCORE, Sam3TrackerBase
 from ..model.sam3_tracker_utils import fill_holes_in_mask_scores
@@ -13,7 +14,7 @@ from tqdm.auto import tqdm
 
 def _get_autocast_dtype():
     """Get appropriate autocast dtype based on GPU capability."""
-    if not torch.cuda.is_available():
+    if comfy.model_management.get_torch_device().type != "cuda":
         return None
     major, _ = torch.cuda.get_device_capability()
     if major >= 8:  # Ampere+ supports bf16
@@ -92,10 +93,10 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
         # and from 24 to 21 when tracking two objects)
         inference_state["offload_state_to_cpu"] = offload_state_to_cpu
         inference_state["device"] = self.device
-        if offload_state_to_cpu or not torch.cuda.is_available():
+        if offload_state_to_cpu or comfy.model_management.get_torch_device().type != "cuda":
             inference_state["storage_device"] = torch.device("cpu")
         else:
-            inference_state["storage_device"] = torch.device("cuda")
+            inference_state["storage_device"] = comfy.model_management.get_torch_device()
 
         if video_path is not None:
             images, video_height, video_width = load_video_frames(
@@ -1112,7 +1113,7 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
         storage_device = inference_state["storage_device"]
         maskmem_features = current_out["maskmem_features"]
         if maskmem_features is not None:
-            if torch.cuda.is_available():
+            if comfy.model_management.get_torch_device().type == "cuda":
                 maskmem_features = maskmem_features.to(torch.bfloat16)
             maskmem_features = maskmem_features.to(storage_device, non_blocking=torch.cuda.is_available())
         pred_masks_gpu = current_out["pred_masks"]
@@ -1164,7 +1165,7 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
 
         # optionally offload the output to CPU memory to save GPU space
         storage_device = inference_state["storage_device"]
-        if torch.cuda.is_available():
+        if comfy.model_management.get_torch_device().type == "cuda":
             maskmem_features = maskmem_features.to(torch.bfloat16)
         maskmem_features = maskmem_features.to(storage_device, non_blocking=torch.cuda.is_available())
         # "maskmem_pos_enc" is the same across frames, so we only need to store one copy of it
