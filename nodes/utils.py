@@ -135,44 +135,40 @@ def visualize_masks_on_image(image, masks, boxes=None, scores=None, alpha=0.5):
     elif isinstance(image, np.ndarray):
         image = Image.fromarray((image * 255).astype(np.uint8) if image.max() <= 1.0 else image.astype(np.uint8))
 
-    # Convert to numpy for processing
-    img_np = np.array(image).astype(np.float32) / 255.0
-
-    # Resize masks to image size if needed
+    # Use torch on GPU for fast mask overlay, fall back to CPU torch
     if isinstance(masks, torch.Tensor):
-        masks_np = masks.cpu().numpy()
+        masks_t = masks
     else:
-        masks_np = masks
+        masks_t = torch.from_numpy(np.asarray(masks))
 
-    # Create colored overlay
-    np.random.seed(42)  # Consistent colors
-    overlay = img_np.copy()
+    device = masks_t.device if masks_t.is_cuda else torch.device('cpu')
+    img_t = torch.from_numpy(np.array(image)).to(device=device, dtype=torch.float32) / 255.0  # [H, W, 3]
+    H, W = img_t.shape[:2]
+    overlay = img_t.clone()
 
-    for i, mask in enumerate(masks_np):
-        # Squeeze extra dimensions (masks may be [1, H, W] or [H, W])
+    # Pre-generate consistent colors
+    rng = torch.Generator(device='cpu').manual_seed(42)
+    colors = torch.rand(masks_t.shape[0], 3, generator=rng, device=device)
+
+    for i in range(masks_t.shape[0]):
+        mask = masks_t[i]
         while mask.ndim > 2:
             mask = mask.squeeze(0)
 
         # Resize mask to image size if needed
-        if mask.shape != img_np.shape[:2]:
-            from PIL import Image as PILImage
-            mask_pil = PILImage.fromarray((mask * 255).astype(np.uint8))
-            mask_pil = mask_pil.resize((img_np.shape[1], img_np.shape[0]), PILImage.NEAREST)
-            mask = np.array(mask_pil).astype(np.float32) / 255.0
+        if mask.shape[0] != H or mask.shape[1] != W:
+            mask = torch.nn.functional.interpolate(
+                mask[None, None].float(), size=(H, W), mode='nearest'
+            )[0, 0]
 
-        # Random color for this mask
-        color = np.random.rand(3)
-
-        # Apply colored mask
-        for c in range(3):
-            overlay[:, :, c] = np.where(
-                mask > 0.5,
-                overlay[:, :, c] * (1 - alpha) + color[c] * alpha,
-                overlay[:, :, c]
-            )
+        # Vectorized: single where over all 3 channels via broadcasting
+        mask_3d = (mask > 0.5).unsqueeze(-1)  # [H, W, 1]
+        color = colors[i]  # [3]
+        overlay = torch.where(mask_3d, overlay * (1 - alpha) + color * alpha, overlay)
 
     # Convert back to PIL
-    result = Image.fromarray((overlay * 255).astype(np.uint8))
+    result_np = (overlay.clamp(0, 1).cpu().numpy() * 255).astype(np.uint8)
+    result = Image.fromarray(result_np)
 
     # Draw boxes if provided
     if boxes is not None:
@@ -184,12 +180,10 @@ def visualize_masks_on_image(image, masks, boxes=None, scores=None, alpha=0.5):
         else:
             boxes_np = boxes
 
+        colors_np = (colors.cpu().numpy() * 255).astype(int)
         for i, box in enumerate(boxes_np):
             x0, y0, x1, y1 = box
-
-            # Random color for this box (same seed for consistency)
-            np.random.seed(42 + i)
-            color_int = tuple((np.random.rand(3) * 255).astype(int).tolist())
+            color_int = tuple(colors_np[i].tolist())
 
             # Draw box
             draw.rectangle([x0, y0, x1, y1], outline=color_int, width=3)
