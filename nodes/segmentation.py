@@ -10,7 +10,6 @@ import logging
 import torch
 import numpy as np
 import gc
-import comfy.model_management
 
 log = logging.getLogger("sam3")
 
@@ -78,10 +77,6 @@ class SAM3Grounding:
                     "step": 1,
                     "tooltip": "Maximum number of detections to return (-1 for all)"
                 }),
-                "offload_model": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Move model to CPU after segmentation to free VRAM (slower next run)"
-                }),
             }
         }
 
@@ -92,7 +87,7 @@ class SAM3Grounding:
 
     def segment(self, sam3_model, image, confidence_threshold=0.2,
                 text_prompt="", positive_boxes=None, negative_boxes=None,
-                max_detections=-1, offload_model=False):
+                max_detections=-1):
         """
         Perform SAM3 grounding with text prompts
 
@@ -141,14 +136,6 @@ class SAM3Grounding:
             positive_boxes, negative_boxes, max_detections
         )
 
-        # Handle post-inference memory based on model's memory_mode
-        if offload_model:
-            sam3_model.unpatch_model()
-            gc.collect()
-            comfy.model_management.soft_empty_cache()
-        else:
-            sam3_model.handle_post_inference_memory()
-
         return result
 
     def _segment_grounding(self, sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
@@ -156,6 +143,7 @@ class SAM3Grounding:
         """
         Grounding mode - text-based detection with optional box refinement.
         """
+        import comfy.model_management
         import json
 
         processor = sam3_model.processor
@@ -541,10 +529,6 @@ class SAM3Segmentation:
                     "default": True,
                     "tooltip": "If True, automatically selects the highest-scoring mask. If False, outputs all mask candidates (3 if use_multimask=True) so you can choose."
                 }),
-                "offload_model": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Move model to CPU after segmentation to free VRAM (slower next run)"
-                }),
             }
         }
 
@@ -554,7 +538,7 @@ class SAM3Segmentation:
     CATEGORY = "SAM3"
 
     def segment(self, sam3_model, image, positive_points=None, negative_points=None,
-                box=None, refinement_iterations=0, use_multimask=True, output_best_mask=True, offload_model=False):
+                box=None, refinement_iterations=0, use_multimask=True, output_best_mask=True):
         """
         Perform SAM2-style interactive segmentation at point/box locations.
 
@@ -745,14 +729,6 @@ class SAM3Segmentation:
         gc.collect()
         comfy.model_management.soft_empty_cache()
 
-        # Handle post-inference memory based on model's memory_mode
-        if offload_model:
-            sam3_model.unpatch_model()
-            gc.collect()
-            comfy.model_management.soft_empty_cache()
-        else:
-            sam3_model.handle_post_inference_memory()
-
         return (comfy_masks, low_res_tensor, vis_tensor, boxes_json, scores_json)
 
 
@@ -794,10 +770,6 @@ class SAM3MultipromptSegmentation:
                     "default": False,
                     "tooltip": "If True, generates 3 mask candidates at different granularities for each prompt. If False, generates single mask directly."
                 }),
-                "offload_model": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Move model to CPU after segmentation to free VRAM (slower next run)"
-                }),
             }
         }
 
@@ -807,7 +779,7 @@ class SAM3MultipromptSegmentation:
     CATEGORY = "SAM3"
 
     def segment(self, sam3_model, image, multi_prompts, refinement_iterations=0,
-                use_multimask=False, offload_model=False):
+                use_multimask=False):
         """
         Perform multi-region segmentation.
 
@@ -974,14 +946,6 @@ class SAM3MultipromptSegmentation:
         del state
         gc.collect()
         comfy.model_management.soft_empty_cache()
-
-        # Handle post-inference memory based on model's memory_mode
-        if offload_model:
-            sam3_model.unpatch_model()
-            gc.collect()
-            comfy.model_management.soft_empty_cache()
-        else:
-            sam3_model.handle_post_inference_memory()
 
         return (comfy_masks, vis_tensor)
 

@@ -399,7 +399,7 @@ def create_video_state_from_file(
         ret, frame = cap.read()
         if not ret:
             break
-        # BGR → RGB, save as JPEG (only 1 frame in RAM at a time)
+        # BGR -> RGB, save as JPEG (only 1 frame in RAM at a time)
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img = PILImage.fromarray(frame_rgb)
         img.save(os.path.join(temp_dir, f"{frame_idx:05d}.jpg"))

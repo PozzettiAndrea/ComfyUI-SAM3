@@ -749,7 +749,7 @@ class ViT(nn.Module):
             self.pos_embed = None
 
         # stochastic depth decay rule
-        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth, device="cpu")]
 
         self.blocks = nn.ModuleList()
         cur_stage = 1

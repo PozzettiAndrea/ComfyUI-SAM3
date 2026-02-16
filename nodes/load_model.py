@@ -42,10 +42,6 @@ class LoadSAM3Model:
                     "default": "auto",
                     "tooltip": "Attention backend. auto: best available (sage > flash_attn > sdpa). sdpa: PyTorch native. flash_attn: Tri Dao's FlashAttention (FA2/FA3, requires flash-attn package). sage: SageAttention (auto-detects v3 for Blackwell or v2, requires sageattention/sageattn3 package)."
                 }),
-                "memory_mode": (["cpu_offload", "cache_gpu", "unload"], {
-                    "default": "cpu_offload",
-                    "tooltip": "Memory after inference. cpu_offload: move to CPU (default). cache_gpu: keep in VRAM (fastest repeated runs). unload: aggressively free all VRAM."
-                }),
                 "compile": ("BOOLEAN", {
                     "default": False,
                     "tooltip": "Enable torch.compile for faster inference. Model loading takes longer (pre-compiles all code paths), but inference is significantly faster on every run."
@@ -59,7 +55,7 @@ class LoadSAM3Model:
     CATEGORY = "SAM3"
 
     def load_model(self, model_path, precision="auto", attention="auto",
-                   memory_mode="cpu_offload", compile=False):
+                   compile=False):
         from .sam3_model_patcher import SAM3UnifiedModel
         from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
         from .sam3_lib.model.sam3_image_processor import Sam3Processor
@@ -127,7 +123,6 @@ class LoadSAM3Model:
             processor=processor,
             load_device=load_device,
             offload_device=offload_device,
-            memory_mode=memory_mode,
             dtype=dtype,
         )
 

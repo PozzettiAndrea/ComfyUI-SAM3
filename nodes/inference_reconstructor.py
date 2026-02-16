@@ -15,7 +15,6 @@ import logging
 import weakref
 import gc
 import torch
-import comfy.model_management
 from typing import Optional, Dict, Any
 
 log = logging.getLogger("sam3")
@@ -25,6 +24,7 @@ from .video_state import SAM3VideoState, VideoPrompt
 
 def print_mem(label: str):
     """Log current RAM and VRAM usage for debugging memory leaks."""
+    import comfy.model_management
     import psutil
     process = psutil.Process()
     rss = process.memory_info().rss / 1024**3
@@ -231,6 +231,7 @@ class InferenceReconstructor:
 
     def clear_all(self):
         """Clear all cached inference states."""
+        import comfy.model_management
         self._cache.clear()
         gc.collect()
         comfy.model_management.soft_empty_cache()

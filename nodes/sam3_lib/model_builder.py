@@ -869,6 +869,25 @@ def build_sam3_video_model(
         if unexpected_keys:
             log.info(f"Unexpected keys: {len(unexpected_keys)}")
 
+    # Materialize leftover meta tensors (non-persistent buffers not in checkpoint)
+    # before moving to device — .to() cannot copy from meta tensors
+    for module in model.modules():
+        for name, buf in module._buffers.items():
+            if buf is not None and buf.device.type == 'meta':
+                module._buffers[name] = torch.zeros(
+                    buf.shape, dtype=buf.dtype, device='cpu'
+                )
+        for name, param in module._parameters.items():
+            if param is not None and param.device.type == 'meta':
+                fill = 1.0 if 'weight' in name else 0.0
+                module._parameters[name] = nn.Parameter(
+                    torch.full(param.shape, fill, dtype=param.dtype, device='cpu'),
+                    requires_grad=param.requires_grad,
+                )
+        # Rebuild non-persistent buffers that need specific initialization
+        if hasattr(module, 'build_causal_mask') and hasattr(module, 'attn_mask'):
+            module.attn_mask = module.build_causal_mask()
+
     # Keep model in float32; autocast will convert activations to bfloat16 dynamically
     model.to(device=device)
     return model
