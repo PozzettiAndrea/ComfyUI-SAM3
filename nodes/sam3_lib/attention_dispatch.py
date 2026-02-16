@@ -13,7 +13,7 @@ Speed tiers by GPU generation:
 - Blackwell (SM 10.x): sage3 > FA4 > sage2 > FA2 > sdpa
 - Hopper   (SM 9.0):   FA3  > sage2 > FA2 > sdpa
 - Ada      (SM 8.9):   sage2 > FA2 > sdpa
-- Ampere   (SM 8.x):   sage2 ≈ FA2 > sdpa
+- Ampere   (SM 8.x):   sage2 ~ FA2 > sdpa
 - Older:                sdpa only
 """
 
@@ -220,7 +220,7 @@ def dispatch_attention(q, k, v, attn_mask=None, dropout_p=0.0):
 # ---------------------------------------------------------------------------
 
 def _dispatch_flash_attn_fa2(q, k, v, dropout_p):
-    """FlashAttention 2 — fp16/bf16, Ampere+. Layout: (B,H,N,D) → (B,N,H,D)."""
+    """FlashAttention 2 -- fp16/bf16, Ampere+. Layout: (B,H,N,D) -> (B,N,H,D)."""
     if q.dtype == torch.float32:
         logger.debug("FA2 requires fp16/bf16, falling back to sdpa for this call")
         return F.scaled_dot_product_attention(q, k, v, dropout_p=dropout_p)
@@ -238,7 +238,7 @@ def _dispatch_flash_attn_fa2(q, k, v, dropout_p):
 
 @torch.compiler.disable
 def _dispatch_flash_attn_fp8(q, k, v):
-    """FlashAttention 3/4 — FP8, Hopper/Blackwell. Layout: (B,H,N,D) → (B,N,H,D)."""
+    """FlashAttention 3/4 -- FP8, Hopper/Blackwell. Layout: (B,H,N,D) -> (B,N,H,D)."""
     try:
         from flash_attn_interface import flash_attn_func as fa_func
         orig_dtype = q.dtype

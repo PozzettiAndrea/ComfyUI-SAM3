@@ -15,7 +15,6 @@ import gc
 import logging
 import torch
 import numpy as np
-import comfy.model_management
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -46,6 +45,7 @@ def _get_autocast_dtype():
     Get appropriate autocast dtype based on GPU capability.
     Returns None if autocast should not be used.
     """
+    import comfy.model_management
     if comfy.model_management.get_torch_device().type != "cuda":
         return None
     major, _ = torch.cuda.get_device_capability()
@@ -59,6 +59,7 @@ def _get_autocast_dtype():
 
 def _get_autocast_context():
     """Get autocast context manager based on GPU capability."""
+    import comfy.model_management
     if comfy.model_management.get_torch_device().type != "cuda":
         return torch.no_grad()
     dtype = _get_autocast_dtype()
@@ -73,6 +74,7 @@ def _get_autocast_context():
 
 def print_mem(label: str, detailed: bool = False):
     """Log current RAM and VRAM usage for debugging memory leaks."""
+    import comfy.model_management
     import psutil
     process = psutil.Process()
     rss = process.memory_info().rss / 1024**3
@@ -467,10 +469,6 @@ class SAM3Propagate:
                     "default": "forward",
                     "tooltip": "Propagation direction: forward (future frames), backward (past frames), or both directions"
                 }),
-                "offload_model": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Move model to CPU after propagation to free VRAM (slower next run)"
-                }),
             }
         }
 
@@ -480,7 +478,7 @@ class SAM3Propagate:
     CATEGORY = "SAM3/video"
 
     @classmethod
-    def IS_CHANGED(cls, sam3_model, video_state, start_frame=0, end_frame=-1, direction="forward", offload_model=False):
+    def IS_CHANGED(cls, sam3_model, video_state, start_frame=0, end_frame=-1, direction="forward"):
         # Use object identity for caching - if upstream node is cached,
         # it returns the same object, so id() will match
         # This is more reliable than hashing content since video_state is immutable
@@ -489,7 +487,8 @@ class SAM3Propagate:
         log.info(f"IS_CHANGED SAM3Propagate: returning {result}")
         return result
 
-    def propagate(self, sam3_model, video_state, start_frame=0, end_frame=-1, direction="forward", offload_model=False):
+    def propagate(self, sam3_model, video_state, start_frame=0, end_frame=-1, direction="forward"):
+        import comfy.model_management
         """Run propagation using reconstructed inference state."""
         # Create cache key using video_state object id (since it's immutable and cached upstream)
         cache_key = (id(video_state), start_frame, end_frame, direction)
@@ -498,15 +497,6 @@ class SAM3Propagate:
         if cache_key in SAM3Propagate._cache:
             cached = SAM3Propagate._cache[cache_key]
             log.info(f"Propagate CACHE HIT - returning cached result for session={video_state.session_uuid[:8]}")
-            # Still need to handle offload if requested
-            if offload_model:
-                if hasattr(sam3_model, 'model'):
-                    sam3_model.model.cpu()
-                gc.collect()
-                comfy.model_management.soft_empty_cache()
-                print_mem("After model offload")
-            else:
-                sam3_model.handle_post_inference_memory()
             return cached
 
         log.info(f"Propagate CACHE MISS - running propagation for session={video_state.session_uuid[:8]}")
@@ -601,18 +591,6 @@ class SAM3Propagate:
         # Clean up
         gc.collect()
         comfy.model_management.soft_empty_cache()
-
-        # Handle post-inference memory based on model's memory_mode
-        if offload_model:
-            if hasattr(sam3_model, 'model'):
-                sam3_model.model.cpu()
-            from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
-            Sam3VideoPredictor._ALL_INFERENCE_STATES.clear()
-            gc.collect()
-            comfy.model_management.soft_empty_cache()
-            print_mem("After model offload")
-        else:
-            sam3_model.handle_post_inference_memory()
 
         # Cache the result
         result = (masks_dict, scores_dict, video_state)
