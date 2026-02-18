@@ -14,9 +14,12 @@ from torchvision.transforms import v2
 class Sam3Processor:
     """ """
 
-    def __init__(self, model, resolution=1008, device="cuda", confidence_threshold=0.2):
+    def __init__(self, model, resolution=1008, device=None, confidence_threshold=0.2):
+        import comfy.model_management
         self.model = model
         self.resolution = resolution
+        if device is None:
+            device = str(comfy.model_management.get_torch_device())
         self.device = device
         self.transform = v2.Compose(
             [

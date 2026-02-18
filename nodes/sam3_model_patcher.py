@@ -282,19 +282,21 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
         comfy.model_management.soft_empty_cache()
 
 
-def create_sam3_model_patcher(model, processor, device="cuda"):
+def create_sam3_model_patcher(model, processor, device=None):
     """
     Factory function to create a SAM3ModelPatcher.
 
     Args:
         model: SAM3 model instance
         processor: Sam3Processor instance
-        device: Target inference device
+        device: Target inference device (defaults to comfy.model_management.get_torch_device())
 
     Returns:
         SAM3ModelPatcher instance ready for ComfyUI
     """
     import comfy.model_management
+    if device is None:
+        device = comfy.model_management.get_torch_device()
     load_device = comfy.model_management.get_torch_device()
     offload_device = comfy.model_management.unet_offload_device()
 

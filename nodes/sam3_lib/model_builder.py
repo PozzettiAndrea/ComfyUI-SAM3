@@ -690,8 +690,8 @@ def download_ckpt_from_hf():
     Returns:
         Path to downloaded checkpoint
     """
-    SAM3_MODEL_ID = "1038lab/sam3"
-    SAM3_CKPT_NAME = "sam3.pt"
+    SAM3_MODEL_ID = "apozz/sam3-safetensors"
+    SAM3_CKPT_NAME = "sam3.safetensors"
 
     checkpoint_path = hf_hub_download(
         repo_id=SAM3_MODEL_ID,
@@ -726,7 +726,7 @@ def build_sam3_video_model(
     if device is None:
         device = comfy.model_management.get_torch_device()
 
-    from .attention_dispatch import set_backend as set_attention_backend
+    from comfy_attn import set_backend as set_attention_backend
     set_attention_backend(attention_backend)
 
     if bpe_path is None:

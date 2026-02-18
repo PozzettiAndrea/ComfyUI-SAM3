@@ -12,7 +12,7 @@ from .rope import apply_rotary_enc, apply_rotary_enc_real, compute_axial_cis
 from torch import nn, Tensor
 
 from .common import MLPBlock
-from ..attention_dispatch import dispatch_attention
+from comfy_attn import dispatch_attention
 
 
 class TwoWayTransformer(nn.Module):
