@@ -19,7 +19,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
 
-from ..attention_dispatch import dispatch_attention
+from comfy_attn import dispatch_attention
 
 try:
     from timm.layers import DropPath, Mlp, trunc_normal_

@@ -29,7 +29,7 @@ class LoadSAM3Model:
         return {
             "required": {
                 "model_path": ("STRING", {
-                    "default": "models/sam3/sam3.pt",
+                    "default": "models/sam3/sam3.safetensors",
                     "tooltip": "Path to SAM3 model checkpoint (relative to ComfyUI root or absolute). Auto-downloads if not found."
                 }),
             },
@@ -141,11 +141,11 @@ class LoadSAM3Model:
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
         hf_hub_download(
-            repo_id="1038lab/sam3",
-            filename="sam3.pt",
+            repo_id="apozz/sam3-safetensors",
+            filename="sam3.safetensors",
             local_dir=str(target_path.parent),
         )
-        log.info(f"Model downloaded to: {target_path.parent / 'sam3.pt'}")
+        log.info(f"Model downloaded to: {target_path.parent / 'sam3.safetensors'}")
 
 
 NODE_CLASS_MAPPINGS = {

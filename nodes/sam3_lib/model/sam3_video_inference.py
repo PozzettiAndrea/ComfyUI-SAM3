@@ -46,7 +46,7 @@ def autocast_if_cuda(func):
     def wrapper(*args, **kwargs):
         dtype = _get_autocast_dtype()
         if dtype is not None:
-            with torch.autocast(device_type="cuda", dtype=dtype):
+            with torch.autocast(device_type=comfy.model_management.get_torch_device().type, dtype=dtype):
                 return func(*args, **kwargs)
         return func(*args, **kwargs)
     return wrapper

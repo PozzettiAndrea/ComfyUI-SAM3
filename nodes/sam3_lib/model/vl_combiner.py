@@ -131,8 +131,11 @@ class SAM3VLBackbone(nn.Module):
         return output
 
     def forward_text(
-        self, captions, input_boxes=None, additional_text=None, device="cuda"
+        self, captions, input_boxes=None, additional_text=None, device=None
     ):
+        if device is None:
+            import comfy.model_management
+            device = comfy.model_management.get_torch_device()
         return activation_ckpt_wrapper(self._forward_text_no_ack_ckpt)(
             captions=captions,
             input_boxes=input_boxes,
@@ -146,8 +149,11 @@ class SAM3VLBackbone(nn.Module):
         captions,
         input_boxes=None,
         additional_text=None,
-        device="cuda",
+        device=None,
     ):
+        if device is None:
+            import comfy.model_management
+            device = comfy.model_management.get_torch_device()
         output = {}
 
         # Forward through text_encoder

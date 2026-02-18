@@ -64,7 +64,7 @@ def _get_autocast_context():
         return torch.no_grad()
     dtype = _get_autocast_dtype()
     if dtype is not None:
-        return torch.autocast(device_type="cuda", dtype=dtype)
+        return torch.autocast(device_type=comfy.model_management.get_torch_device().type, dtype=dtype)
     return torch.no_grad()
 
 

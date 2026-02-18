@@ -62,7 +62,7 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
         # Use autocast with dtype based on GPU capability
         autocast_dtype = _get_autocast_dtype()
         if autocast_dtype is not None:
-            self.bf16_context = torch.autocast(device_type="cuda", dtype=autocast_dtype)
+            self.bf16_context = torch.autocast(device_type=comfy.model_management.get_torch_device().type, dtype=autocast_dtype)
             self.bf16_context.__enter__()  # keep using for the entire model process
         else:
             self.bf16_context = None
