@@ -20,28 +20,7 @@ from typing import Optional, Dict, Any
 log = logging.getLogger("sam3")
 
 from .video_state import SAM3VideoState, VideoPrompt
-
-
-def print_mem(label: str):
-    """Log current RAM and VRAM usage for debugging memory leaks."""
-    import comfy.model_management
-    import psutil
-    process = psutil.Process()
-    rss = process.memory_info().rss / 1024**3
-    sys_used = psutil.virtual_memory().used / 1024**3
-    sys_total = psutil.virtual_memory().total / 1024**3
-    ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
-    if comfy.model_management.get_torch_device().type == "cuda":
-        alloc = torch.cuda.memory_allocated() / 1024**3
-        reserved = torch.cuda.memory_reserved() / 1024**3
-        log.info(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
-    else:
-        log.info(f"[MEM] {label}: {ram_str}")
-
-
-# Backward compat alias
-def print_vram(label: str):
-    print_mem(label)
+from .utils import print_mem, print_vram
 
 
 class InferenceReconstructor:

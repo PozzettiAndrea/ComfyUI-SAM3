@@ -19,20 +19,16 @@ except ImportError:
 class LoadSAM3Model:
     """
     Node to load SAM3 model with ComfyUI memory management integration.
-
-    Specify the path to the model checkpoint. If the model doesn't exist,
-    it will be automatically downloaded from HuggingFace.
+    Auto-downloads the model from HuggingFace if not found.
     """
+
+    MODEL_DIR = "models/sam3"
+    MODEL_FILENAME = "sam3.safetensors"
 
     @classmethod
     def INPUT_TYPES(cls):
         return {
-            "required": {
-                "model_path": ("STRING", {
-                    "default": "models/sam3/sam3.safetensors",
-                    "tooltip": "Path to SAM3 model checkpoint (relative to ComfyUI root or absolute). Auto-downloads if not found."
-                }),
-            },
+            "required": {},
             "optional": {
                 "precision": (["auto", "bf16", "fp16", "fp32"], {
                     "default": "auto",
@@ -54,25 +50,22 @@ class LoadSAM3Model:
     FUNCTION = "load_model"
     CATEGORY = "SAM3"
 
-    def load_model(self, model_path, precision="auto", attention="auto",
-                   compile=False):
+    def load_model(self, precision="auto", attention="auto", compile=False):
         from .sam3_model_patcher import SAM3UnifiedModel
         from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
-        from .sam3_lib.model.sam3_image_processor import Sam3Processor
+        from .sam3_lib.utils import Sam3Processor
         import comfy.model_management
 
         load_device = comfy.model_management.get_torch_device()
         offload_device = comfy.model_management.unet_offload_device()
 
-        # Resolve checkpoint path
-        checkpoint_path = Path(model_path)
-        if not checkpoint_path.is_absolute():
-            checkpoint_path = Path(comfy_base_path) / checkpoint_path
+        # Fixed checkpoint path
+        checkpoint_path = Path(comfy_base_path) / self.MODEL_DIR / self.MODEL_FILENAME
 
         # Auto-download if needed
         if not checkpoint_path.exists():
             log.info(f"Model not found at {checkpoint_path}, downloading from HuggingFace...")
-            self._download_from_huggingface(checkpoint_path)
+            self._download_from_huggingface()
 
         # BPE path for tokenizer
         bpe_path = str(Path(__file__).parent / "sam3_lib" / "bpe_simple_vocab_16e6.txt.gz")
@@ -130,22 +123,22 @@ class LoadSAM3Model:
 
         return (unified_model,)
 
-    def _download_from_huggingface(self, target_path):
+    def _download_from_huggingface(self):
         if not HF_HUB_AVAILABLE:
             raise ImportError(
                 "[SAM3] huggingface_hub is required to download models.\n"
                 "Please install it with: pip install huggingface_hub"
             )
 
-        target_path = Path(target_path)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
+        model_dir = Path(comfy_base_path) / self.MODEL_DIR
+        model_dir.mkdir(parents=True, exist_ok=True)
 
         hf_hub_download(
             repo_id="apozz/sam3-safetensors",
-            filename="sam3.safetensors",
-            local_dir=str(target_path.parent),
+            filename=self.MODEL_FILENAME,
+            local_dir=str(model_dir),
         )
-        log.info(f"Model downloaded to: {target_path.parent / 'sam3.safetensors'}")
+        log.info(f"Model downloaded to: {model_dir / self.MODEL_FILENAME}")
 
 
 NODE_CLASS_MAPPINGS = {
