@@ -68,37 +68,7 @@ def _get_autocast_context():
     return torch.no_grad()
 
 
-# =============================================================================
-# VRAM Debug Utility
-# =============================================================================
-
-def print_mem(label: str, detailed: bool = False):
-    """Log current RAM and VRAM usage for debugging memory leaks."""
-    import comfy.model_management
-    import psutil
-    process = psutil.Process()
-    rss = process.memory_info().rss / 1024**3
-    sys_total = psutil.virtual_memory().total / 1024**3
-    sys_used = psutil.virtual_memory().used / 1024**3
-    ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
-
-    if comfy.model_management.get_torch_device().type == "cuda":
-        alloc = torch.cuda.memory_allocated() / 1024**3
-        reserved = torch.cuda.memory_reserved() / 1024**3
-        log.info(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
-        if detailed:
-            stats = torch.cuda.memory_stats()
-            log.info(f"[MEM]   Active: {stats.get('active_bytes.all.current', 0) / 1024**3:.2f}GB")
-            log.info(f"[MEM]   Inactive: {stats.get('inactive_split_bytes.all.current', 0) / 1024**3:.2f}GB")
-            log.info(f"[MEM]   Allocated retries: {stats.get('num_alloc_retries', 0)}")
-    else:
-        log.info(f"[MEM] {label}: {ram_str}")
-
-
-# Keep backward compat alias
-def print_vram(label: str, detailed: bool = False):
-    """Alias for print_mem."""
-    print_mem(label, detailed)
+from .utils import print_mem, print_vram
 
 
 # =============================================================================

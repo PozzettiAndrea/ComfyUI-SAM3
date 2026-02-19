@@ -62,7 +62,7 @@ class Sam3VideoPredictor:
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
         self._compile = compile
-        from .model_builder import build_sam3_video_model
+        from . import build_sam3_video_model
 
         # Determine device
         self.device = comfy.model_management.get_torch_device()

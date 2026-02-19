@@ -8,19 +8,6 @@ from PIL import Image
 from pathlib import Path
 
 
-def get_comfy_models_dir():
-    """Get the ComfyUI models directory"""
-    # Try to find ComfyUI root by going up from custom_nodes
-    current = Path(__file__).parent.parent.absolute()  # ComfyUI-SAM3
-    comfy_custom_nodes = current.parent  # custom_nodes
-    comfy_root = comfy_custom_nodes.parent  # ComfyUI root
-
-    models_dir = comfy_root / "models" / "sam3"
-    models_dir.mkdir(parents=True, exist_ok=True)
-
-    return str(models_dir)
-
-
 def comfy_image_to_pil(image):
     """
     Convert ComfyUI image tensor to PIL Image
@@ -148,7 +135,7 @@ def visualize_masks_on_image(image, masks, boxes=None, scores=None, alpha=0.5):
 
     # Pre-generate consistent colors
     rng = torch.Generator(device='cpu').manual_seed(42)
-    colors = torch.rand(masks_t.shape[0], 3, generator=rng, device=device)
+    colors = torch.rand(masks_t.shape[0], 3, generator=rng).to(device)
 
     for i in range(masks_t.shape[0]):
         mask = masks_t[i]
@@ -204,36 +191,33 @@ def tensor_to_list(tensor):
     return tensor
 
 
-from contextlib import contextmanager
-import gc
+import logging
+
+_mem_log = logging.getLogger("sam3")
 
 
-@contextmanager
-def inference_context():
-    """
-    Context manager ensuring cleanup after inference.
-
-    Usage:
-        with inference_context():
-            # ... inference code ...
-
-    This ensures gc.collect() and soft_empty_cache() are called
-    after inference, even if an exception occurs.
-    """
+def print_mem(label: str, detailed: bool = False):
+    """Log current RAM and VRAM usage for debugging memory leaks."""
     import comfy.model_management
-    try:
-        yield
-    finally:
-        gc.collect()
-        comfy.model_management.soft_empty_cache()
+    import psutil
+    process = psutil.Process()
+    rss = process.memory_info().rss / 1024**3
+    sys_used = psutil.virtual_memory().used / 1024**3
+    sys_total = psutil.virtual_memory().total / 1024**3
+    ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
+    if comfy.model_management.get_torch_device().type == "cuda":
+        alloc = torch.cuda.memory_allocated() / 1024**3
+        reserved = torch.cuda.memory_reserved() / 1024**3
+        _mem_log.info(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
+        if detailed:
+            stats = torch.cuda.memory_stats()
+            _mem_log.info(f"[MEM]   Active: {stats.get('active_bytes.all.current', 0) / 1024**3:.2f}GB")
+            _mem_log.info(f"[MEM]   Inactive: {stats.get('inactive_split_bytes.all.current', 0) / 1024**3:.2f}GB")
+            _mem_log.info(f"[MEM]   Allocated retries: {stats.get('num_alloc_retries', 0)}")
+    else:
+        _mem_log.info(f"[MEM] {label}: {ram_str}")
 
 
-def cleanup_gpu_memory():
-    """
-    Force GPU memory cleanup.
-
-    Call this after inference to ensure VRAM is freed.
-    """
-    import comfy.model_management
-    gc.collect()
-    comfy.model_management.soft_empty_cache()
+def print_vram(label: str, detailed: bool = False):
+    """Backward compat alias for print_mem."""
+    print_mem(label, detailed)
