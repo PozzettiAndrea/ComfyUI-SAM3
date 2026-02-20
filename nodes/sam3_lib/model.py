@@ -18,7 +18,6 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.utils.checkpoint as checkpoint_fn
 
 import comfy.ops
 import comfy.model_management
@@ -32,7 +31,6 @@ except ModuleNotFoundError:
 
 from copy import copy
 from torch import Tensor
-from torch.nn.attention import sdpa_kernel, SDPBackend
 from torchvision.ops import masks_to_boxes
 from torchvision.ops.roi_align import RoIAlign
 from tqdm.auto import tqdm
@@ -52,7 +50,6 @@ from .attention import (
 )
 from .text_encoder import LayerScale
 from .utils import (
-    activation_ckpt_wrapper,
     box_cxcywh_to_xyxy,
     box_xywh_to_cxcywh,
     box_xyxy_to_xywh,
@@ -75,19 +72,16 @@ from .utils import (
     copy_data_to_device,
     load_resource_as_video_frames,
     IMAGE_EXTS,
-    clone_output_wrapper,
     rle_encode,
     load_video_frames,
     SAM2Transforms,
 )
 from . import perflib
-from .logger import get_logger
-from .perflib.compile import compile_wrapper, shape_logging_wrapper
 from .perflib.masks_ops import mask_iou
 from .perflib.masks_ops import masks_to_boxes as perf_masks_to_boxes
 
 log = logging.getLogger("sam3")
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -318,8 +312,7 @@ class PositionEmbeddingSine(nn.Module):
                 (precompute_resolution // 32, precompute_resolution // 32),
             ]
             for size in precompute_sizes:
-                device = comfy.model_management.get_torch_device()
-                tensors = torch.zeros((1, 1) + size, device=device)
+                tensors = torch.zeros((1, 1) + size)
                 self.forward(tensors)
                 self.cache[size] = self.cache[size].clone().detach()
 
@@ -713,11 +706,8 @@ class ViTAttention(nn.Module):
             q = q.reshape(B, self.num_heads, H * W, -1)
             k = k.reshape(B, self.num_heads, H * W, -1)
 
-        if self.use_rel_pos:
-            # concat_rel_pos changes Q/K head_dim — must use SDPA
-            x = F.scaled_dot_product_attention(q, k, v)
-        else:
-            x = sam3_attention(q, k, v, self.num_heads)
+        # Both paths use optimized_attention (skip_reshape since q/k/v are [B, H, L, D])
+        x = sam3_attention(q, k, v, self.num_heads)
 
         if ndim == 4:
             x = (
@@ -933,7 +923,6 @@ class ViT(nn.Module):
             )
             self.blocks.append(block)
 
-        self.use_act_checkpoint = use_act_checkpoint
         self.return_interm_layers = return_interm_layers
         self.channel_list = (
             [embed_dim] * len(self.full_attn_ids)
@@ -951,13 +940,6 @@ class ViT(nn.Module):
             if ln_post
             else nn.Identity()
         )
-
-        if compile_mode is not None:
-            self.forward = torch.compile(
-                self.forward, mode=compile_mode, fullgraph=True
-            )
-            if self.use_act_checkpoint and self.training:
-                torch._dynamo.config.optimize_ddp = False
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
         x = self.patch_embed(x)
@@ -978,10 +960,7 @@ class ViT(nn.Module):
 
         outputs = []
         for i, blk in enumerate(self.blocks):
-            if self.use_act_checkpoint and self.training:
-                x = checkpoint_fn.checkpoint(blk, x, use_reentrant=False)
-            else:
-                x = blk(x)
+            x = blk(x)
             if (i == self.full_attn_ids[-1]) or (
                 self.return_interm_layers and i in self.full_attn_ids
             ):
@@ -1162,7 +1141,6 @@ class TransformerEncoder(nn.Module):
         if frozen:
             for p in self.parameters():
                 p.requires_grad_(False)
-        self.use_act_checkpoint = use_act_checkpoint
         for layer_idx, layer in enumerate(self.layers):
             layer.layer_idx = layer_idx
 
@@ -1245,14 +1223,9 @@ class TransformerEncoder(nn.Module):
             layer_kwargs["query_pos"] = lvl_pos_embed_flatten
             layer_kwargs["tgt"] = output
             layer_kwargs["tgt_key_padding_mask"] = key_padding_masks_flatten
-            if self.training:
-                assert self.use_act_checkpoint, "activation ckpt not enabled in encoder"
             if encoder_extra_kwargs is not None:
                 layer_kwargs.update(encoder_extra_kwargs)
-            output = activation_ckpt_wrapper(layer)(
-                **layer_kwargs,
-                act_ckpt_enable=self.training and self.use_act_checkpoint,
-            )
+            output = layer(**layer_kwargs)
         return (
             output.transpose(0, 1),
             (key_padding_masks_flatten.transpose(0, 1) if key_padding_masks_flatten is not None else None),
@@ -1287,8 +1260,6 @@ class TransformerEncoderFusion(TransformerEncoder):
         if self.add_pooled_text_to_img_feat:
             self.text_pooling_proj = operations.Linear(d_model, d_model, dtype=dtype, device=device)
         self.pool_text_with_mask = pool_text_with_mask
-        if compile_mode is not None:
-            self.forward = torch.compile(self.forward, mode=compile_mode, fullgraph=True)
 
     @staticmethod
     def get_reference_points(spatial_shapes, valid_ratios, device):
@@ -1534,7 +1505,7 @@ class TransformerDecoder(nn.Module):
         self.norm = operations.LayerNorm(d_model, dtype=dtype, device=device)
         self.return_intermediate = return_intermediate
         self.bbox_embed = MLP(d_model, d_model, 4, 3, dtype=dtype, device=device, operations=operations)
-        self.query_embed = nn.Embedding(tot_num_queries, d_model)
+        self.query_embed = operations.Embedding(tot_num_queries, d_model, dtype=dtype, device=device)
         self.instance_query_embed = None
         self.instance_query_reference_points = None
         self.use_instance_query = instance_query
@@ -1549,14 +1520,14 @@ class TransformerDecoder(nn.Module):
         if separate_box_head_instance:
             self.instance_bbox_embed = MLP(d_model, d_model, 4, 3, dtype=dtype, device=device, operations=operations)
         if instance_query:
-            self.instance_query_embed = nn.Embedding(num_instances, d_model)
+            self.instance_query_embed = operations.Embedding(num_instances, d_model, dtype=dtype, device=device)
         self.box_refine = box_refine
         if box_refine:
             nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
             nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
-            self.reference_points = nn.Embedding(num_queries, 4)
+            self.reference_points = operations.Embedding(num_queries, 4, dtype=dtype, device=device)
             if instance_query:
-                self.instance_reference_points = nn.Embedding(num_instances, 4)
+                self.instance_reference_points = operations.Embedding(num_instances, 4, dtype=dtype, device=device)
 
         assert boxRPB in ["none", "log", "linear", "both"]
         self.boxRPB = boxRPB
@@ -1573,9 +1544,6 @@ class TransformerDecoder(nn.Module):
             self.coord_cache = {}
             if resolution is not None and stride is not None:
                 feat_size = resolution // stride
-                init_device = comfy.model_management.get_torch_device()
-                coords_h, coords_w = self._get_coords(feat_size, feat_size, device=init_device)
-                self.compilable_cord_cache = (coords_h, coords_w)
                 self.compilable_stored_size = (feat_size, feat_size)
 
         self.roi_pooler = (
@@ -1590,13 +1558,12 @@ class TransformerDecoder(nn.Module):
         self.clamp_presence_logits = clamp_presence_logits
         self.clamp_presence_logit_max_val = clamp_presence_logit_max_val
         if presence_token:
-            self.presence_token = nn.Embedding(1, d_model)
+            self.presence_token = operations.Embedding(1, d_model, dtype=dtype, device=device)
             self.presence_token_head = MLP(d_model, d_model, 1, 3, dtype=dtype, device=device, operations=operations)
             self.presence_token_out_norm = operations.LayerNorm(d_model, dtype=dtype, device=device)
 
         self.ref_point_head = MLP(2 * d_model, d_model, d_model, 2, dtype=dtype, device=device, operations=operations)
         self.dac_use_selfatt_ln = dac_use_selfatt_ln
-        self.use_act_checkpoint = use_act_checkpoint
 
         nn.init.normal_(self.query_embed.weight.data)
         if self.instance_query_embed is not None:
@@ -1624,14 +1591,12 @@ class TransformerDecoder(nn.Module):
         if self.compilable_cord_cache is None:
             self.compilable_cord_cache = self._get_coords(H, W, reference_boxes.device)
             self.compilable_stored_size = (H, W)
-        if torch.compiler.is_dynamo_compiling() or self.compilable_stored_size == (H, W):
+        if self.compilable_stored_size == (H, W):
             coords_h, coords_w = self.compilable_cord_cache
         else:
             if feat_size not in self.coord_cache:
                 self.coord_cache[feat_size] = self._get_coords(H, W, reference_boxes.device)
             coords_h, coords_w = self.coord_cache[feat_size]
-            assert coords_h.shape == (H,)
-            assert coords_w.shape == (W,)
         deltas_y = coords_h.view(1, -1, 1) - boxes_xyxy.reshape(-1, 1, 4)[:, :, 1:4:2]
         deltas_y = deltas_y.view(bs, num_queries, -1, 2)
         deltas_x = coords_w.view(1, -1, 1) - boxes_xyxy.reshape(-1, 1, 4)[:, :, 0:3:2]
@@ -1651,25 +1616,12 @@ class TransformerDecoder(nn.Module):
             else:
                 deltas_x = torch.cat([deltas_x, deltas_x_log], dim=-1)
                 deltas_y = torch.cat([deltas_y, deltas_y_log], dim=-1)
-        if self.training:
-            assert self.use_act_checkpoint, "activation ckpt not enabled in decoder"
-        deltas_x = activation_ckpt_wrapper(self.boxRPB_embed_x)(
-            x=deltas_x, act_ckpt_enable=self.training and self.use_act_checkpoint,
-        )
-        deltas_y = activation_ckpt_wrapper(self.boxRPB_embed_y)(
-            x=deltas_y, act_ckpt_enable=self.training and self.use_act_checkpoint,
-        )
-        if not torch.compiler.is_dynamo_compiling():
-            assert deltas_x.shape[:3] == (bs, num_queries, W)
-            assert deltas_y.shape[:3] == (bs, num_queries, H)
+        deltas_x = self.boxRPB_embed_x(x=deltas_x)
+        deltas_y = self.boxRPB_embed_y(x=deltas_y)
         B = deltas_y.unsqueeze(3) + deltas_x.unsqueeze(2)
-        if not torch.compiler.is_dynamo_compiling():
-            assert B.shape[:4] == (bs, num_queries, H, W)
         B = B.flatten(2, 3)
         B = B.permute(0, 3, 1, 2)
         B = B.contiguous()
-        if not torch.compiler.is_dynamo_compiling():
-            assert B.shape[2:] == (num_queries, H * W)
         return B
 
     def forward(
@@ -1739,9 +1691,7 @@ class TransformerDecoder(nn.Module):
                     reference_boxes, (spatial_shapes[0, 0], spatial_shapes[0, 1]),
                 )
                 memory_mask = memory_mask.flatten(0, 1)
-            if self.training:
-                assert self.use_act_checkpoint
-            output, presence_out = activation_ckpt_wrapper(layer)(
+            output, presence_out = layer(
                 tgt=output, tgt_query_pos=query_pos,
                 tgt_query_sine_embed=query_sine_embed,
                 tgt_key_padding_mask=tgt_key_padding_mask,
@@ -1755,7 +1705,6 @@ class TransformerDecoder(nn.Module):
                 dac_use_selfatt_ln=self.dac_use_selfatt_ln,
                 presence_token=presence_out,
                 **(decoder_extra_kwargs or {}),
-                act_ckpt_enable=self.training and self.use_act_checkpoint,
                 obj_roi_memory_feat=obj_roi_memory_feat,
                 obj_roi_memory_mask=obj_roi_memory_mask,
             )
@@ -1791,9 +1740,6 @@ class TransformerDecoder(nn.Module):
                     )
                 intermediate_presence_logits.append(intermediate_layer_presence_logits)
                 presence_feats = presence_out.clone()
-        if not self.compiled and self.compile_mode is not None:
-            self.forward = torch.compile(self.forward, mode=self.compile_mode, fullgraph=True)
-            self.compiled = True
         return (
             torch.stack(intermediate),
             torch.stack(intermediate_ref_boxes),
@@ -1830,7 +1776,6 @@ class TransformerEncoderCrossAttention(nn.Module):
         self.num_layers = num_layers
         self.norm = operations.LayerNorm(d_model, dtype=dtype, device=device)
         self.pos_enc_at_input = pos_enc_at_input
-        self.use_act_checkpoint = use_act_checkpoint
         if frozen:
             for p in self.parameters():
                 p.requires_grad_(False)
@@ -1869,14 +1814,13 @@ class TransformerEncoderCrossAttention(nn.Module):
             kwds = {}
             if isinstance(layer.cross_attn_image, RoPEAttention):
                 kwds = {"num_k_exclude_rope": num_obj_ptr_tokens}
-            output = activation_ckpt_wrapper(layer)(
+            output = layer(
                 tgt=output, memory=prompt, tgt_mask=src_mask,
                 memory_mask=prompt_mask,
                 tgt_key_padding_mask=src_key_padding_mask,
                 memory_key_padding_mask=prompt_key_padding_mask,
                 pos=prompt_pos, query_pos=src_pos, dac=False,
                 attn_bias=None,
-                act_ckpt_enable=self.training and self.use_act_checkpoint,
                 **kwds,
             )
             normed_output = self.norm(output)
@@ -2384,11 +2328,11 @@ class SequenceGeometryEncoder(nn.Module):
         self.encode_boxes_as_points = encode_boxes_as_points
         self.roi_size = roi_size
         num_labels = 6 if self.encode_boxes_as_points else 2
-        self.label_embed = nn.Embedding(num_labels, self.d_model)
+        self.label_embed = operations.Embedding(num_labels, self.d_model, dtype=dtype, device=device)
 
         self.cls_embed = None
         if add_cls:
-            self.cls_embed = nn.Embedding(1, self.d_model)
+            self.cls_embed = operations.Embedding(1, self.d_model, dtype=dtype, device=device)
 
         assert points_direct_project or points_pos_enc or points_pool
         assert encode_boxes_as_points or boxes_direct_project or boxes_pos_enc or boxes_pool
@@ -2436,10 +2380,9 @@ class SequenceGeometryEncoder(nn.Module):
         if mask_encoder is not None:
             assert isinstance(mask_encoder, MaskEncoder)
             if add_mask_label:
-                self.mask_label_embed = nn.Embedding(2, self.d_model)
+                self.mask_label_embed = operations.Embedding(2, self.d_model, dtype=dtype, device=device)
         self.add_mask_label = add_mask_label
         self.mask_encoder = mask_encoder
-        self.use_act_ckpt = use_act_ckpt
 
     def _encode_points(self, points, points_mask, points_labels, img_feats):
         points_embed = None
@@ -2605,11 +2548,10 @@ class SequenceGeometryEncoder(nn.Module):
             final_embeds = self.norm(self.final_proj(final_embeds))
         if self.encode is not None:
             for lay in self.encode:
-                final_embeds = activation_ckpt_wrapper(lay)(
+                final_embeds = lay(
                     tgt=final_embeds, memory=seq_first_img_feats,
                     tgt_key_padding_mask=final_mask,
                     pos=seq_first_img_pos_embeds,
-                    act_ckpt_enable=self.training and self.use_act_ckpt,
                 )
             final_embeds = self.encode_norm(final_embeds)
         if masks is not None and self.mask_encoder is not None:
@@ -2643,10 +2585,10 @@ class PromptEncoder(nn.Module):
 
         self.num_point_embeddings: int = 4  # pos/neg point + 2 box corners
         point_embeddings = [
-            nn.Embedding(1, embed_dim) for i in range(self.num_point_embeddings)
+            operations.Embedding(1, embed_dim, dtype=dtype, device=device) for i in range(self.num_point_embeddings)
         ]
         self.point_embeddings = nn.ModuleList(point_embeddings)
-        self.not_a_point_embed = nn.Embedding(1, embed_dim)
+        self.not_a_point_embed = operations.Embedding(1, embed_dim, dtype=dtype, device=device)
 
         self.mask_input_size = (
             4 * image_embedding_size[0],
@@ -2661,7 +2603,7 @@ class PromptEncoder(nn.Module):
             activation(),
             operations.Conv2d(mask_in_chans, embed_dim, kernel_size=1, dtype=dtype, device=device),
         )
-        self.no_mask_embed = nn.Embedding(1, embed_dim)
+        self.no_mask_embed = operations.Embedding(1, embed_dim, dtype=dtype, device=device)
 
     def get_dense_pe(self) -> torch.Tensor:
         return self.pe_layer(self.image_embedding_size).unsqueeze(0)
@@ -2804,13 +2746,13 @@ class MaskDecoder(nn.Module):
 
         self.num_multimask_outputs = num_multimask_outputs
 
-        self.iou_token = nn.Embedding(1, transformer_dim)
+        self.iou_token = operations.Embedding(1, transformer_dim, dtype=dtype, device=device)
         self.num_mask_tokens = num_multimask_outputs + 1
-        self.mask_tokens = nn.Embedding(self.num_mask_tokens, transformer_dim)
+        self.mask_tokens = operations.Embedding(self.num_mask_tokens, transformer_dim, dtype=dtype, device=device)
 
         self.pred_obj_scores = pred_obj_scores
         if self.pred_obj_scores:
-            self.obj_score_token = nn.Embedding(1, transformer_dim)
+            self.obj_score_token = operations.Embedding(1, transformer_dim, dtype=dtype, device=device)
         self.use_multimask_token_for_obj_ptr = use_multimask_token_for_obj_ptr
 
         self.output_upscaling = nn.Sequential(
@@ -3090,11 +3032,6 @@ class PixelDecoder(nn.Module):
         self.norms = nn.ModuleList(norms)
         self.shared_conv = shared_conv
         self.out_dim = self.hidden_dim
-        if compile_mode is not None:
-            self.forward = torch.compile(
-                self.forward, mode=compile_mode, dynamic=True, fullgraph=True
-            )
-            torch._dynamo.config.optimize_ddp = False
 
     def forward(self, backbone_feats: List[torch.Tensor]):
         prev_fpn = backbone_feats[-1]
@@ -3150,7 +3087,6 @@ class SegmentationHead(nn.Module):
             self.mask_predictor = MaskPredictor(hidden_dim, mask_dim=hidden_dim,
                                                  dtype=dtype, device=device, operations=operations)
 
-        self.act_ckpt = act_ckpt
         self.instance_keys = ["pred_masks"]
 
     @property
@@ -3184,12 +3120,7 @@ class SegmentationHead(nn.Module):
                 -1, *backbone_feats[-1].shape[1:]
             )
             backbone_visual_feats[-1] = encoder_visual_embed
-            if self.act_ckpt:
-                pixel_embed = checkpoint_fn.checkpoint(
-                    self.pixel_decoder, backbone_visual_feats, use_reentrant=False
-                )
-            else:
-                pixel_embed = self.pixel_decoder(backbone_visual_feats)
+            pixel_embed = self.pixel_decoder(backbone_visual_feats)
         else:
             backbone_feats = [x.to(model_device) for x in backbone_feats]
             pixel_embed = self.pixel_decoder(backbone_feats)
@@ -3347,19 +3278,13 @@ class SAM3VLBackbone(nn.Module):
         self,
         visual,
         text,
-        compile_visual: bool = False,
-        act_ckpt_whole_vision_backbone: bool = False,
-        act_ckpt_whole_language_backbone: bool = False,
         scalp=0,
+        **kwargs,
     ):
         super().__init__()
-        self.vision_backbone = (
-            torch.compile(visual) if compile_visual else visual
-        )
+        self.vision_backbone = visual
         self.language_backbone = text
         self.scalp = scalp
-        self.act_ckpt_whole_vision_backbone = act_ckpt_whole_vision_backbone
-        self.act_ckpt_whole_language_backbone = act_ckpt_whole_language_backbone
 
     def forward(
         self,
@@ -3382,10 +3307,7 @@ class SAM3VLBackbone(nn.Module):
                 samples = samples.to(expected_device)
         except StopIteration:
             pass
-        return activation_ckpt_wrapper(self._forward_image_no_act_ckpt)(
-            samples=samples,
-            act_ckpt_enable=self.act_ckpt_whole_vision_backbone and self.training,
-        )
+        return self._forward_image_no_act_ckpt(samples)
 
     def _forward_image_no_act_ckpt(self, samples):
         sam3_features, sam3_pos, sam2_features, sam2_pos = self.vision_backbone.forward(
@@ -3423,14 +3345,11 @@ class SAM3VLBackbone(nn.Module):
     def forward_text(
         self, captions, input_boxes=None, additional_text=None, device=None
     ):
-        if device is None:
-            device = comfy.model_management.get_torch_device()
-        return activation_ckpt_wrapper(self._forward_text_no_ack_ckpt)(
+        return self._forward_text_no_ack_ckpt(
             captions=captions,
             input_boxes=input_boxes,
             additional_text=additional_text,
             device=device,
-            act_ckpt_enable=self.act_ckpt_whole_language_backbone and self.training,
         )
 
     def _forward_text_no_ack_ckpt(
@@ -3440,26 +3359,15 @@ class SAM3VLBackbone(nn.Module):
         additional_text=None,
         device=None,
     ):
-        if device is None:
-            device = comfy.model_management.get_torch_device()
         output = {}
 
         text_to_encode = copy(captions)
         if additional_text is not None:
             text_to_encode += additional_text
 
-        sdpa_context = sdpa_kernel(
-            [
-                SDPBackend.MATH,
-                SDPBackend.EFFICIENT_ATTENTION,
-                SDPBackend.FLASH_ATTENTION,
-            ]
+        text_attention_mask, text_memory, text_embeds = self.language_backbone(
+            text_to_encode, input_boxes, device=device
         )
-
-        with sdpa_context:
-            text_attention_mask, text_memory, text_embeds = self.language_backbone(
-                text_to_encode, input_boxes, device=device
-            )
 
         if additional_text is not None:
             output["additional_text_features"] = text_memory[:, -len(additional_text) :]
@@ -3531,7 +3439,6 @@ class Sam3Image(torch.nn.Module):
         self.o2m_mask_predict = o2m_mask_predict
 
         self.dot_prod_scoring = dot_prod_scoring
-        self.use_act_checkpoint_seg_head = use_act_checkpoint_seg_head
         self.interactivity_in_encoder = interactivity_in_encoder
         self.matcher = matcher
 
@@ -3836,12 +3743,11 @@ class Sam3Image(torch.nn.Module):
             num_o2o = (hs.size(2) // 2) if apply_dac else hs.size(2)
             num_o2m = hs.size(2) - num_o2o
             obj_queries = hs if self.o2m_mask_predict else hs[:, :, :num_o2o]
-            seg_head_outputs = activation_ckpt_wrapper(self.segmentation_head)(
+            seg_head_outputs = self.segmentation_head(
                 backbone_feats=backbone_out["backbone_fpn"],
                 obj_queries=obj_queries,
                 image_ids=img_ids,
                 encoder_hidden_states=encoder_hidden_states,
-                act_ckpt_enable=self.training and self.use_act_checkpoint_seg_head,
                 prompt=prompt,
                 prompt_mask=prompt_mask,
             )
@@ -4242,7 +4148,7 @@ class Sam3ImageOnVideoMultiGPU(Sam3Image):
         if self.gather_backbone_out:
             feats = out_local["prev_encoder_out"]["backbone_out"]["sam2_backbone_out"]
             assert len(feats["backbone_fpn"]) == 3
-            if comfy.model_management.get_torch_device().type == "cuda":
+            if feats["backbone_fpn"][0].device.type == "cuda":
                 backbone_fpn_bf16 = [x.to(torch.bfloat16) for x in feats["backbone_fpn"]]
             else:
                 backbone_fpn_bf16 = list(feats["backbone_fpn"])
@@ -5290,10 +5196,10 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
         inference_state["offload_video_to_cpu"] = offload_video_to_cpu
         inference_state["offload_state_to_cpu"] = offload_state_to_cpu
         inference_state["device"] = self.device
-        if offload_state_to_cpu or comfy.model_management.get_torch_device().type != "cuda":
+        if offload_state_to_cpu or self.device.type != "cuda":
             inference_state["storage_device"] = torch.device("cpu")
         else:
-            inference_state["storage_device"] = comfy.model_management.get_torch_device()
+            inference_state["storage_device"] = self.device
 
         if video_path is not None:
             images, video_height, video_width = load_video_frames(
@@ -6152,7 +6058,7 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
         storage_device = inference_state["storage_device"]
         maskmem_features = current_out["maskmem_features"]
         if maskmem_features is not None:
-            if comfy.model_management.get_torch_device().type == "cuda":
+            if maskmem_features.device.type == "cuda":
                 maskmem_features = maskmem_features.to(torch.bfloat16)
             maskmem_features = maskmem_features.to(storage_device, non_blocking=torch.cuda.is_available())
         pred_masks_gpu = current_out["pred_masks"]
@@ -6194,7 +6100,7 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
         )
 
         storage_device = inference_state["storage_device"]
-        if comfy.model_management.get_torch_device().type == "cuda":
+        if maskmem_features.device.type == "cuda":
             maskmem_features = maskmem_features.to(torch.bfloat16)
         maskmem_features = maskmem_features.to(storage_device, non_blocking=torch.cuda.is_available())
         maskmem_pos_enc = self._get_maskmem_pos_enc(
@@ -8401,81 +8307,8 @@ class Sam3VideoInference(Sam3VideoBase):
         return obj_id_to_mask
 
     def _compile_model(self):
-        """Compile the SAM model with torch.compile for speedup."""
-        is_compiled = getattr(self, "_model_is_compiled", False)
-        if is_compiled or not self.compile_model:
-            return
-
-        import torch._dynamo
-
-        # a larger cache size to hold varying number of shapes for torch.compile
-        # see https://github.com/pytorch/pytorch/blob/v2.5.1/torch/_dynamo/config.py#L42-L49
-        torch._dynamo.config.cache_size_limit = 128
-        torch._dynamo.config.accumulated_cache_size_limit = 2048
-        torch._dynamo.config.capture_scalar_outputs = True
-        torch._dynamo.config.suppress_errors = True
-
-        # Compile module components
-        # skip compilation of `_encode_prompt` since it sometimes tiggger SymInt errors
-
-        ## Compile SAM3 model components
-        self.detector.backbone.vision_backbone.forward = clone_output_wrapper(
-            torch.compile(
-                self.detector.backbone.vision_backbone.forward,
-                fullgraph=True,
-                mode="max-autotune",
-            )
-        )
-        self.detector.transformer.encoder.forward = clone_output_wrapper(
-            torch.compile(
-                self.detector.transformer.encoder.forward,
-                fullgraph=True,
-                mode="max-autotune",
-            )
-        )
-        self.detector.transformer.decoder.forward = clone_output_wrapper(
-            torch.compile(
-                self.detector.transformer.decoder.forward,
-                fullgraph=True,
-                mode="max-autotune",
-                dynamic=False,
-            )
-        )
-
-        self.detector.segmentation_head.forward = clone_output_wrapper(
-            torch.compile(
-                self.detector.segmentation_head.forward,
-                fullgraph=True,
-                mode="max-autotune",
-            )
-        )
-
-        ## Compile Tracker model components
-        self.tracker.maskmem_backbone.forward = compile_wrapper(
-            self.tracker.maskmem_backbone.forward,
-            mode="max-autotune",
-            fullgraph=True,
-            dynamic=False,
-        )
-
-        self.tracker.transformer.encoder.forward = shape_logging_wrapper(
-            compile_wrapper(
-                self.tracker.transformer.encoder.forward,
-                mode="max-autotune-no-cudagraphs",
-                fullgraph=True,
-                dynamic=True,
-            ),
-            keep_kwargs=["src", "src_pos", "prompt", "prompt_pos"],
-        )
-
-        self.tracker.sam_mask_decoder.forward = compile_wrapper(
-            self.tracker.sam_mask_decoder.forward,
-            mode="max-autotune",
-            fullgraph=True,
-            dynamic=False,  # Accuracy regression on True
-        )
-
-        self._model_is_compiled = True
+        """No-op: ComfyUI handles optimization through its execution engine."""
+        pass
 
     def _warm_up_vg_propagation(self, inference_state, start_frame_idx=0):
         # use different tracking score thresholds for each round to simulate different number of output objects
