@@ -8,17 +8,12 @@ from typing import Optional, Tuple, Type
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch import Tensor
 
 import comfy.ops
-import comfy.model_management
-from comfy.ldm.modules.attention import optimized_attention_for_device, get_attention_function
+from comfy.ldm.modules.attention import optimized_attention
 
 ops = comfy.ops.manual_cast
-
-# Flash attention fallback for head_dim > 128 (sage doesn't support it)
-_flash_attn_fn = get_attention_function("flash", default=None)
 
 
 # ---------------------------------------------------------------------------
@@ -31,20 +26,7 @@ def sam3_attention(q, k, v, num_heads):
     Drop-in replacement for comfy_attn.dispatch_attention.
     Expects q, k, v in shape [B, H, L, D]. Returns [B, H, L, D].
     """
-    orig_dtype = q.dtype
-    if orig_dtype == torch.float32:
-        dtype = torch.bfloat16 if comfy.model_management.should_use_bf16() else torch.float16
-        q, k, v = q.to(dtype), k.to(dtype), v.to(dtype)
-
-    head_dim = q.shape[-1]
-    # Sage attention only supports head_dim <= 128; use flash attention for larger
-    if head_dim > 128 and _flash_attn_fn is not None:
-        attn_fn = _flash_attn_fn
-    else:
-        attn_fn = optimized_attention_for_device(q.device)
-
-    out = attn_fn(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
-    return out.to(orig_dtype)
+    return optimized_attention(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
 
 
 # ---------------------------------------------------------------------------
@@ -55,7 +37,7 @@ class SplitMultiheadAttention(nn.Module):
     """Drop-in replacement for nn.MultiheadAttention using separate Linear projections.
 
     Uses operations.Linear for ComfyUI weight management and
-    F.scaled_dot_product_attention for computation (supports masks).
+    optimized_attention for computation (supports masks).
     Returns (output, None) to match nn.MultiheadAttention signature.
     """
 
@@ -101,12 +83,12 @@ class SplitMultiheadAttention(nn.Module):
         k = self.to_k(key).reshape(B, L_k, self.num_heads, self.head_dim).transpose(1, 2)
         v = self.to_v(value).reshape(B, L_k, self.num_heads, self.head_dim).transpose(1, 2)
 
-        # Prepare mask for F.scaled_dot_product_attention
+        # Prepare mask for optimized_attention
         sdpa_mask = self._prepare_mask(attn_mask, key_padding_mask, B, L_q, L_k, q.dtype, q.device)
 
-        out = F.scaled_dot_product_attention(q, k, v, attn_mask=sdpa_mask)
+        out = optimized_attention(q, k, v, heads=self.num_heads, mask=sdpa_mask, skip_reshape=True)
 
-        out = out.transpose(1, 2).reshape(B, L_q, self.embed_dim)
+        out = out.reshape(B, L_q, self.embed_dim)
         out = self.out_proj(out)
 
         if not self.batch_first:
@@ -357,13 +339,11 @@ class RoPEAttention(Attention):
         self.compute_cis = partial(
             compute_axial_cis, dim=self.internal_dim // self.num_heads, theta=rope_theta
         )
-        device = comfy.model_management.get_torch_device()
-        self.freqs_cis = self.compute_cis(
-            end_x=feat_sizes[0], end_y=feat_sizes[1], device=device
-        )
-        if self.use_rope_real:
-            self.freqs_cis_real = self.freqs_cis.real
-            self.freqs_cis_imag = self.freqs_cis.imag
+        self._feat_sizes = feat_sizes
+        # Lazily computed on first forward using input tensor device
+        self.freqs_cis = None
+        self.freqs_cis_real = None
+        self.freqs_cis_imag = None
         self.rope_k_repeat = rope_k_repeat
 
     def forward(
@@ -379,7 +359,7 @@ class RoPEAttention(Attention):
 
         # Apply rotary position encoding
         w = h = math.sqrt(q.shape[-2])
-        if self.freqs_cis.shape[0] != q.shape[-2]:
+        if self.freqs_cis is None or self.freqs_cis.shape[0] != q.shape[-2]:
             self.freqs_cis = self.compute_cis(end_x=w, end_y=h, device=q.device)
             self.freqs_cis_real = self.freqs_cis.real
             self.freqs_cis_imag = self.freqs_cis.imag

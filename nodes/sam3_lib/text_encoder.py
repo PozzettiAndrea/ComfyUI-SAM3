@@ -8,7 +8,6 @@ from typing import Callable, List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 from torch import Tensor
-from torch.utils.checkpoint import checkpoint
 
 import comfy.ops
 
@@ -135,16 +134,14 @@ class Transformer(nn.Module):
         mlp_ratio: float = 4.0,
         ls_init_value: Optional[float] = None,
         act_layer: Callable[[], nn.Module] = nn.GELU,
-        compile_mode: Optional[str] = None,
-        use_act_checkpoint: bool = False,
         dtype=None,
         device=None,
         operations=ops,
+        **kwargs,
     ):
         super().__init__()
         self.width = width
         self.layers = layers
-        self.grad_checkpointing = use_act_checkpoint
         self.resblocks = nn.ModuleList(
             [
                 ResidualAttentionBlock(
@@ -161,30 +158,13 @@ class Transformer(nn.Module):
             ]
         )
 
-        if compile_mode is not None:
-            self.forward = torch.compile(
-                self.forward, mode=compile_mode, fullgraph=True
-            )
-            if self.grad_checkpointing:
-                torch._dynamo.config.optimize_ddp = False
-
     def forward(
         self,
         x: torch.Tensor,
         attn_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
-        for _, r in enumerate(self.resblocks):
-            if (
-                self.grad_checkpointing
-                and not torch.jit.is_scripting()
-                and self.training
-            ):
-                x = checkpoint(r, x, None, None, attn_mask, use_reentrant=False)
-            else:
-                x = r(
-                    x,
-                    attn_mask=attn_mask,
-                )
+        for r in self.resblocks:
+            x = r(x, attn_mask=attn_mask)
         return x
 
 
@@ -228,11 +208,10 @@ class TextTransformer(nn.Module):
         act_layer: Callable = nn.GELU,
         output_tokens: bool = False,
         use_ln_post: bool = True,
-        compile_mode: Optional[str] = None,
-        use_act_checkpoint: bool = False,
         dtype=None,
         device=None,
         operations=ops,
+        **kwargs,
     ):
         super().__init__()
         assert pool_type in ("first", "last", "argmax", "none")
@@ -244,7 +223,7 @@ class TextTransformer(nn.Module):
         self.heads = heads
         self.pool_type = pool_type
 
-        self.token_embedding = nn.Embedding(self.vocab_size, width)
+        self.token_embedding = operations.Embedding(self.vocab_size, width, dtype=dtype, device=device)
         self.positional_embedding = nn.Parameter(torch.empty(self.num_pos, width))
         self.transformer = Transformer(
             width=width,
@@ -253,8 +232,6 @@ class TextTransformer(nn.Module):
             mlp_ratio=mlp_ratio,
             ls_init_value=ls_init_value,
             act_layer=act_layer,
-            compile_mode=compile_mode,
-            use_act_checkpoint=use_act_checkpoint,
             dtype=dtype,
             device=device,
             operations=operations,
