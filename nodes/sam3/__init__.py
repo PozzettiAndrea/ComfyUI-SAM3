@@ -61,8 +61,8 @@ from .model import (
     Sam3VideoInferenceWithInstanceInteractivity,
     SAM3InteractiveImagePredictor,
 )
-from .sam3_video_predictor import Sam3VideoPredictor, Sam3VideoPredictorMultiGPU
-from .tokenizer_ve import SimpleTokenizer
+from .predictor import Sam3VideoPredictor, Sam3VideoPredictorMultiGPU
+from .tokenizer import SimpleTokenizer
 
 
 # ---------------------------------------------------------------------------

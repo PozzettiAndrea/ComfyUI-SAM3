@@ -52,8 +52,8 @@ class LoadSAM3Model:
 
     def load_model(self, precision="auto", attention="auto", compile=False):
         from .sam3_model_patcher import SAM3UnifiedModel
-        from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
-        from .sam3_lib.utils import Sam3Processor
+        from .sam3.predictor import Sam3VideoPredictor
+        from .sam3.utils import Sam3Processor
         import comfy.model_management
 
         load_device = comfy.model_management.get_torch_device()
@@ -68,7 +68,7 @@ class LoadSAM3Model:
             self._download_from_huggingface()
 
         # BPE path for tokenizer
-        bpe_path = str(Path(__file__).parent / "sam3_lib" / "bpe_simple_vocab_16e6.txt.gz")
+        bpe_path = str(Path(__file__).parent / "sam3" / "bpe_simple_vocab_16e6.txt.gz")
 
         log.info(f"Loading model from: {checkpoint_path}")
         if compile:
