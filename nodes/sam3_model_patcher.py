@@ -1,227 +1,24 @@
 """
-SAM3 Model Patcher - Wraps SAM3 models for ComfyUI's model management system
+SAM3 Model Patcher - Wraps SAM3 models for ComfyUI's model management system.
 
-This module provides ComfyUI-compatible wrappers that integrate with:
+Provides a single ModelPatcher subclass that integrates with:
 - comfy.model_management.load_models_gpu()
 - ComfyUI's automatic VRAM management
 - Device offloading when memory pressure is detected
 """
 
-import torch
-import logging
 import gc
 import comfy.model_management
 from comfy.model_patcher import ModelPatcher
 
 
-class SAM3ModelWrapper:
+class SAM3UnifiedModel(ModelPatcher):
     """
-    Lightweight wrapper that makes SAM3 models compatible with ComfyUI's ModelPatcher.
+    Unified SAM3 model patcher for ComfyUI.
 
-    This provides the interface expected by ModelPatcher without the full complexity
-    of diffusion models (no patches, hooks, etc. needed for SAM3).
-    """
-
-    def __init__(self, model, processor, load_device, offload_device):
-        """
-        Args:
-            model: The SAM3 model (torch.nn.Module)
-            processor: Sam3Processor instance
-            load_device: Device to load model on for inference (e.g., cuda:0)
-            offload_device: Device to offload model to when not in use (e.g., cpu)
-        """
-        self.model = model
-        self.processor = processor
-        self.load_device = load_device
-        self.offload_device = offload_device
-        self.device = offload_device  # Current device
-
-        # Required attributes for ModelPatcher compatibility
-        self.model_loaded_weight_memory = 0
-        self.lowvram_patch_counter = 0
-        self.model_lowvram = False
-        self.current_weight_patches_uuid = None
-
-        # Calculate and cache model size
-        self._model_size = None
-
-    def model_size(self):
-        """Return model size in bytes (cached for performance)."""
-        if self._model_size is None:
-            import comfy.model_management
-            self._model_size = comfy.model_management.module_size(self.model)
-        return self._model_size
-
-    def to(self, device):
-        """Move model to specified device with full processor sync."""
-        device_str = str(device)
-        if str(self.device) != device_str:
-            logging.debug(f"[SAM3] Moving model from {self.device} to {device}")
-            self.model.to(device)
-            self.device = device
-
-            # Sync processor device using dedicated method if available
-            if hasattr(self.processor, 'sync_device_with_model'):
-                self.processor.sync_device_with_model()
-            elif hasattr(self.processor, 'device'):
-                self.processor.device = device_str
-                # Also sync find_stage tensors if present
-                if hasattr(self.processor, 'find_stage') and self.processor.find_stage is not None:
-                    fs = self.processor.find_stage
-                    if hasattr(fs, 'img_ids') and fs.img_ids is not None:
-                        fs.img_ids = fs.img_ids.to(device)
-                    if hasattr(fs, 'text_ids') and fs.text_ids is not None:
-                        fs.text_ids = fs.text_ids.to(device)
-        return self
-
-    def get_dtype(self):
-        """Return model dtype."""
-        try:
-            return next(self.model.parameters()).dtype
-        except StopIteration:
-            return torch.float32
-
-
-class SAM3ModelPatcher(ModelPatcher):
-    """
-    ModelPatcher subclass for SAM3 models.
-
-    This integrates SAM3 with ComfyUI's model management system, enabling:
-    - Automatic GPU/CPU offloading based on VRAM pressure
-    - Proper cleanup when models are unloaded
-    - Integration with load_models_gpu()
-    """
-
-    def __init__(self, sam3_wrapper):
-        """
-        Args:
-            sam3_wrapper: SAM3ModelWrapper instance
-        """
-        self.sam3_wrapper = sam3_wrapper
-
-        # Initialize ModelPatcher with the wrapper
-        super().__init__(
-            model=sam3_wrapper,
-            load_device=sam3_wrapper.load_device,
-            offload_device=sam3_wrapper.offload_device,
-            size=sam3_wrapper.model_size(),
-            weight_inplace_update=False
-        )
-
-    @property
-    def sam3_model(self):
-        """Access the underlying SAM3 model."""
-        return self.sam3_wrapper.model
-
-    @property
-    def processor(self):
-        """Access the SAM3 processor."""
-        return self.sam3_wrapper.processor
-
-    def model_size(self):
-        """Override to use cached size from wrapper."""
-        return self.sam3_wrapper.model_size()
-
-    def clone(self):
-        """Clone this patcher (shares underlying model)."""
-        # For SAM3, we don't need complex cloning - just reference the same wrapper
-        n = SAM3ModelPatcher(self.sam3_wrapper)
-        n.patches = {}
-        n.object_patches = {}
-        n.model_options = {"transformer_options": {}}
-        return n
-
-    def patch_model(self, device_to=None, lowvram_model_memory=0, load_weights=True, force_patch_weights=False):
-        """
-        Load model to GPU for inference.
-
-        SAM3 doesn't use LoRA patches, so this is simplified.
-        """
-        if device_to is None:
-            device_to = self.load_device
-
-        # Move the actual model to device
-        self.sam3_wrapper.to(device_to)
-        self.sam3_wrapper.model_loaded_weight_memory = self.model_size()
-
-        return self.sam3_wrapper.model
-
-    def unpatch_model(self, device_to=None, unpatch_weights=True):
-        """
-        Unload model from GPU.
-
-        Moves model to offload device and cleans up VRAM.
-        """
-        if device_to is None:
-            device_to = self.offload_device
-
-        # Move model to offload device
-        self.sam3_wrapper.to(device_to)
-        self.sam3_wrapper.model_loaded_weight_memory = 0
-
-        # Force cleanup
-        gc.collect()
-        comfy.model_management.soft_empty_cache()
-
-    def model_patches_to(self, device):
-        """SAM3 doesn't use patches, so this is a no-op."""
-        pass
-
-    def model_patches_models(self):
-        """SAM3 doesn't have sub-models in patches."""
-        return []
-
-    def current_loaded_device(self):
-        """Return the device the model is currently on."""
-        return self.sam3_wrapper.device
-
-    def loaded_size(self):
-        """Return currently loaded size (0 if offloaded)."""
-        if "cuda" in str(self.sam3_wrapper.device):
-            return self.model_size()
-        return 0
-
-    def partially_load(self, device_to, extra_memory=0, force_patch_weights=False):
-        """Load model to device."""
-        self.patch_model(device_to)
-        return self.model_size()
-
-    def partially_unload(self, device_to, memory_to_free=0, force_patch_weights=False):
-        """Unload model to free memory."""
-        self.unpatch_model(device_to)
-        return self.model_size()
-
-    def memory_required(self, input_shape=None):
-        """
-        Estimate memory required for inference.
-
-        SAM3 uses ~1008x1008 internal resolution plus activations.
-        """
-        base_memory = self.model_size()
-        # Estimate activation memory (rough approximation)
-        activation_memory = 1008 * 1008 * 256 * 4 * 10  # ~10 intermediate tensors
-        return base_memory + activation_memory
-
-    def cleanup(self):
-        """Cleanup resources."""
-        self.unpatch_model()
-        super().cleanup()
-
-    def __del__(self):
-        """Ensure cleanup on deletion."""
-        try:
-            self.cleanup()
-        except Exception:
-            pass
-
-
-class SAM3UnifiedModel(SAM3ModelPatcher):
-    """
-    Unified SAM3 model that supports both image segmentation and video tracking.
-
-    Inherits from SAM3ModelPatcher for ComfyUI integration.
-    Exposes both image interface (processor, sam3_wrapper) and video interface
-    (handle_stream_request, model).
+    Wraps the video predictor (detector + tracker) and image processor
+    behind ComfyUI's ModelPatcher for automatic VRAM management.
+    All layers use comfy.ops.manual_cast, so dtype is handled per-layer.
     """
 
     def __init__(self, video_predictor, processor, load_device, offload_device, dtype=None):
@@ -229,30 +26,35 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
         self._processor = processor
         self._load_device = load_device
         self._offload_device = offload_device
-        self._model = None
 
-        detector_model = video_predictor.model.detector
-        wrapper = SAM3ModelWrapper(detector_model, processor, load_device, offload_device)
-        super().__init__(wrapper)
+        # The full model (detector + tracker) is the nn.Module we manage
+        full_model = video_predictor.model
+        model_size = comfy.model_management.module_size(full_model)
+
+        # ModelPatcher assigns self.model = full_model
+        super().__init__(
+            model=full_model,
+            load_device=load_device,
+            offload_device=offload_device,
+            size=model_size,
+            weight_inplace_update=False,
+        )
+
+    # -- Properties -----------------------------------------------------------
 
     @property
     def processor(self):
         return self._processor
 
     @property
-    def model(self):
-        return self._video_predictor.model
+    def current_device(self):
+        """Current device the model is on."""
+        try:
+            return next(self.model.parameters()).device
+        except StopIteration:
+            return self._offload_device
 
-    @model.setter
-    def model(self, value):
-        self._model = value
-
-    def __getattr__(self, name):
-        if name == '_video_predictor':
-            raise AttributeError(name)
-        if hasattr(self._video_predictor, name):
-            return getattr(self._video_predictor, name)
-        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+    # -- Video predictor delegation -------------------------------------------
 
     def start_session(self, *args, **kwargs):
         return self._video_predictor.start_session(*args, **kwargs)
@@ -266,41 +68,93 @@ class SAM3UnifiedModel(SAM3ModelPatcher):
     def handle_request(self, request):
         return self._video_predictor.handle_request(request)
 
+    def __getattr__(self, name):
+        # Delegate unknown attributes to video predictor (e.g. _ALL_INFERENCE_STATES)
+        if name == '_video_predictor':
+            raise AttributeError(name)
+        if hasattr(self._video_predictor, name):
+            return getattr(self._video_predictor, name)
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+    # -- ModelPatcher overrides -----------------------------------------------
+
     def patch_model(self, device_to=None, lowvram_model_memory=0, load_weights=True, force_patch_weights=False):
-        result = super().patch_model(device_to, lowvram_model_memory, load_weights, force_patch_weights)
         if device_to is None:
             device_to = self._load_device
-        self._video_predictor.model.to(device_to)
-        return result
+        self.model.to(device_to)
+        self._sync_processor_device(device_to)
+        return self.model
 
     def unpatch_model(self, device_to=None, unpatch_weights=True):
-        super().unpatch_model(device_to, unpatch_weights)
         if device_to is None:
             device_to = self._offload_device
-        self._video_predictor.model.to(device_to)
+        self.model.to(device_to)
+        self._sync_processor_device(device_to)
         gc.collect()
         comfy.model_management.soft_empty_cache()
 
+    def clone(self):
+        n = SAM3UnifiedModel(
+            self._video_predictor, self._processor,
+            self._load_device, self._offload_device,
+        )
+        n.patches = {}
+        n.object_patches = {}
+        n.model_options = {"transformer_options": {}}
+        return n
 
-def create_sam3_model_patcher(model, processor, device=None):
-    """
-    Factory function to create a SAM3ModelPatcher.
+    def model_size(self):
+        return comfy.model_management.module_size(self.model)
 
-    Args:
-        model: SAM3 model instance
-        processor: Sam3Processor instance
-        device: Target inference device (defaults to comfy.model_management.get_torch_device())
+    def memory_required(self, input_shape=None):
+        base_memory = self.model_size()
+        activation_memory = 1008 * 1008 * 256 * 4 * 10
+        return base_memory + activation_memory
 
-    Returns:
-        SAM3ModelPatcher instance ready for ComfyUI
-    """
-    import comfy.model_management
-    if device is None:
-        device = comfy.model_management.get_torch_device()
-    load_device = comfy.model_management.get_torch_device()
-    offload_device = comfy.model_management.unet_offload_device()
+    def model_patches_to(self, device):
+        pass
 
-    wrapper = SAM3ModelWrapper(model, processor, load_device, offload_device)
-    patcher = SAM3ModelPatcher(wrapper)
+    def model_patches_models(self):
+        return []
 
-    return patcher
+    def current_loaded_device(self):
+        return self.current_device
+
+    def loaded_size(self):
+        device = self.current_device
+        if device is not None and device.type != "cpu":
+            return self.model_size()
+        return 0
+
+    def partially_load(self, device_to, extra_memory=0, force_patch_weights=False):
+        self.patch_model(device_to)
+        return self.model_size()
+
+    def partially_unload(self, device_to, memory_to_free=0, force_patch_weights=False):
+        self.unpatch_model(device_to)
+        return self.model_size()
+
+    def cleanup(self):
+        self.unpatch_model()
+        super().cleanup()
+
+    def __del__(self):
+        try:
+            self.cleanup()
+        except Exception:
+            pass
+
+    # -- Internal helpers -----------------------------------------------------
+
+    def _sync_processor_device(self, device):
+        """Sync processor's cached device state after model movement."""
+        if hasattr(self._processor, 'sync_device_with_model'):
+            self._processor.sync_device_with_model()
+        elif hasattr(self._processor, 'device'):
+            self._processor.device = str(device)
+            if hasattr(self._processor, 'find_stage') and self._processor.find_stage is not None:
+                fs = self._processor.find_stage
+                if hasattr(fs, 'img_ids') and fs.img_ids is not None:
+                    fs.img_ids = fs.img_ids.to(device)
+                if hasattr(fs, 'text_ids') and fs.text_ids is not None:
+                    fs.text_ids = fs.text_ids.to(device)

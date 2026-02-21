@@ -19,7 +19,7 @@ import weakref
 from collections import defaultdict
 from collections.abc import Iterator
 from contextlib import AbstractContextManager
-from dataclasses import dataclass, field as field_ptr_behaviour, fields, is_dataclass
+from dataclasses import dataclass, fields, is_dataclass
 from enum import auto, Enum
 from functools import wraps
 from threading import Condition, get_ident, Lock, Thread
@@ -50,12 +50,6 @@ def box_cxcywh_to_xyxy(x):
     return torch.stack(b, dim=-1)
 
 
-def box_cxcywh_to_xywh(x):
-    x_c, y_c, w, h = x.unbind(-1)
-    b = [(x_c - 0.5 * w), (y_c - 0.5 * h), (w), (h)]
-    return torch.stack(b, dim=-1)
-
-
 def box_xywh_to_xyxy(x):
     x_, y, w, h = x.unbind(-1)
     b = [(x_), (y), (x_ + w), (y + h)]
@@ -74,17 +68,6 @@ def box_xyxy_to_xywh(x):
     return torch.stack(b, dim=-1)
 
 
-def box_xyxy_to_cxcywh(x):
-    x0, y0, x1, y1 = x.unbind(-1)
-    b = [(x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0), (y1 - y0)]
-    return torch.stack(b, dim=-1)
-
-
-def box_area(boxes):
-    x0, y0, x1, y1 = boxes.unbind(-1)
-    return (x1 - x0) * (y1 - y0)
-
-
 def masks_to_boxes(masks):
     if masks.numel() == 0:
         return torch.zeros((0, 4), device=masks.device)
@@ -101,27 +84,6 @@ def masks_to_boxes(masks):
     boxes = torch.stack([x_min, y_min, x_max, y_max], 1)
     boxes = boxes * masks.flatten(-2).any(-1)
     return boxes
-
-
-def box_iou(boxes1, boxes2):
-    area1 = box_area(boxes1)
-    area2 = box_area(boxes2)
-    lt = torch.max(boxes1[..., :, None, :2], boxes2[..., None, :, :2])
-    rb = torch.min(boxes1[..., :, None, 2:], boxes2[..., None, :, 2:])
-    wh = (rb - lt).clamp(min=0)
-    inter = wh[..., 0] * wh[..., 1]
-    union = area1[..., None] + area2[..., None, :] - inter
-    iou = inter / union
-    return iou, union
-
-
-def generalized_box_iou(boxes1, boxes2):
-    iou, union = box_iou(boxes1, boxes2)
-    lt = torch.min(boxes1[..., :, None, :2], boxes2[..., None, :, :2])
-    rb = torch.max(boxes1[..., :, None, 2:], boxes2[..., None, :, 2:])
-    wh = (rb - lt).clamp(min=0)
-    area = wh[..., 0] * wh[..., 1]
-    return iou - (area - union) / area
 
 
 @torch.jit.script
@@ -454,20 +416,6 @@ def interpolate(
 
 
 @dataclass
-class BatchedPointer:
-    stage_ids: MyTensor
-    stage_ids__type = torch.long
-    query_ids: MyTensor
-    query_ids__type = torch.long
-    object_ids: MyTensor
-    object_ids__type = torch.long
-    ptr_mask: MyTensor
-    ptr_mask__type = torch.bool
-    ptr_types: MyTensor
-    ptr_types__type = torch.long
-
-
-@dataclass
 class FindStage:
     img_ids: MyTensor
     img_ids__type = torch.long
@@ -627,50 +575,6 @@ def compute_boundary(seg):
     return b
 
 
-def dilation(mask, kernel_size):
-    assert mask.ndim == 3
-    kernel_size = int(kernel_size)
-    assert kernel_size % 2 == 1, f"Dilation expects a odd kernel size, got {kernel_size}"
-    if mask.is_cuda:
-        m = mask.unsqueeze(1).to(torch.float16)
-        k = torch.ones(1, 1, kernel_size, 1, dtype=m.dtype, device=m.device)
-        result = torch.nn.functional.conv2d(m, k, padding="same")
-        result = torch.nn.functional.conv2d(result, k.transpose(-1, -2), padding="same")
-        return result.view_as(mask) > 0
-    all_masks = mask.view(-1, mask.size(-2), mask.size(-1)).numpy().astype(np.uint8)
-    kernel = np.ones((kernel_size, kernel_size), dtype=np.uint8)
-    import cv2
-    processed = [torch.from_numpy(cv2.dilate(m, kernel)) for m in all_masks]
-    return torch.stack(processed).view_as(mask).to(mask)
-
-
-def compute_F_measure(
-    gt_boundary_rle, gt_dilated_boundary_rle, dt_boundary_rle, dt_dilated_boundary_rle
-):
-    import pycocotools.mask as maskUtils
-    gt_match = maskUtils.merge([gt_boundary_rle, dt_dilated_boundary_rle], True)
-    dt_match = maskUtils.merge([dt_boundary_rle, gt_dilated_boundary_rle], True)
-    n_dt = maskUtils.area(dt_boundary_rle)
-    n_gt = maskUtils.area(gt_boundary_rle)
-    if n_dt == 0 and n_gt > 0:
-        precision = 1
-        recall = 0
-    elif n_dt > 0 and n_gt == 0:
-        precision = 0
-        recall = 1
-    elif n_dt == 0 and n_gt == 0:
-        precision = 1
-        recall = 1
-    else:
-        precision = maskUtils.area(dt_match) / float(n_dt)
-        recall = maskUtils.area(gt_match) / float(n_gt)
-    if precision + recall == 0:
-        f_val = 0
-    else:
-        f_val = 2 * precision * recall / (precision + recall)
-    return f_val
-
-
 @torch.no_grad()
 def rle_encode(orig_mask, return_areas=False):
     from pycocotools import mask as mask_util
@@ -711,135 +615,6 @@ def rle_encode(orig_mask, return_areas=False):
             rle["area"] = mask_areas[i]
         batch_rles.append(rle)
     return batch_rles
-
-
-def robust_rle_encode(masks):
-    from pycocotools import mask as mask_util
-    assert masks.ndim == 3, "Mask must be of shape (N, H, W)"
-    assert masks.dtype == torch.bool, "Mask must have dtype=torch.bool"
-    try:
-        return rle_encode(masks)
-    except RuntimeError:
-        masks = masks.cpu().numpy()
-        rles = [
-            mask_util.encode(
-                np.array(mask[:, :, np.newaxis], dtype=np.uint8, order="F")
-            )[0]
-            for mask in masks
-        ]
-        for rle in rles:
-            rle["counts"] = rle["counts"].decode("utf-8")
-        return rles
-
-
-def ann_to_rle(segm, im_info):
-    from pycocotools import mask as mask_util
-    h, w = im_info["height"], im_info["width"]
-    if isinstance(segm, list):
-        rles = mask_util.frPyObjects(segm, h, w)
-        rle = mask_util.merge(rles)
-    elif isinstance(segm["counts"], list):
-        rle = mask_util.frPyObjects(segm, h, w)
-    else:
-        rle = segm
-    return rle
-
-
-# ===========================================================================
-# Euclidean Distance Transform (from model/edt.py)
-# ===========================================================================
-
-try:
-    import triton
-    import triton.language as tl
-    HAS_TRITON = True
-except ImportError:
-    HAS_TRITON = False
-    triton = None
-    tl = None
-
-
-if HAS_TRITON:
-    @triton.jit
-    def edt_kernel(inputs_ptr, outputs_ptr, v, z, height, width, horizontal: tl.constexpr):
-        batch_id = tl.program_id(axis=0)
-        if horizontal:
-            row_id = tl.program_id(axis=1)
-            block_start = (batch_id * height * width) + row_id * width
-            length = width
-            stride = 1
-        else:
-            col_id = tl.program_id(axis=1)
-            block_start = (batch_id * height * width) + col_id
-            length = height
-            stride = width
-        k = 0
-        for q in range(1, length):
-            cur_input = tl.load(inputs_ptr + block_start + (q * stride))
-            r = tl.load(v + block_start + (k * stride))
-            z_k = tl.load(z + block_start + (k * stride))
-            previous_input = tl.load(inputs_ptr + block_start + (r * stride))
-            s = (cur_input - previous_input + q * q - r * r) / (q - r) / 2
-            while s <= z_k and k - 1 >= 0:
-                k = k - 1
-                r = tl.load(v + block_start + (k * stride))
-                z_k = tl.load(z + block_start + (k * stride))
-                previous_input = tl.load(inputs_ptr + block_start + (r * stride))
-                s = (cur_input - previous_input + q * q - r * r) / (q - r) / 2
-            k = k + 1
-            tl.store(v + block_start + (k * stride), q)
-            tl.store(z + block_start + (k * stride), s)
-            if k + 1 < length:
-                tl.store(z + block_start + ((k + 1) * stride), 1e9)
-        k = 0
-        for q in range(length):
-            while (
-                k + 1 < length
-                and tl.load(
-                    z + block_start + ((k + 1) * stride), mask=(k + 1) < length, other=q
-                )
-                < q
-            ):
-                k += 1
-            r = tl.load(v + block_start + (k * stride))
-            d = q - r
-            old_value = tl.load(inputs_ptr + block_start + (r * stride))
-            tl.store(outputs_ptr + block_start + (q * stride), old_value + d * d)
-
-    def edt_triton(data: torch.Tensor):
-        if not HAS_TRITON:
-            raise RuntimeError(
-                "Triton is not available. Please use the CPU fallback function "
-                "sample_one_point_from_error_center_slow() instead."
-            )
-        assert data.dim() == 3
-        assert data.is_cuda
-        B, H, W = data.shape
-        data = data.contiguous()
-        output = torch.where(data, 1e18, 0.0)
-        assert output.is_contiguous()
-        parabola_loc = torch.zeros(B, H, W, dtype=torch.uint32, device=data.device)
-        parabola_inter = torch.empty(B, H, W, dtype=torch.float, device=data.device)
-        parabola_inter[:, :, 0] = -1e18
-        parabola_inter[:, :, 1] = 1e18
-        grid = (B, H)
-        edt_kernel[grid](
-            output.clone(), output, parabola_loc, parabola_inter, H, W, horizontal=True,
-        )
-        parabola_loc.zero_()
-        parabola_inter[:, :, 0] = -1e18
-        parabola_inter[:, :, 1] = 1e18
-        grid = (B, W)
-        edt_kernel[grid](
-            output.clone(), output, parabola_loc, parabola_inter, H, W, horizontal=False,
-        )
-        return output.sqrt()
-else:
-    def edt_triton(data: torch.Tensor):
-        raise RuntimeError(
-            "Triton is not available (requires PyTorch with CUDA support). "
-            "Please use the CPU fallback function sample_one_point_from_error_center_slow() instead."
-        )
 
 
 # ===========================================================================
@@ -901,7 +676,51 @@ def copy_data_to_device(data, device: torch.device, *args: Any, **kwargs: Any):
 # I/O utilities — video/image loading (from model/io_utils.py)
 # ===========================================================================
 
-from .logger import get_logger
+_LOG_LEVELS = {
+    "DEBUG": logging.DEBUG, "INFO": logging.INFO, "WARNING": logging.WARNING,
+    "ERROR": logging.ERROR, "CRITICAL": logging.CRITICAL,
+}
+
+
+class ColoredFormatter(logging.Formatter):
+    """A command line formatter with different colors for each level."""
+
+    def __init__(self):
+        super().__init__()
+        reset = "\033[0m"
+        colors = {
+            logging.DEBUG: f"{reset}\033[36m",
+            logging.INFO: f"{reset}\033[32m",
+            logging.WARNING: f"{reset}\033[33m",
+            logging.ERROR: f"{reset}\033[31m",
+            logging.CRITICAL: f"{reset}\033[35m",
+        }
+        fmt_str = "{color}%(levelname)s %(asctime)s %(process)d %(filename)s:%(lineno)4d:{reset} %(message)s"
+        self.formatters = {
+            level: logging.Formatter(fmt_str.format(color=color, reset=reset))
+            for level, color in colors.items()
+        }
+        self.default_formatter = self.formatters[logging.INFO]
+
+    def format(self, record):
+        formatter = self.formatters.get(record.levelno, self.default_formatter)
+        return formatter.format(record)
+
+
+def get_logger(name, level=logging.INFO):
+    """A command line logger."""
+    if "LOG_LEVEL" in os.environ:
+        level = os.environ["LOG_LEVEL"].upper()
+        assert level in _LOG_LEVELS, f"Invalid LOG_LEVEL: {level}, must be one of {list(_LOG_LEVELS.keys())}"
+        level = _LOG_LEVELS[level]
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.propagate = False
+    ch = logging.StreamHandler()
+    ch.setLevel(level)
+    ch.setFormatter(ColoredFormatter())
+    logger.addHandler(ch)
+    return logger
 from tqdm import tqdm
 import comfy.model_management
 import torchvision.transforms.functional as TF
@@ -1210,54 +1029,6 @@ class LazyImageFrameLoader:
 
     def __len__(self):
         return self._num_frames
-
-
-class AsyncImageFrameLoader:
-    def __init__(self, img_paths, image_size, offload_video_to_cpu, device, img_mean, img_std):
-        self.img_paths = img_paths
-        self.image_size = image_size
-        self.offload_video_to_cpu = offload_video_to_cpu
-        self.device = device
-        self.img_mean = img_mean
-        self.img_std = img_std
-        self.images = [None] * len(img_paths)
-        self.exception = None
-        self.video_height = None
-        self.video_width = None
-        self.__getitem__(0)
-
-        def _load_frames():
-            try:
-                for n in tqdm(range(len(self.images)),
-                              desc=f"frame loading (image folder) [rank={RANK}]"):
-                    self.__getitem__(n)
-            except Exception as e:
-                self.exception = e
-
-        self.thread = Thread(target=_load_frames, daemon=True)
-        self.thread.start()
-
-    def __getitem__(self, index):
-        if self.exception is not None:
-            raise RuntimeError("Failure in frame loading thread") from self.exception
-        img = self.images[index]
-        if img is not None:
-            return img
-        img, video_height, video_width = _load_img_as_tensor(
-            self.img_paths[index], self.image_size
-        )
-        self.video_height = video_height
-        self.video_width = video_width
-        img = img.to(dtype=_get_float_dtype(self.device))
-        img -= self.img_mean
-        img /= self.img_std
-        if not self.offload_video_to_cpu:
-            img = img.to(self.device)
-        self.images[index] = img
-        return img
-
-    def __len__(self):
-        return len(self.images)
 
 
 class TorchCodecDecoder:
@@ -1805,85 +1576,6 @@ def sample_random_points_from_errors(gt_masks, pred_masks, num_pt=1):
     return points, labels
 
 
-def sample_one_point_from_error_center(gt_masks, pred_masks, padding=True):
-    if pred_masks is None:
-        pred_masks = torch.zeros_like(gt_masks)
-    assert gt_masks.dtype == torch.bool and gt_masks.size(1) == 1
-    assert pred_masks.dtype == torch.bool and pred_masks.shape == gt_masks.shape
-    B, _, H, W = gt_masks.shape
-    fp_masks = (~gt_masks & pred_masks).squeeze(1)
-    fn_masks = (gt_masks & ~pred_masks).squeeze(1)
-    if padding:
-        padded_fp_masks = torch.zeros(B, H + 2, W + 2, dtype=fp_masks.dtype, device=fp_masks.device)
-        padded_fp_masks[:, 1 : H + 1, 1 : W + 1] = fp_masks
-        padded_fn_masks = torch.zeros(B, H + 2, W + 2, dtype=fp_masks.dtype, device=fp_masks.device)
-        padded_fn_masks[:, 1 : H + 1, 1 : W + 1] = fn_masks
-    else:
-        padded_fp_masks = fp_masks
-        padded_fn_masks = fn_masks
-    fn_mask_dt = edt_triton(padded_fn_masks)
-    fp_mask_dt = edt_triton(padded_fp_masks)
-    if padding:
-        fn_mask_dt = fn_mask_dt[:, 1:-1, 1:-1]
-        fp_mask_dt = fp_mask_dt[:, 1:-1, 1:-1]
-    fn_max, fn_argmax = fn_mask_dt.reshape(B, -1).max(dim=-1)
-    fp_max, fp_argmax = fp_mask_dt.reshape(B, -1).max(dim=-1)
-    is_positive = fn_max > fp_max
-    chosen = torch.where(is_positive, fn_argmax, fp_argmax)
-    points_x = chosen % W
-    points_y = chosen // W
-    labels = is_positive.long()
-    points = torch.stack([points_x, points_y], -1)
-    return points.unsqueeze(1), labels.unsqueeze(1)
-
-
-def sample_one_point_from_error_center_slow(gt_masks, pred_masks, padding=True):
-    import cv2
-    if pred_masks is None:
-        pred_masks = torch.zeros_like(gt_masks)
-    assert gt_masks.dtype == torch.bool and gt_masks.size(1) == 1
-    assert pred_masks.dtype == torch.bool and pred_masks.shape == gt_masks.shape
-    B, _, _, W_im = gt_masks.shape
-    device = gt_masks.device
-    fp_masks = ~gt_masks & pred_masks
-    fn_masks = gt_masks & ~pred_masks
-    fp_masks = fp_masks.cpu().numpy()
-    fn_masks = fn_masks.cpu().numpy()
-    points = torch.zeros(B, 1, 2, dtype=torch.float)
-    labels = torch.ones(B, 1, dtype=torch.int32)
-    for b in range(B):
-        fn_mask = fn_masks[b, 0]
-        fp_mask = fp_masks[b, 0]
-        if padding:
-            fn_mask = np.pad(fn_mask, ((1, 1), (1, 1)), "constant")
-            fp_mask = np.pad(fp_mask, ((1, 1), (1, 1)), "constant")
-        fn_mask_dt = cv2.distanceTransform(fn_mask.astype(np.uint8), cv2.DIST_L2, 0)
-        fp_mask_dt = cv2.distanceTransform(fp_mask.astype(np.uint8), cv2.DIST_L2, 0)
-        if padding:
-            fn_mask_dt = fn_mask_dt[1:-1, 1:-1]
-            fp_mask_dt = fp_mask_dt[1:-1, 1:-1]
-        fn_mask_dt_flat = fn_mask_dt.reshape(-1)
-        fp_mask_dt_flat = fp_mask_dt.reshape(-1)
-        fn_argmax = np.argmax(fn_mask_dt_flat)
-        fp_argmax = np.argmax(fp_mask_dt_flat)
-        is_positive = fn_mask_dt_flat[fn_argmax] > fp_mask_dt_flat[fp_argmax]
-        pt_idx = fn_argmax if is_positive else fp_argmax
-        points[b, 0, 0] = pt_idx % W_im
-        points[b, 0, 1] = pt_idx // W_im
-        labels[b, 0] = int(is_positive)
-    points = points.to(device)
-    labels = labels.to(device)
-    return points, labels
-
-
-def get_next_point(gt_masks, pred_masks, method):
-    if method == "uniform":
-        return sample_random_points_from_errors(gt_masks, pred_masks)
-    elif method == "center":
-        return sample_one_point_from_error_center(gt_masks, pred_masks)
-    else:
-        raise ValueError(f"unknown sampling method {method}")
-
 
 def select_closest_cond_frames(
     frame_idx, cond_frame_outputs, max_cond_frame_num, keep_first_cond_frame=False
@@ -1970,7 +1662,7 @@ def fill_holes_in_mask_scores(mask, max_area, fill_holes=True, remove_sprinkles=
 
 
 def _get_connected_components_with_padding(mask):
-    from .perflib.connected_components import connected_components
+    from .perflib import connected_components
     mask = mask.to(torch.uint8)
     _, _, H, W = mask.shape
     pad_h = H % 2
@@ -2041,7 +1733,7 @@ class SAM2Transforms(nn.Module):
         input_masks = masks
         mask_flat = masks.flatten(0, 1).unsqueeze(1)
         try:
-            from .perflib.connected_components import connected_components
+            from .perflib import connected_components
             if self.max_hole_area > 0:
                 labels, areas = connected_components(
                     (mask_flat <= self.mask_threshold).to(torch.uint8)
@@ -2069,138 +1761,6 @@ class SAM2Transforms(nn.Module):
         return masks
 
 
-# ===========================================================================
-# SAM1 video loading utilities (from model/utils/sam1_utils.py)
-# ===========================================================================
-
-def _load_img_as_tensor_sam1(img_path, image_size):
-    """SAM1-style image loading (different normalization path)."""
-    img_pil = Image.open(img_path)
-    img_np = np.array(img_pil.convert("RGB").resize((image_size, image_size)))
-    if img_np.dtype == np.uint8:
-        img_np = img_np / 255.0
-    else:
-        raise RuntimeError(f"Unknown image dtype: {img_np.dtype} on {img_path}")
-    img = torch.from_numpy(img_np).permute(2, 0, 1)
-    video_width, video_height = img_pil.size
-    return img, video_height, video_width
-
-
-class AsyncVideoFrameLoaderSAM1:
-    def __init__(
-        self, img_paths, image_size, offload_video_to_cpu,
-        img_mean, img_std, compute_device,
-    ):
-        self.img_paths = img_paths
-        self.image_size = image_size
-        self.offload_video_to_cpu = offload_video_to_cpu
-        self.img_mean = img_mean
-        self.img_std = img_std
-        self.images = [None] * len(img_paths)
-        self.exception = None
-        self.video_height = None
-        self.video_width = None
-        self.compute_device = compute_device
-        self.__getitem__(0)
-
-        def _load_frames():
-            try:
-                for n in tqdm(range(len(self.images)), desc="frame loading (JPEG)"):
-                    self.__getitem__(n)
-            except Exception as e:
-                self.exception = e
-
-        self.thread = Thread(target=_load_frames, daemon=True)
-        self.thread.start()
-
-    def __getitem__(self, index):
-        if self.exception is not None:
-            raise RuntimeError("Failure in frame loading thread") from self.exception
-        img = self.images[index]
-        if img is not None:
-            return img
-        img, video_height, video_width = _load_img_as_tensor_sam1(
-            self.img_paths[index], self.image_size
-        )
-        self.video_height = video_height
-        self.video_width = video_width
-        img -= self.img_mean
-        img /= self.img_std
-        if not self.offload_video_to_cpu:
-            img = img.to(self.compute_device, non_blocking=torch.cuda.is_available())
-        self.images[index] = img
-        return img
-
-    def __len__(self):
-        return len(self.images)
-
-
-def load_video_frames_sam1(
-    video_path, image_size, offload_video_to_cpu,
-    img_mean=(0.485, 0.456, 0.406), img_std=(0.229, 0.224, 0.225),
-    async_loading_frames=False, compute_device=None,
-):
-    if compute_device is None:
-        compute_device = comfy.model_management.get_torch_device()
-    is_bytes = isinstance(video_path, bytes)
-    is_str = isinstance(video_path, str)
-    is_mp4_path = is_str and os.path.splitext(video_path)[-1] in [".mp4", ".MP4"]
-    if is_bytes or is_mp4_path:
-        raise NotImplementedError("SAM1 video file loading not supported here")
-    elif is_str and os.path.isdir(video_path):
-        return load_video_frames_from_jpg_images_sam1(
-            video_path=video_path, image_size=image_size,
-            offload_video_to_cpu=offload_video_to_cpu,
-            img_mean=img_mean, img_std=img_std,
-            async_loading_frames=async_loading_frames,
-            compute_device=compute_device,
-        )
-    else:
-        raise NotImplementedError(
-            "Only MP4 video and JPEG folder are supported at this moment"
-        )
-
-
-def load_video_frames_from_jpg_images_sam1(
-    video_path, image_size, offload_video_to_cpu,
-    img_mean=(0.485, 0.456, 0.406), img_std=(0.229, 0.224, 0.225),
-    async_loading_frames=False, compute_device=None,
-):
-    if compute_device is None:
-        compute_device = comfy.model_management.get_torch_device()
-    if isinstance(video_path, str) and os.path.isdir(video_path):
-        jpg_folder = video_path
-    else:
-        raise NotImplementedError(
-            "Only JPEG frames are supported at this moment. For video files, you may use "
-            "ffmpeg (https://ffmpeg.org/) to extract frames into a folder of JPEG files."
-        )
-    frame_names = [
-        p for p in os.listdir(jpg_folder)
-        if os.path.splitext(p)[-1] in [".jpg", ".jpeg", ".JPG", ".JPEG"]
-    ]
-    frame_names.sort(key=lambda p: int(os.path.splitext(p)[0]))
-    num_frames = len(frame_names)
-    if num_frames == 0:
-        raise RuntimeError(f"no images found in {jpg_folder}")
-    img_paths = [os.path.join(jpg_folder, frame_name) for frame_name in frame_names]
-    img_mean = torch.tensor(img_mean, dtype=torch.float32)[:, None, None]
-    img_std = torch.tensor(img_std, dtype=torch.float32)[:, None, None]
-    if async_loading_frames:
-        lazy_images = AsyncVideoFrameLoaderSAM1(
-            img_paths, image_size, offload_video_to_cpu, img_mean, img_std, compute_device,
-        )
-        return lazy_images, lazy_images.video_height, lazy_images.video_width
-    images = torch.zeros(num_frames, 3, image_size, image_size, dtype=torch.float32)
-    for n, img_path in enumerate(tqdm(img_paths, desc="frame loading (JPEG)")):
-        images[n], video_height, video_width = _load_img_as_tensor_sam1(img_path, image_size)
-    if not offload_video_to_cpu:
-        images = images.to(compute_device)
-        img_mean = img_mean.to(compute_device)
-        img_std = img_std.to(compute_device)
-    images -= img_mean
-    images /= img_std
-    return images, video_height, video_width
 
 
 # ---------------------------------------------------------------------------

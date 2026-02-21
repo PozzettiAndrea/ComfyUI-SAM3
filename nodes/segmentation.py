@@ -109,7 +109,7 @@ class SAM3Grounding:
 
         # Access processor from the patcher
         processor = sam3_model.processor
-        device = sam3_model.sam3_wrapper.device
+        device = sam3_model.current_device
 
         # Sync processor device after model load (handles offload/reload cycles)
         if hasattr(processor, 'sync_device_with_model'):

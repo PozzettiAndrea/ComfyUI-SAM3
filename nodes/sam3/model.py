@@ -77,8 +77,8 @@ from .utils import (
     SAM2Transforms,
 )
 from . import perflib
-from .perflib.masks_ops import mask_iou
-from .perflib.masks_ops import masks_to_boxes as perf_masks_to_boxes
+from .perflib import mask_iou
+from .perflib import masks_to_boxes as perf_masks_to_boxes
 
 log = logging.getLogger("sam3")
 logger = logging.getLogger(__name__)
@@ -266,18 +266,7 @@ class TransformerWrapper(nn.Module):
             two_stage_type
         )
         self.two_stage_type = two_stage_type
-        self._reset_parameters()
         self.d_model = d_model
-
-    def _reset_parameters(self):
-        for n, p in self.named_parameters():
-            if p.dim() > 1:
-                if (
-                    "box_embed" not in n
-                    and "query_embed" not in n
-                    and "reference_points" not in n
-                ):
-                    nn.init.xavier_uniform_(p)
 
 
 # ---------------------------------------------------------------------------
@@ -1369,8 +1358,7 @@ class TransformerDecoderLayer(nn.Module):
         return tensor if pos is None else tensor + pos
 
     def forward_ffn(self, tgt):
-        with torch.amp.autocast(device_type=tgt.device.type, enabled=False):
-            tgt2 = self.linear2(self.dropout3(self.activation(self.linear1(tgt))))
+        tgt2 = self.linear2(self.dropout3(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout4(tgt2)
         tgt = self.norm3(tgt)
         return tgt
@@ -2257,41 +2245,6 @@ class MaskEncoder(nn.Module):
         masks = self.mask_downsampler(masks)
         masks_pos = self.position_encoding(masks).to(masks.dtype)
         return masks, masks_pos
-
-
-# ---------------------------------------------------------------------------
-# FusedMaskEncoder (from model/geometry_encoders.py)
-# ---------------------------------------------------------------------------
-
-class FusedMaskEncoder(MaskEncoder):
-    def __init__(
-        self,
-        mask_downsampler,
-        position_encoding,
-        fuser,
-        in_dim=256,
-        out_dim=256,
-        dtype=None,
-        device=None,
-        operations=ops,
-    ):
-        super().__init__(mask_downsampler, position_encoding)
-        self.fuser = fuser
-        self.out_proj = nn.Identity()
-        if out_dim != in_dim:
-            self.out_proj = operations.Conv2d(in_dim, out_dim, kernel_size=1, dtype=dtype, device=device)
-        self.pix_feat_proj = operations.Conv2d(in_dim, in_dim, kernel_size=1, dtype=dtype, device=device)
-
-    @override
-    def forward(self, masks, pix_feat, **kwargs):
-        masks = self.mask_downsampler(masks)
-        pix_feat = pix_feat.to(masks.device)
-        x = self.pix_feat_proj(pix_feat)
-        x = x + masks
-        x = self.fuser(x)
-        x = self.out_proj(x)
-        pos = self.position_encoding(x).to(x.dtype)
-        return x, pos
 
 
 # ---------------------------------------------------------------------------
@@ -3822,8 +3775,6 @@ class Sam3Image(torch.nn.Module):
                 hs=hs,
             )
 
-        if self.training or self.num_interactive_steps_val > 0:
-            self._compute_matching(out, self.back_convert(find_target))
         return out
 
     def _postprocess_out(self, out: Dict, multimask_output: bool = False):
@@ -3901,27 +3852,6 @@ class Sam3Image(torch.nn.Module):
 
         previous_stages_out.append(stage_outs)
         return previous_stages_out
-
-    def _compute_matching(self, out, targets):
-        out["indices"] = self.matcher(out, targets)
-        for aux_out in out.get("aux_outputs", []):
-            aux_out["indices"] = self.matcher(aux_out, targets)
-
-    def back_convert(self, targets):
-        batched_targets = {
-            "boxes": targets.boxes.view(-1, 4),
-            "boxes_xyxy": box_cxcywh_to_xyxy(targets.boxes.view(-1, 4)),
-            "boxes_padded": targets.boxes_padded,
-            "positive_map": targets.boxes.new_ones(len(targets.boxes), 1),
-            "num_boxes": targets.num_boxes,
-            "masks": targets.segments,
-            "semantic_masks": targets.semantic_segments,
-            "is_valid_mask": targets.is_valid_segment,
-            "is_exhaustive": targets.is_exhaustive,
-            "object_ids_packed": targets.object_ids,
-            "object_ids_padded": targets.object_ids_padded,
-        }
-        return batched_targets
 
     def predict_inst(
         self,
@@ -4042,7 +3972,7 @@ class Sam3ImageOnVideoMultiGPU(Sam3Image):
         nms_iou_thresh=None,
         **kwargs,
     ):
-        from .perflib.nms import nms_masks
+        from .perflib import nms_masks
 
         frame_idx_curr_b = frame_idx - frame_idx % self.world_size
         frame_idx_curr_e = min(frame_idx_curr_b + self.world_size, num_frames)
@@ -4121,7 +4051,7 @@ class Sam3ImageOnVideoMultiGPU(Sam3Image):
         nms_prob_thresh=None,
         nms_iou_thresh=None,
     ):
-        from .perflib.nms import nms_masks
+        from .perflib import nms_masks
 
         frame_idx_local_gpu = min(frame_idx_begin + self.rank, frame_idx_end - 1)
         with torch.profiler.record_function("forward_grounding"):
@@ -5108,7 +5038,7 @@ class Sam3TrackerBase(torch.nn.Module):
     def _compile_all_components(self):
         torch._dynamo.config.cache_size_limit = 64
         torch._dynamo.config.accumulated_cache_size_limit = 2048
-        from .perflib.compile import compile_wrapper
+        from .perflib import compile_wrapper
 
         logging.info("Compiling all components. First time may be very slow.")
 
@@ -5175,7 +5105,6 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
         self.max_point_num_in_prompt_enc = max_point_num_in_prompt_enc
         self.non_overlap_masks_for_output = non_overlap_masks_for_output
 
-        # NOTE: autocast removed — ComfyUI handles dtype casting via operations=
         self.iter_use_prev_mask_pred = True
         self.add_all_frames_to_correct_as_cond = True
 
@@ -7677,61 +7606,6 @@ class Sam3VideoBase(nn.Module):
         confirmation_data["consecutive_det_num"] = consecutive_det_num
         return rank0_metadata
 
-    def forward(self, input: BatchedDatapoint, is_inference: bool = False):
-        raise NotImplementedError("Evaluation outside demo is not implemented yet")
-
-    def _load_checkpoint(self, ckpt_path: str, strict: bool = True):
-        from . import _load_checkpoint_file
-        ckpt = _load_checkpoint_file(ckpt_path)
-        sd = ckpt["model"] if "model" in ckpt else ckpt
-        missing_keys, unexpected_keys = self.load_state_dict(sd, strict=strict)
-        if len(missing_keys) > 0 or len(unexpected_keys) > 0:
-            logger.warning(f"Loaded ckpt with {missing_keys=}, {unexpected_keys=}")
-        else:
-            logger.info("Loaded ckpt successfully without missing or unexpected keys")
-
-    def prep_for_evaluator(self, video_frames, tracking_res, scores_labels):
-        num_frames = len(video_frames)
-        w, h = video_frames[0].size
-        zero_mask = torch.zeros((1, h, w), dtype=torch.bool)
-        object_ids = list(scores_labels.keys())
-        preds = {"scores": [], "labels": [], "boxes": [], "masks_rle": []}
-        for oid in object_ids:
-            o_masks = []
-            o_score = scores_labels[oid][0].item()
-            o_label = scores_labels[oid][1]
-            for frame_idx in range(num_frames):
-                if frame_idx not in tracking_res:
-                    o_masks.append(zero_mask)
-                else:
-                    o_masks.append(tracking_res[frame_idx].get(oid, zero_mask))
-
-            o_masks = torch.cat(o_masks, dim=0)
-            preds["scores"].append(o_score)
-            preds["labels"].append(o_label)
-            preds["boxes"].append(mask_to_box(o_masks.unsqueeze(1)).squeeze())
-            preds["masks_rle"].append(rle_encode(o_masks, return_areas=True))
-
-        preds["boxes"] = (
-            torch.stack(preds["boxes"], dim=0)
-            if len(preds["boxes"]) > 0
-            else torch.empty(
-                (0, num_frames, 4), dtype=torch.float32, device=self.device
-            )
-        )
-        preds["scores"] = (
-            torch.tensor(preds["scores"], device=self.device)
-            if len(preds["scores"]) > 0
-            else torch.empty((0,), device=self.device)
-        )
-        preds["per_frame_scores"] = preds["scores"]
-        preds["labels"] = (
-            torch.tensor(preds["labels"], device=self.device)
-            if len(preds["labels"]) > 0
-            else torch.empty((0,), device=self.device)
-        )
-        return preds
-
     def _encode_prompt(self, **kwargs):
         return self.detector._encode_prompt(**kwargs)
 
@@ -7749,8 +7623,6 @@ class Sam3VideoBase(nn.Module):
 
 # ---------------------------------------------------------------------------
 # Sam3VideoInference (from model/sam3_video_inference.py)
-# NOTE: autocast_if_cuda decorator and _get_autocast_dtype() REMOVED —
-#       ComfyUI handles dtype casting via operations=
 # ---------------------------------------------------------------------------
 
 class Sam3VideoInference(Sam3VideoBase):
@@ -8457,7 +8329,6 @@ class Sam3VideoInference(Sam3VideoBase):
         return inference_state
 
     @torch.inference_mode()
-    # NOTE: @autocast_if_cuda removed — ComfyUI handles dtype casting via operations=
     def warm_up_compilation(self):
         """
         Warm up the model by running a dummy inference to compile the model. This is
@@ -8562,60 +8433,6 @@ class Sam3VideoInference(Sam3VideoBase):
         )
         return frame_idx, self._postprocess_output(inference_state, out)
 
-    # NOTE: @autocast_if_cuda removed — ComfyUI handles dtype casting via operations=
-    def forward(self, input: BatchedDatapoint, is_inference: bool = False):
-        """This method is only used for benchmark eval (not used in the demo)."""
-        # set the model to single GPU for benchmark evaluation (to be compatible with trainer)
-        orig_rank = self.rank
-        orig_world_size = self.world_size
-        self.rank = self.detector.rank = 0
-        self.world_size = self.detector.world_size = 1
-
-        # get data
-        text_prompt_ids = input.find_metadatas[0].original_category_id
-        text_prompt_list = input.find_text_batch
-
-        # loop over txt prompts
-        tracking_res = defaultdict(dict)  # frame_idx --> {obj_id: mask}
-        scores_labels = defaultdict(tuple)  # obj_id --> (score, text_prompt_id)
-        inference_state = self.init_state(resource_path=input.raw_images)
-        for prompt_id, prompt in zip(text_prompt_ids, text_prompt_list):
-            self.add_prompt(inference_state, frame_idx=0, text_str=prompt)
-            start_obj_id = max(scores_labels.keys(), default=-1) + 1  # prev max + 1
-
-            # propagate the prompts
-            obj_ids_this_prompt = set()
-            for frame_idx, out in self.propagate_in_video(
-                inference_state,
-                start_frame_idx=0,
-                max_frame_num_to_track=inference_state["num_frames"],
-                reverse=False,
-            ):
-                current_frame_res = tracking_res[frame_idx]
-                for obj_id, mask in zip(out["out_obj_ids"], out["out_binary_masks"]):
-                    mask_tensor = torch.tensor(mask[None], dtype=torch.bool)
-                    current_frame_res[obj_id + start_obj_id] = mask_tensor
-                obj_ids_this_prompt.update(current_frame_res.keys())
-
-            obj_id_to_score = inference_state["tracker_metadata"]["obj_id_to_score"]
-            for obj_id, score in obj_id_to_score.items():
-                if obj_id + start_obj_id in obj_ids_this_prompt:
-                    score_tensor = torch.tensor(score, dtype=torch.float32)
-                    scores_labels[obj_id + start_obj_id] = (score_tensor, prompt_id)
-
-            self.reset_state(inference_state)
-
-        video_id = input.find_metadatas[0].original_image_id[0].cpu().item()
-        preds = self.prep_for_evaluator(input.raw_images, tracking_res, scores_labels)
-
-        # revert the model to the original GPU and rank
-        self.rank = self.detector.rank = orig_rank
-        self.world_size = self.detector.world_size = orig_world_size
-        return {video_id: preds}
-
-    def back_convert(self, targets):
-        # Needed for retraining compatibility with trainer
-        return targets
 
 
 # ---------------------------------------------------------------------------

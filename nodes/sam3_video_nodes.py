@@ -37,37 +37,6 @@ from .inference_reconstructor import (
 )
 
 
-# =============================================================================
-# Autocast dtype detection - handles GPUs without bf16 support
-# =============================================================================
-def _get_autocast_dtype():
-    """
-    Get appropriate autocast dtype based on GPU capability.
-    Returns None if autocast should not be used.
-    """
-    import comfy.model_management
-    if comfy.model_management.get_torch_device().type != "cuda":
-        return None
-    major, _ = torch.cuda.get_device_capability()
-    if major >= 8:  # Ampere+ supports bf16
-        return torch.bfloat16
-    elif major >= 7:  # Volta/Turing use fp16
-        return torch.float16
-    else:
-        return None  # Older GPUs - no autocast
-
-
-def _get_autocast_context():
-    """Get autocast context manager based on GPU capability."""
-    import comfy.model_management
-    if comfy.model_management.get_torch_device().type != "cuda":
-        return torch.no_grad()
-    dtype = _get_autocast_dtype()
-    if dtype is not None:
-        return torch.autocast(device_type=comfy.model_management.get_torch_device().type, dtype=dtype)
-    return torch.no_grad()
-
-
 from .utils import print_mem, print_vram
 
 
@@ -497,62 +466,58 @@ class SAM3Propagate:
             "max_frame_num_to_track": end_frame - start_frame + 1,
         }
 
-        # Run ALL inference inside autocast context for dtype consistency
-        # SAM3 requires bf16/fp16 - wrap reconstruction AND propagation
         masks_dict = {}
-        scores_dict = {}  # Store confidence scores per frame
-        # Use autocast with dtype based on GPU capability (bf16 for Ampere+, fp16 for Volta/Turing)
-        autocast_context = _get_autocast_context()
-        with autocast_context:
-            print_mem("Before reconstruction (in autocast)")
-            # Reconstruct inference state from immutable state
-            inference_state = get_inference_state(sam3_model, video_state)
-            print_mem("After reconstruction")
+        scores_dict = {}
 
-            # Run propagation
-            try:
-                for response in sam3_model.handle_stream_request(request):
-                    frame_idx = response.get("frame_index", response.get("frame_idx"))
-                    if frame_idx is None:
-                        continue
+        print_mem("Before reconstruction")
+        # Reconstruct inference state from immutable state
+        inference_state = get_inference_state(sam3_model, video_state)
+        print_mem("After reconstruction")
 
-                    outputs = response.get("outputs", response)
-                    if outputs is None:
-                        continue
+        # Run propagation (dtype handled by operations= / manual_cast)
+        try:
+            for response in sam3_model.handle_stream_request(request):
+                frame_idx = response.get("frame_index", response.get("frame_idx"))
+                if frame_idx is None:
+                    continue
 
-                    # Try different possible mask keys
-                    mask_key = None
-                    for key in ["out_binary_masks", "video_res_masks", "masks"]:
-                        if key in outputs and outputs[key] is not None:
-                            mask_key = key
-                            break
+                outputs = response.get("outputs", response)
+                if outputs is None:
+                    continue
 
-                    if mask_key:
-                        # Move masks to CPU immediately to free GPU memory
-                        mask = outputs[mask_key]
-                        if hasattr(mask, 'cpu'):
-                            mask = mask.cpu()
-                        masks_dict[frame_idx] = mask
+                # Try different possible mask keys
+                mask_key = None
+                for key in ["out_binary_masks", "video_res_masks", "masks"]:
+                    if key in outputs and outputs[key] is not None:
+                        mask_key = key
+                        break
 
-                    # Capture confidence scores
-                    for score_key in ["out_probs", "scores", "confidences", "obj_scores"]:
-                        if score_key in outputs and outputs[score_key] is not None:
-                            probs = outputs[score_key]
-                            if hasattr(probs, 'cpu'):
-                                probs = probs.cpu()
-                            elif isinstance(probs, np.ndarray):
-                                probs = torch.from_numpy(probs)
-                            scores_dict[frame_idx] = probs
-                            break
+                if mask_key:
+                    # Move masks to CPU immediately to free GPU memory
+                    mask = outputs[mask_key]
+                    if hasattr(mask, 'cpu'):
+                        mask = mask.cpu()
+                    masks_dict[frame_idx] = mask
 
-                    # Periodic cleanup and memory monitoring
-                    if frame_idx % 10 == 0:
-                        print_mem(f"Propagation frame {frame_idx}/{video_state.num_frames}")
-                        gc.collect()
+                # Capture confidence scores
+                for score_key in ["out_probs", "scores", "confidences", "obj_scores"]:
+                    if score_key in outputs and outputs[score_key] is not None:
+                        probs = outputs[score_key]
+                        if hasattr(probs, 'cpu'):
+                            probs = probs.cpu()
+                        elif isinstance(probs, np.ndarray):
+                            probs = torch.from_numpy(probs)
+                        scores_dict[frame_idx] = probs
+                        break
 
-            except Exception as e:
-                log.error(f"Propagation error: {e}", exc_info=True)
-                raise
+                # Periodic cleanup and memory monitoring
+                if frame_idx % 10 == 0:
+                    print_mem(f"Propagation frame {frame_idx}/{video_state.num_frames}")
+                    gc.collect()
+
+        except Exception as e:
+            log.error(f"Propagation error: {e}", exc_info=True)
+            raise
 
         print_mem("After propagation loop")
         log.info(f"Propagation complete: {len(masks_dict)} frames processed")
