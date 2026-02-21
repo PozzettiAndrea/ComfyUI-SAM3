@@ -87,12 +87,8 @@ class SAM3UnifiedModel(ModelPatcher):
         if device_to is None:
             device_to = self._load_device
         self.model.to(device_to)
-        if self._model_dtype in (torch.float16, torch.bfloat16):
-            for p in self.model.parameters():
-                p.data = p.data.to(dtype=self._model_dtype)
-            for name, buf in self.model.named_buffers():
-                if not buf.is_complex():
-                    buf.data = buf.data.to(dtype=self._model_dtype)
+        # Native ComfyUI pattern: weights stay in checkpoint dtype (fp32).
+        # manual_cast handles per-layer casting to match input dtype.
         self._sync_processor_device(device_to)
         return self.model
 
