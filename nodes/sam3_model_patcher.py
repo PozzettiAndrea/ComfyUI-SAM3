@@ -8,6 +8,7 @@ Provides a single ModelPatcher subclass that integrates with:
 """
 
 import gc
+import torch
 import comfy.model_management
 from comfy.model_patcher import ModelPatcher
 
@@ -26,6 +27,10 @@ class SAM3UnifiedModel(ModelPatcher):
         self._processor = processor
         self._load_device = load_device
         self._offload_device = offload_device
+        self._model_dtype = dtype or torch.float32
+        # Set inference dtype on processor immediately so set_image() always
+        # casts image inputs to bf16/fp16 before backbone forward.
+        self._processor._inference_dtype = self._model_dtype
 
         # The full model (detector + tracker) is the nn.Module we manage
         full_model = video_predictor.model
@@ -82,6 +87,12 @@ class SAM3UnifiedModel(ModelPatcher):
         if device_to is None:
             device_to = self._load_device
         self.model.to(device_to)
+        if self._model_dtype in (torch.float16, torch.bfloat16):
+            for p in self.model.parameters():
+                p.data = p.data.to(dtype=self._model_dtype)
+            for name, buf in self.model.named_buffers():
+                if not buf.is_complex():
+                    buf.data = buf.data.to(dtype=self._model_dtype)
         self._sync_processor_device(device_to)
         return self.model
 
@@ -97,6 +108,7 @@ class SAM3UnifiedModel(ModelPatcher):
         n = SAM3UnifiedModel(
             self._video_predictor, self._processor,
             self._load_device, self._offload_device,
+            dtype=self._model_dtype,
         )
         n.patches = {}
         n.object_patches = {}
@@ -148,6 +160,9 @@ class SAM3UnifiedModel(ModelPatcher):
 
     def _sync_processor_device(self, device):
         """Sync processor's cached device state after model movement."""
+        # Tell the processor what dtype to cast image inputs to.
+        # manual_cast layers will then match their weights to the input dtype.
+        self._processor._inference_dtype = self._model_dtype
         if hasattr(self._processor, 'sync_device_with_model'):
             self._processor.sync_device_with_model()
         elif hasattr(self._processor, 'device'):
