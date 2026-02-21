@@ -148,7 +148,7 @@ class DotProductScoring(nn.Module):
             self.clamp_max_val = clamp_max_val
 
     def mean_pool_text(self, prompt, prompt_mask):
-        is_valid = (~prompt_mask).float().permute(1, 0)[..., None]
+        is_valid = (~prompt_mask).to(prompt.dtype).permute(1, 0)[..., None]
         num_valid = torch.clamp(torch.sum(is_valid, dim=0), min=1.0)
         pooled_prompt = (prompt * is_valid).sum(dim=0) / num_valid
         return pooled_prompt
@@ -391,6 +391,7 @@ class PositionEmbeddingRandom(nn.Module):
 
     def _pe_encoding(self, coords: torch.Tensor) -> torch.Tensor:
         coords = 2 * coords - 1
+        coords = coords.to(self.positional_encoding_gaussian_matrix.dtype)
         coords = coords @ self.positional_encoding_gaussian_matrix
         coords = 2 * np.pi * coords
         return torch.cat([torch.sin(coords), torch.cos(coords)], dim=-1)
@@ -398,7 +399,7 @@ class PositionEmbeddingRandom(nn.Module):
     def forward(self, size: Tuple[int, int]) -> torch.Tensor:
         h, w = size
         device: Any = self.positional_encoding_gaussian_matrix.device
-        grid = torch.ones((h, w), device=device, dtype=torch.float32)
+        grid = torch.ones((h, w), device=device, dtype=self.positional_encoding_gaussian_matrix.dtype)
         y_embed = grid.cumsum(dim=0) - 0.5
         x_embed = grid.cumsum(dim=1) - 0.5
         y_embed = y_embed / h
@@ -412,7 +413,7 @@ class PositionEmbeddingRandom(nn.Module):
         coords = coords_input.clone()
         coords[:, :, 0] = coords[:, :, 0] / image_size[1]
         coords[:, :, 1] = coords[:, :, 1] / image_size[0]
-        return self._pe_encoding(coords.to(torch.float))
+        return self._pe_encoding(coords)
 
 
 # ---------------------------------------------------------------------------
@@ -455,7 +456,7 @@ def get_rel_pos(q_size: int, k_size: int, rel_pos: Tensor) -> Tensor:
             mode="linear",
             align_corners=False,
         )
-        rel_pos_resized = rel_pos_resized.reshape(-1, max_rel_dist).permute(1, 0)
+        rel_pos_resized = rel_pos_resized.reshape(-1, max_rel_dist).permute(1, 0).to(rel_pos.dtype)
     else:
         rel_pos_resized = rel_pos
     q_coords = torch.arange(q_size)[:, None] * max(k_size / q_size, 1.0)
@@ -488,8 +489,8 @@ def get_abs_pos(
             )[:, :, :h, :w]
         else:
             new_abs_pos = F.interpolate(
-                new_abs_pos, size=(h, w), mode="bicubic", align_corners=False,
-            )
+                new_abs_pos.float(), size=(h, w), mode="bicubic", align_corners=False,
+            ).to(abs_pos.dtype)
         if not retain_cls_token:
             return new_abs_pos.permute(0, 2, 3, 1)
         else:
@@ -1301,7 +1302,7 @@ def pool_text_feat(prompt, prompt_mask, pool_with_mask):
     if not pool_with_mask:
         return prompt.mean(dim=0)
     assert prompt_mask.dim() == 2
-    is_valid = (~prompt_mask).float().permute(1, 0)[..., None]
+    is_valid = (~prompt_mask).to(prompt.dtype).permute(1, 0)[..., None]
     num_valid = torch.clamp(torch.sum(is_valid, dim=0), min=1.0)
     pooled_text = (prompt * is_valid).sum(dim=0) / num_valid
     return pooled_text
@@ -2115,10 +2116,11 @@ class SimpleMaskDownSampler(nn.Module):
 
     def forward(self, x):
         if self.interpol_size is not None and self.interpol_size != list(x.shape[-2:]):
+            _dtype = x.dtype
             x = F.interpolate(
                 x.float(), size=self.interpol_size,
                 align_corners=False, mode="bilinear", antialias=True,
-            )
+            ).to(_dtype)
         return self.encoder(x)
 
 
@@ -2413,7 +2415,7 @@ class SequenceGeometryEncoder(nn.Module):
         n_masks, bs = masks.shape[:2]
         assert n_masks == 1
         assert list(attn_mask.shape) == [bs, n_masks]
-        masks, pos = self.mask_encoder(masks=masks.flatten(0, 1).float(), pix_feat=img_feats)
+        masks, pos = self.mask_encoder(masks=masks.flatten(0, 1).to(img_feats.dtype), pix_feat=img_feats)
         H, W = masks.shape[-2:]
         n_tokens_per_mask = H * W
         masks = masks + pos
@@ -2647,7 +2649,8 @@ class PromptEncoder(nn.Module):
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         bs = self._get_batch_size(points, boxes, masks)
         sparse_embeddings = torch.empty(
-            (bs, 0, self.embed_dim), device=self._get_device()
+            (bs, 0, self.embed_dim), device=self._get_device(),
+            dtype=self.point_embeddings[0].weight.dtype,
         )
         if points is not None:
             coords, labels = points

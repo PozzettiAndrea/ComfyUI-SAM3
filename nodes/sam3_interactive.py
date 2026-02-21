@@ -1,26 +1,35 @@
 """
-SAM3 Point Collector - Interactive Point Selection
+SAM3 Interactive Collectors — Point, BBox, Multi-Region, and Interactive Segmentation
 
-Point editor widget adapted from ComfyUI-KJNodes
+Point/BBox editor widgets adapted from ComfyUI-KJNodes
 Original: https://github.com/kijai/ComfyUI-KJNodes
 Author: kijai
 License: Apache 2.0
-
-Modifications for SAM3:
-- Removed bounding box functionality
-- Simplified to positive/negative points only
-- Outputs point arrays for use with SAM3Segmentation node
 """
 
+import asyncio
+import gc
+import hashlib
 import logging
-import torch
-import numpy as np
 import json
 import io
 import base64
+
+import numpy as np
+import torch
 from PIL import Image
 
+import server
+from aiohttp import web
+import comfy.model_management
+from .utils import comfy_image_to_pil, visualize_masks_on_image, masks_to_comfy_mask, pil_to_comfy_image
+
 log = logging.getLogger("sam3")
+
+# ---------------------------------------------------------------------------
+# Interactive segmentation cache — keyed by node unique_id
+# ---------------------------------------------------------------------------
+_INTERACTIVE_CACHE = {}
 
 
 class SAM3PointCollector:
@@ -519,15 +528,297 @@ class SAM3MultiRegionCollector:
         return img_base64
 
 
+class SAM3InteractiveCollector:
+    """
+    Interactive Collector with live segmentation preview.
+
+    Same multi-region prompt UI as SAM3MultiRegionCollector, but also takes
+    a SAM3 model and runs segmentation directly.  The widget has a "Run"
+    button that calls a custom API route for instant mask overlay without
+    having to queue the full workflow.
+    """
+    _cache = {}
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "sam3_model": ("SAM3_MODEL", {
+                    "tooltip": "SAM3 model from LoadSAM3Model node."
+                }),
+                "image": ("IMAGE", {
+                    "tooltip": "Image to segment. Draw points/boxes on the canvas, then click Run for a live mask preview."
+                }),
+                "multi_prompts_store": ("STRING", {"multiline": False, "default": "[]"}),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+            },
+        }
+
+    RETURN_TYPES = ("MASK", "IMAGE", "SAM3_MULTI_PROMPTS")
+    RETURN_NAMES = ("masks", "visualization", "multi_prompts")
+    FUNCTION = "segment"
+    CATEGORY = "SAM3"
+    OUTPUT_NODE = True
+
+    @classmethod
+    def IS_CHANGED(cls, sam3_model, image, multi_prompts_store, unique_id=None):
+        h = hashlib.md5()
+        h.update(str(image.shape).encode())
+        h.update(multi_prompts_store.encode())
+        return h.hexdigest()
+
+    # -- helpers reused by both segment() and the API route ----------------
+
+    @staticmethod
+    def _parse_raw_prompts(raw_prompts, img_w, img_h):
+        """Normalize raw JS prompts (pixel coords) to model format."""
+        multi_prompts = []
+        for idx, raw in enumerate(raw_prompts):
+            prompt = {
+                "id": idx,
+                "positive_points": {"points": [], "labels": []},
+                "negative_points": {"points": [], "labels": []},
+                "positive_boxes": {"boxes": [], "labels": []},
+                "negative_boxes": {"boxes": [], "labels": []},
+            }
+            for pt in raw.get("positive_points", []):
+                prompt["positive_points"]["points"].append([pt["x"] / img_w, pt["y"] / img_h])
+                prompt["positive_points"]["labels"].append(1)
+            for pt in raw.get("negative_points", []):
+                prompt["negative_points"]["points"].append([pt["x"] / img_w, pt["y"] / img_h])
+                prompt["negative_points"]["labels"].append(0)
+            for box in raw.get("positive_boxes", []):
+                x1n, y1n = box["x1"] / img_w, box["y1"] / img_h
+                x2n, y2n = box["x2"] / img_w, box["y2"] / img_h
+                prompt["positive_boxes"]["boxes"].append([
+                    (x1n + x2n) / 2, (y1n + y2n) / 2, x2n - x1n, y2n - y1n
+                ])
+                prompt["positive_boxes"]["labels"].append(True)
+            for box in raw.get("negative_boxes", []):
+                x1n, y1n = box["x1"] / img_w, box["y1"] / img_h
+                x2n, y2n = box["x2"] / img_w, box["y2"] / img_h
+                prompt["negative_boxes"]["boxes"].append([
+                    (x1n + x2n) / 2, (y1n + y2n) / 2, x2n - x1n, y2n - y1n
+                ])
+                prompt["negative_boxes"]["labels"].append(False)
+            has_content = (prompt["positive_points"]["points"] or
+                           prompt["negative_points"]["points"] or
+                           prompt["positive_boxes"]["boxes"] or
+                           prompt["negative_boxes"]["boxes"])
+            if has_content:
+                multi_prompts.append(prompt)
+        return multi_prompts
+
+    @staticmethod
+    def _run_prompts(model, state, multi_prompts, img_w, img_h):
+        """Run predict_inst for each prompt, return stacked masks + scores."""
+        all_masks = []
+        all_scores = []
+        for prompt in multi_prompts:
+            pts, labels = [], []
+            for pt in prompt["positive_points"]["points"]:
+                pts.append([pt[0] * img_w, pt[1] * img_h])
+                labels.append(1)
+            for pt in prompt["negative_points"]["points"]:
+                pts.append([pt[0] * img_w, pt[1] * img_h])
+                labels.append(0)
+            box_array = None
+            pos_boxes = prompt.get("positive_boxes", {}).get("boxes", [])
+            if pos_boxes:
+                cx, cy, w, h = pos_boxes[0]
+                box_array = np.array([
+                    (cx - w / 2) * img_w, (cy - h / 2) * img_h,
+                    (cx + w / 2) * img_w, (cy + h / 2) * img_h,
+                ])
+            point_coords = np.array(pts) if pts else None
+            point_labels = np.array(labels) if labels else None
+            if point_coords is None and box_array is None:
+                continue
+            masks_np, scores_np, _ = model.predict_inst(
+                state,
+                point_coords=point_coords,
+                point_labels=point_labels,
+                box=box_array,
+                mask_input=None,
+                multimask_output=True,
+                normalize_coords=True,
+            )
+            best_idx = np.argmax(scores_np)
+            all_masks.append(torch.from_numpy(masks_np[best_idx]).float())
+            all_scores.append(scores_np[best_idx])
+        return all_masks, all_scores
+
+    # -- main execution (workflow queue) -----------------------------------
+
+    def segment(self, sam3_model, image, multi_prompts_store, unique_id=None):
+        comfy.model_management.load_models_gpu([sam3_model])
+        pil_image = comfy_image_to_pil(image)
+        img_w, img_h = pil_image.size
+
+        processor = sam3_model.processor
+        model = processor.model  # The actual nn.Module with predict_inst
+
+        # Sync processor device after model load
+        if hasattr(processor, 'sync_device_with_model'):
+            processor.sync_device_with_model()
+
+        state = processor.set_image(pil_image)
+
+        # Cache for the API route
+        _INTERACTIVE_CACHE[str(unique_id)] = {
+            "sam3_model": sam3_model,
+            "model": model,
+            "processor": processor,
+            "state": state,
+            "pil_image": pil_image,
+            "img_size": (img_w, img_h),
+        }
+
+        # Parse prompts
+        try:
+            raw_prompts = json.loads(multi_prompts_store) if multi_prompts_store.strip() else []
+        except json.JSONDecodeError:
+            raw_prompts = []
+        multi_prompts = self._parse_raw_prompts(raw_prompts, img_w, img_h)
+
+        # Run segmentation
+        all_masks, all_scores = self._run_prompts(model, state, multi_prompts, img_w, img_h)
+
+        if not all_masks:
+            empty_mask = torch.zeros(1, img_h, img_w)
+            vis_tensor = pil_to_comfy_image(pil_image)
+            img_b64 = self._tensor_to_base64(image)
+            return {
+                "ui": {"bg_image": [img_b64]},
+                "result": (empty_mask, vis_tensor, multi_prompts),
+            }
+
+        masks = torch.stack(all_masks, dim=0)
+        scores = torch.tensor(all_scores)
+
+        # Bounding boxes for visualization
+        boxes_list = []
+        for i in range(masks.shape[0]):
+            coords = torch.where(masks[i] > 0)
+            if len(coords[0]) > 0:
+                boxes_list.append([coords[1].min().item(), coords[0].min().item(),
+                                   coords[1].max().item(), coords[0].max().item()])
+            else:
+                boxes_list.append([0, 0, 0, 0])
+        boxes = torch.tensor(boxes_list).float()
+
+        comfy_masks = masks_to_comfy_mask(masks)
+        vis_image = visualize_masks_on_image(pil_image, masks, boxes, scores, alpha=0.5)
+        vis_tensor = pil_to_comfy_image(vis_image)
+
+        img_b64 = self._tensor_to_base64(image)
+        overlay_b64 = self._pil_to_base64(vis_image)
+
+        return {
+            "ui": {"bg_image": [img_b64], "overlay_image": [overlay_b64]},
+            "result": (comfy_masks, vis_tensor, multi_prompts),
+        }
+
+    @staticmethod
+    def _tensor_to_base64(tensor):
+        arr = tensor[0].cpu().numpy()
+        arr = (arr * 255).astype(np.uint8)
+        pil_img = Image.fromarray(arr)
+        buf = io.BytesIO()
+        pil_img.save(buf, format="JPEG", quality=75)
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+    @staticmethod
+    def _pil_to_base64(pil_img):
+        buf = io.BytesIO()
+        pil_img.save(buf, format="JPEG", quality=75)
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Custom API route for live interactive segmentation
+# ---------------------------------------------------------------------------
+
+def _run_segment_sync(cached, raw_prompts):
+    """Blocking helper — called from the async route via run_in_executor."""
+    sam3_model = cached["sam3_model"]  # ModelPatcher for GPU management
+    model = cached["model"]            # processor.model with predict_inst
+    state = cached["state"]
+    pil_image = cached["pil_image"]
+    img_w, img_h = cached["img_size"]
+
+    comfy.model_management.load_models_gpu([sam3_model])
+
+    multi_prompts = SAM3InteractiveCollector._parse_raw_prompts(raw_prompts, img_w, img_h)
+    if not multi_prompts:
+        return {"error": "No valid prompts", "num_masks": 0}
+
+    all_masks, all_scores = SAM3InteractiveCollector._run_prompts(
+        model, state, multi_prompts, img_w, img_h
+    )
+    if not all_masks:
+        return {"error": "No masks generated", "num_masks": 0}
+
+    masks = torch.stack(all_masks, dim=0)
+    scores = torch.tensor(all_scores)
+
+    boxes_list = []
+    for i in range(masks.shape[0]):
+        coords = torch.where(masks[i] > 0)
+        if len(coords[0]) > 0:
+            boxes_list.append([coords[1].min().item(), coords[0].min().item(),
+                               coords[1].max().item(), coords[0].max().item()])
+        else:
+            boxes_list.append([0, 0, 0, 0])
+    boxes = torch.tensor(boxes_list).float()
+
+    vis_image = visualize_masks_on_image(pil_image, masks, boxes, scores, alpha=0.5)
+    buf = io.BytesIO()
+    vis_image.save(buf, format="JPEG", quality=80)
+    overlay_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+
+    return {"overlay": overlay_b64, "num_masks": len(all_masks)}
+
+
+@server.PromptServer.instance.routes.post("/sam3/interactive_segment")
+async def _interactive_segment_handler(request):
+    try:
+        body = await request.json()
+    except Exception:
+        return web.json_response({"error": "Invalid JSON"}, status=400)
+
+    node_id = str(body.get("node_id", ""))
+    raw_prompts = body.get("prompts", [])
+
+    cached = _INTERACTIVE_CACHE.get(node_id)
+    if not cached:
+        return web.json_response(
+            {"error": "Model not loaded. Queue the workflow first (Ctrl+Enter)."},
+            status=400,
+        )
+
+    try:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, _run_segment_sync, cached, raw_prompts)
+        return web.json_response(result)
+    except Exception as exc:
+        log.exception("Interactive segmentation failed")
+        return web.json_response({"error": str(exc)}, status=500)
+
+
 # Node mappings for ComfyUI registration
 NODE_CLASS_MAPPINGS = {
     "SAM3PointCollector": SAM3PointCollector,
     "SAM3BBoxCollector": SAM3BBoxCollector,
     "SAM3MultiRegionCollector": SAM3MultiRegionCollector,
+    "SAM3InteractiveCollector": SAM3InteractiveCollector,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3PointCollector": "SAM3 Point Collector",
     "SAM3BBoxCollector": "SAM3 BBox Collector",
     "SAM3MultiRegionCollector": "SAM3 Multi-Region Collector",
+    "SAM3InteractiveCollector": "SAM3 Interactive Collector",
 }

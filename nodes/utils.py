@@ -133,9 +133,19 @@ def visualize_masks_on_image(image, masks, boxes=None, scores=None, alpha=0.5):
     H, W = img_t.shape[:2]
     overlay = img_t.clone()
 
-    # Pre-generate consistent colors
-    rng = torch.Generator(device='cpu').manual_seed(42)
-    colors = torch.rand(masks_t.shape[0], 3, generator=rng).to(device)
+    # Fixed palette matching JS widget PROMPT_COLORS
+    PROMPT_COLORS_RGB = [
+        [0.0, 1.0, 1.0],       # cyan
+        [1.0, 1.0, 0.0],       # yellow
+        [1.0, 0.0, 1.0],       # magenta
+        [0.0, 1.0, 0.0],       # lime
+        [1.0, 0.5, 0.0],       # orange
+        [1.0, 0.412, 0.706],   # pink
+        [0.255, 0.412, 0.882], # blue
+        [0.125, 0.698, 0.667], # teal
+    ]
+    n = masks_t.shape[0]
+    colors = torch.tensor([PROMPT_COLORS_RGB[i % len(PROMPT_COLORS_RGB)] for i in range(n)], device=device)
 
     for i in range(masks_t.shape[0]):
         mask = masks_t[i]

@@ -20,12 +20,19 @@ ops = comfy.ops.manual_cast
 # ComfyUI attention dispatch
 # ---------------------------------------------------------------------------
 
+_sam3_attn_printed = False
+
 def sam3_attention(q, k, v, num_heads):
     """ComfyUI-native attention dispatch.
 
     Drop-in replacement for comfy_attn.dispatch_attention.
     Expects q, k, v in shape [B, H, L, D]. Returns [B, H, L, D].
     """
+    global _sam3_attn_printed
+    if not _sam3_attn_printed:
+        import sys
+        print(f"[SAM3] optimized_attention = {optimized_attention.__name__} | q.dtype={q.dtype} k.dtype={k.dtype} v.dtype={v.dtype}", file=sys.stderr)
+        _sam3_attn_printed = True
     return optimized_attention(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
 
 

@@ -1345,10 +1345,9 @@ class Sam3Processor:
         state["original_widths"] = [image.width for image in images]
         try:
             model_device = next(self.model.parameters()).device
-            model_dtype = next(self.model.parameters()).dtype
         except StopIteration:
             model_device = torch.device(self.device)
-            model_dtype = torch.float32
+        model_dtype = next(self.model.parameters()).dtype
         images = [
             self.transform(v2.functional.to_image(image).to(model_device))
             for image in images
