@@ -766,6 +766,12 @@ def build_sam3_video_model(
     Returns:
         Sam3VideoInferenceWithInstanceInteractivity: The instantiated dense tracking model
     """
+    # Configure attention backend before building any modules
+    attention_backend = kwargs.pop("attention_backend", "auto")
+    kwargs.pop("compile", None)  # consumed by caller, not needed here
+    from .attention import set_sam3_backend
+    set_sam3_backend(attention_backend)
+
     if device is None:
         device = comfy.model_management.get_torch_device()
 

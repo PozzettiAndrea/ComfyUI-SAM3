@@ -2,6 +2,7 @@
 # ComfyUI-native attention, RoPE, and SAM attention classes.
 # Consolidated from: sam/rope.py, sam/transformer.py, sam/common.py
 
+import logging
 import math
 from functools import partial
 from typing import Optional, Tuple, Type
@@ -11,16 +12,56 @@ import torch.nn as nn
 from torch import Tensor
 
 import comfy.ops
-from comfy.ldm.modules.attention import optimized_attention
+from comfy.ldm.modules.attention import optimized_attention, get_attention_function
+
+log = logging.getLogger("sam3")
 
 ops = comfy.ops.manual_cast
 
 
 # ---------------------------------------------------------------------------
-# ComfyUI attention dispatch
+# ComfyUI attention dispatch — per-model backend override
 # ---------------------------------------------------------------------------
 
+_sam3_attn_fn = None  # None = not yet configured, falls back to optimized_attention
 _sam3_attn_printed = False
+
+_BACKEND_MAP = {
+    "flash_attn": "flash",
+    "sage": "sage",
+    "sage3": "sage3",
+    "xformers": "xformers",
+    "sdpa": "pytorch",
+    "sub_quad": "sub_quad",
+    "split": "split",
+}
+
+
+def set_sam3_backend(name: str = "auto"):
+    """Configure SAM3's attention backend.
+
+    ``auto`` uses the global ``optimized_attention``, but if SageAttention is
+    active globally, falls back to flash_attn — SAM3 is incompatible with sage
+    due to relative position bias concatenation modifying Q/K dimensions.
+    Explicit user choices are respected (including ``sage`` at user's risk).
+    """
+    global _sam3_attn_fn, _sam3_attn_printed
+    pytorch = get_attention_function("pytorch")
+    if name == "auto":
+        if optimized_attention.__name__ in ("attention_sage", "attention3_sage"):
+            _sam3_attn_fn = get_attention_function("flash", default=pytorch)
+            log.warning(
+                "SageAttention is not compatible with SAM3 "
+                "(relative position bias modifies Q/K dimensions). "
+                "Using %s instead.", _sam3_attn_fn.__name__
+            )
+        else:
+            _sam3_attn_fn = optimized_attention
+    else:
+        reg_name = _BACKEND_MAP.get(name, "pytorch")
+        _sam3_attn_fn = get_attention_function(reg_name, default=pytorch)
+    _sam3_attn_printed = False
+
 
 def sam3_attention(q, k, v, num_heads):
     """ComfyUI-native attention dispatch.
@@ -29,11 +70,11 @@ def sam3_attention(q, k, v, num_heads):
     Expects q, k, v in shape [B, H, L, D]. Returns [B, H, L, D].
     """
     global _sam3_attn_printed
+    fn = _sam3_attn_fn if _sam3_attn_fn is not None else optimized_attention
     if not _sam3_attn_printed:
-        import sys
-        print(f"[SAM3] optimized_attention = {optimized_attention.__name__} | q.dtype={q.dtype} k.dtype={k.dtype} v.dtype={v.dtype}", file=sys.stderr)
+        log.info("attention backend: %s | dtype: %s", fn.__name__, q.dtype)
         _sam3_attn_printed = True
-    return optimized_attention(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
+    return fn(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
 
 
 # ---------------------------------------------------------------------------
@@ -78,6 +119,12 @@ class SplitMultiheadAttention(nn.Module):
         if value is None:
             value = key
 
+        # Ensure matching dtypes for cross-attention (bf16 model + fp32 features)
+        if key.dtype != query.dtype:
+            key = key.to(query.dtype)
+        if value.dtype != query.dtype:
+            value = value.to(query.dtype)
+
         if not self.batch_first:
             query = query.transpose(0, 1)   # [L, B, D] -> [B, L, D]
             key = key.transpose(0, 1)
@@ -90,10 +137,17 @@ class SplitMultiheadAttention(nn.Module):
         k = self.to_k(key).reshape(B, L_k, self.num_heads, self.head_dim).transpose(1, 2)
         v = self.to_v(value).reshape(B, L_k, self.num_heads, self.head_dim).transpose(1, 2)
 
-        # Prepare mask for optimized_attention
+        # Prepare mask for attention
         sdpa_mask = self._prepare_mask(attn_mask, key_padding_mask, B, L_q, L_k, q.dtype, q.device)
 
-        out = optimized_attention(q, k, v, heads=self.num_heads, mask=sdpa_mask, skip_reshape=True)
+        # When mask is needed, use SDPA (pytorch) which supports masks natively.
+        # Flash/sage/xformers don't support arbitrary attention masks.
+        if sdpa_mask is not None:
+            pytorch_attn = get_attention_function("pytorch")
+            out = pytorch_attn(q, k, v, heads=self.num_heads, mask=sdpa_mask, skip_reshape=True)
+        else:
+            fn = _sam3_attn_fn if _sam3_attn_fn is not None else optimized_attention
+            out = fn(q, k, v, heads=self.num_heads, skip_reshape=True)
 
         out = out.reshape(B, L_q, self.embed_dim)
         out = self.out_proj(out)
