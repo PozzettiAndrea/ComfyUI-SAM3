@@ -2814,7 +2814,15 @@ class MaskDecoder(nn.Module):
         else:
             assert image_embeddings.shape[0] == tokens.shape[0]
             src = image_embeddings
-        src = src + dense_prompt_embeddings
+        src = src + dense_prompt_embeddings.to(src.dtype)
+        import os as _os
+        if _os.environ.get("DEBUG_COMFYUI_SAM3", "").lower() in ("1", "true", "yes"):
+            import logging as _logging
+            _logging.getLogger("sam3").warning(
+                "predict_masks: tokens=%s image_embed=%s dense_pe=%s src=%s",
+                tokens.dtype, image_embeddings.dtype,
+                dense_prompt_embeddings.dtype, src.dtype,
+            )
         assert (
             image_pe.size(0) == 1
         ), "image_pe should have size 1 in batch dim (from `get_dense_pe()`)"
@@ -2843,6 +2851,12 @@ class MaskDecoder(nn.Module):
             )
         hyper_in = torch.stack(hyper_in_list, dim=1)
         b, c, h, w = upscaled_embedding.shape
+        if _os.environ.get("DEBUG_COMFYUI_SAM3", "").lower() in ("1", "true", "yes"):
+            import logging as _logging
+            _logging.getLogger("sam3").warning(
+                "predict_masks: hs=%s mask_tokens=%s hyper_in=%s upscaled=%s",
+                hs.dtype, mask_tokens_out.dtype, hyper_in.dtype, upscaled_embedding.dtype,
+            )
         masks = (hyper_in @ upscaled_embedding.view(b, c, h * w)).view(b, -1, h, w)
 
         # Generate mask quality predictions
@@ -3881,6 +3895,14 @@ class Sam3Image(torch.nn.Module):
         vision_feats[-1] = (
             vision_feats[-1] + self.inst_interactive_predictor.model.no_mem_embed
         )
+        import os as _os
+        if _os.environ.get("DEBUG_COMFYUI_SAM3", "").lower() in ("1", "true", "yes"):
+            import logging as _logging
+            _logging.getLogger("sam3").warning(
+                "predict_inst: vision_feats[-1] dtype=%s, no_mem_embed dtype=%s",
+                vision_feats[-1].dtype,
+                self.inst_interactive_predictor.model.no_mem_embed.dtype,
+            )
         feats = [
             feat.permute(1, 2, 0).view(1, -1, *feat_size)
             for feat, feat_size in zip(
@@ -9438,9 +9460,17 @@ class SAM3InteractiveImagePredictor(nn.Module):
                 box, normalize=normalize_coords, orig_hw=self._orig_hw[img_idx]
             )  # Bx2x2
         if mask_logits is not None:
-            mask_input = torch.as_tensor(
-                mask_logits, dtype=torch.float, device=self.device
-            )
+            # Preserve dtype if mask_logits is already a tensor (e.g. bf16
+            # low_res_masks fed back from a previous predict call).  Forcing
+            # dtype=float32 here causes dense_prompt_embeddings to be fp32,
+            # which promotes src to fp32 and crashes the matmul against bf16
+            # hyper_in in predict_masks.
+            if isinstance(mask_logits, torch.Tensor):
+                mask_input = mask_logits.to(device=self.device)
+            else:
+                mask_input = torch.as_tensor(
+                    mask_logits, dtype=torch.float, device=self.device
+                )
             if len(mask_input.shape) == 3:
                 mask_input = mask_input[None, :, :, :]
         return mask_input, unnorm_coords, labels, unnorm_box
