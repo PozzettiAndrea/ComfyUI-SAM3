@@ -1,5 +1,13 @@
 # ComfyUI-SAM3
 
+<div align="center">
+<a href="https://pozzettiandrea.github.io/ComfyUI-SAM3/">
+<img src="https://pozzettiandrea.github.io/ComfyUI-SAM3/gallery-preview.png" alt="Workflow Test Gallery" width="800">
+</a>
+<br>
+<b><a href="https://pozzettiandrea.github.io/ComfyUI-SAM3/">View Live Test Gallery →</a></b>
+</div>
+
 ComfyUI integration for Meta's SAM3 (Segment Anything Model 3) - enabling open-vocabulary image and video segmentation using natural language text prompts.
 
 

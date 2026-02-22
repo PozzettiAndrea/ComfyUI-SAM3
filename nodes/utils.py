@@ -8,19 +8,6 @@ from PIL import Image
 from pathlib import Path
 
 
-def get_comfy_models_dir():
-    """Get the ComfyUI models directory"""
-    # Try to find ComfyUI root by going up from custom_nodes
-    current = Path(__file__).parent.parent.absolute()  # ComfyUI-SAM3
-    comfy_custom_nodes = current.parent  # custom_nodes
-    comfy_root = comfy_custom_nodes.parent  # ComfyUI root
-
-    models_dir = comfy_root / "models" / "sam3"
-    models_dir.mkdir(parents=True, exist_ok=True)
-
-    return str(models_dir)
-
-
 def comfy_image_to_pil(image):
     """
     Convert ComfyUI image tensor to PIL Image
@@ -135,44 +122,50 @@ def visualize_masks_on_image(image, masks, boxes=None, scores=None, alpha=0.5):
     elif isinstance(image, np.ndarray):
         image = Image.fromarray((image * 255).astype(np.uint8) if image.max() <= 1.0 else image.astype(np.uint8))
 
-    # Convert to numpy for processing
-    img_np = np.array(image).astype(np.float32) / 255.0
-
-    # Resize masks to image size if needed
+    # Use torch on GPU for fast mask overlay, fall back to CPU torch
     if isinstance(masks, torch.Tensor):
-        masks_np = masks.cpu().numpy()
+        masks_t = masks
     else:
-        masks_np = masks
+        masks_t = torch.from_numpy(np.asarray(masks))
 
-    # Create colored overlay
-    np.random.seed(42)  # Consistent colors
-    overlay = img_np.copy()
+    device = masks_t.device if masks_t.is_cuda else torch.device('cpu')
+    img_t = torch.from_numpy(np.array(image)).to(device=device, dtype=torch.float32) / 255.0  # [H, W, 3]
+    H, W = img_t.shape[:2]
+    overlay = img_t.clone()
 
-    for i, mask in enumerate(masks_np):
-        # Squeeze extra dimensions (masks may be [1, H, W] or [H, W])
+    # Fixed palette matching JS widget PROMPT_COLORS
+    PROMPT_COLORS_RGB = [
+        [0.0, 1.0, 1.0],       # cyan
+        [1.0, 1.0, 0.0],       # yellow
+        [1.0, 0.0, 1.0],       # magenta
+        [0.0, 1.0, 0.0],       # lime
+        [1.0, 0.5, 0.0],       # orange
+        [1.0, 0.412, 0.706],   # pink
+        [0.255, 0.412, 0.882], # blue
+        [0.125, 0.698, 0.667], # teal
+    ]
+    n = masks_t.shape[0]
+    colors = torch.tensor([PROMPT_COLORS_RGB[i % len(PROMPT_COLORS_RGB)] for i in range(n)], device=device)
+
+    for i in range(masks_t.shape[0]):
+        mask = masks_t[i]
         while mask.ndim > 2:
             mask = mask.squeeze(0)
 
         # Resize mask to image size if needed
-        if mask.shape != img_np.shape[:2]:
-            from PIL import Image as PILImage
-            mask_pil = PILImage.fromarray((mask * 255).astype(np.uint8))
-            mask_pil = mask_pil.resize((img_np.shape[1], img_np.shape[0]), PILImage.NEAREST)
-            mask = np.array(mask_pil).astype(np.float32) / 255.0
+        if mask.shape[0] != H or mask.shape[1] != W:
+            mask = torch.nn.functional.interpolate(
+                mask[None, None].float(), size=(H, W), mode='nearest'
+            )[0, 0]
 
-        # Random color for this mask
-        color = np.random.rand(3)
-
-        # Apply colored mask
-        for c in range(3):
-            overlay[:, :, c] = np.where(
-                mask > 0.5,
-                overlay[:, :, c] * (1 - alpha) + color[c] * alpha,
-                overlay[:, :, c]
-            )
+        # Vectorized: single where over all 3 channels via broadcasting
+        mask_3d = (mask > 0.5).unsqueeze(-1)  # [H, W, 1]
+        color = colors[i]  # [3]
+        overlay = torch.where(mask_3d, overlay * (1 - alpha) + color * alpha, overlay)
 
     # Convert back to PIL
-    result = Image.fromarray((overlay * 255).astype(np.uint8))
+    result_np = (overlay.clamp(0, 1).cpu().numpy() * 255).astype(np.uint8)
+    result = Image.fromarray(result_np)
 
     # Draw boxes if provided
     if boxes is not None:
@@ -180,16 +173,14 @@ def visualize_masks_on_image(image, masks, boxes=None, scores=None, alpha=0.5):
         draw = ImageDraw.Draw(result)
 
         if isinstance(boxes, torch.Tensor):
-            boxes_np = boxes.cpu().numpy()
+            boxes_np = boxes.float().cpu().numpy()
         else:
             boxes_np = boxes
 
+        colors_np = (colors.float().cpu().numpy() * 255).astype(int)
         for i, box in enumerate(boxes_np):
             x0, y0, x1, y1 = box
-
-            # Random color for this box (same seed for consistency)
-            np.random.seed(42 + i)
-            color_int = tuple((np.random.rand(3) * 255).astype(int).tolist())
+            color_int = tuple(colors_np[i].tolist())
 
             # Draw box
             draw.rectangle([x0, y0, x1, y1], outline=color_int, width=3)
@@ -210,36 +201,33 @@ def tensor_to_list(tensor):
     return tensor
 
 
-from contextlib import contextmanager
-import gc
+import logging
+
+_mem_log = logging.getLogger("sam3")
 
 
-@contextmanager
-def inference_context():
-    """
-    Context manager ensuring cleanup after inference.
+def print_mem(label: str, detailed: bool = False):
+    """Log current RAM and VRAM usage for debugging memory leaks."""
+    import comfy.model_management
+    import psutil
+    process = psutil.Process()
+    rss = process.memory_info().rss / 1024**3
+    sys_used = psutil.virtual_memory().used / 1024**3
+    sys_total = psutil.virtual_memory().total / 1024**3
+    ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
+    if comfy.model_management.get_torch_device().type == "cuda":
+        alloc = torch.cuda.memory_allocated() / 1024**3
+        reserved = torch.cuda.memory_reserved() / 1024**3
+        _mem_log.info(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
+        if detailed:
+            stats = torch.cuda.memory_stats()
+            _mem_log.info(f"[MEM]   Active: {stats.get('active_bytes.all.current', 0) / 1024**3:.2f}GB")
+            _mem_log.info(f"[MEM]   Inactive: {stats.get('inactive_split_bytes.all.current', 0) / 1024**3:.2f}GB")
+            _mem_log.info(f"[MEM]   Allocated retries: {stats.get('num_alloc_retries', 0)}")
+    else:
+        _mem_log.info(f"[MEM] {label}: {ram_str}")
 
-    Usage:
-        with inference_context():
-            # ... inference code ...
 
-    This ensures gc.collect() and torch.cuda.empty_cache() are called
-    after inference, even if an exception occurs.
-    """
-    try:
-        yield
-    finally:
-        gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-
-
-def cleanup_gpu_memory():
-    """
-    Force GPU memory cleanup.
-
-    Call this after inference to ensure VRAM is freed.
-    """
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
+def print_vram(label: str, detailed: bool = False):
+    """Backward compat alias for print_mem."""
+    print_mem(label, detailed)

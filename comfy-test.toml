@@ -1,14 +1,15 @@
 [test]
-name = "ComfyUI-SAM3"
-python_version = "3.10"
-cpu_only = true
-timeout = 300
-levels = ["syntax", "install", "registration", "instantiation", "validation"]
+levels = ["syntax", "install", "registration", "instantiation", "execution"]
 
 [test.workflows]
-run = ["tests/workflows/point_segmentation.json", "tests/workflows/box_segmentation.json"]
+cpu = ["!video_point_prompt"]
+gpu = "all"
 
 [test.platforms]
 linux = true
+macos = true
 windows = true
 windows_portable = true
+linux_gpu = true
+windows_gpu = true
+windows_portable_gpu = true
