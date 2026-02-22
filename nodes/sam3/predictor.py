@@ -17,15 +17,28 @@ import torch
 
 # Adapted imports for vendored version
 import logging
+import comfy.model_management
 logger = logging.getLogger(__name__)
 
 
-def print_vram(label: str):
-    """Print current VRAM usage for debugging memory leaks."""
-    if torch.cuda.is_available():
+def print_mem(label: str):
+    """Log current RAM and VRAM usage for debugging memory leaks."""
+    import psutil
+    process = psutil.Process()
+    rss = process.memory_info().rss / 1024**3
+    sys_used = psutil.virtual_memory().used / 1024**3
+    sys_total = psutil.virtual_memory().total / 1024**3
+    ram_str = f"RAM: {rss:.2f}GB (process), {sys_used:.1f}/{sys_total:.1f}GB (system)"
+    if comfy.model_management.get_torch_device().type == "cuda":
         alloc = torch.cuda.memory_allocated() / 1024**3
         reserved = torch.cuda.memory_reserved() / 1024**3
-        print(f"[VRAM] {label}: {alloc:.2f}GB allocated, {reserved:.2f}GB reserved")
+        logger.info(f"[MEM] {label}: VRAM {alloc:.2f}GB alloc / {reserved:.2f}GB reserved | {ram_str}")
+    else:
+        logger.info(f"[MEM] {label}: {ram_str}")
+
+
+def print_vram(label: str):
+    print_mem(label)
 
 
 class Sam3VideoPredictor:
@@ -39,20 +52,20 @@ class Sam3VideoPredictor:
         has_presence_token=True,
         geo_encoder_use_img_cross_attn=True,
         strict_state_dict_loading=True,
-        async_loading_frames=False,
+        async_loading_frames=True,
         video_loader_type="cv2",
         apply_temporal_disambiguation: bool = True,
         enable_inst_interactivity=False,
+        attention_backend: str = "auto",
+        compile: bool = False,
     ):
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
-        from .model_builder import build_sam3_video_model
+        self._compile = compile
+        from . import build_sam3_video_model
 
         # Determine device
-        if torch.cuda.is_available():
-            self.device = torch.device("cuda")
-        else:
-            self.device = torch.device("cpu")
+        self.device = comfy.model_management.get_torch_device()
 
         logger.info(f"Sam3VideoPredictor using device: {self.device}")
 
@@ -65,6 +78,8 @@ class Sam3VideoPredictor:
                 strict_state_dict_loading=strict_state_dict_loading,
                 apply_temporal_disambiguation=apply_temporal_disambiguation,
                 enable_inst_interactivity=enable_inst_interactivity,
+                attention_backend=attention_backend,
+                compile=compile,
             )
             .to(self.device)
             .eval()
@@ -131,6 +146,7 @@ class Sam3VideoPredictor:
         # get an initial inference_state from the model
         inference_state = self.model.init_state(
             resource_path=resource_path,
+            offload_video_to_cpu=True,
             async_loading_frames=self.async_loading_frames,
             video_loader_type=self.video_loader_type,
         )
@@ -142,7 +158,7 @@ class Sam3VideoPredictor:
             "session_id": session_id,
             "start_time": time.time(),
         }
-        print(f"[SAM3 Video] Active sessions in _ALL_INFERENCE_STATES: {len(self._ALL_INFERENCE_STATES)}")
+        logger.info(f"Active sessions in _ALL_INFERENCE_STATES: {len(self._ALL_INFERENCE_STATES)}")
         logger.debug(
             f"started new session {session_id}; {self._get_session_stats()}; "
             f"{self._get_torch_and_gpu_properties()}"
@@ -260,7 +276,7 @@ class Sam3VideoPredictor:
         times on the same "session_id".
         """
         print_vram(f"Before close_session ({session_id[:8]})")
-        print(f"[SAM3 Video] Sessions before close: {len(self._ALL_INFERENCE_STATES)}")
+        logger.info(f"Sessions before close: {len(self._ALL_INFERENCE_STATES)}")
         session = self._ALL_INFERENCE_STATES.pop(session_id, None)
         if session is None:
             logger.warning(
@@ -270,11 +286,10 @@ class Sam3VideoPredictor:
         else:
             del session
             gc.collect()
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
+            comfy.model_management.soft_empty_cache()
             logger.info(f"removed session {session_id}; {self._get_session_stats()}")
         print_vram(f"After close_session ({session_id[:8]})")
-        print(f"[SAM3 Video] Sessions after close: {len(self._ALL_INFERENCE_STATES)}")
+        logger.info(f"Sessions after close: {len(self._ALL_INFERENCE_STATES)}")
         return {"is_success": True}
 
     def _get_session(self, session_id):
@@ -292,7 +307,7 @@ class Sam3VideoPredictor:
             f"'{session_id}' ({session['state']['num_frames']} frames)"
             for session_id, session in self._ALL_INFERENCE_STATES.items()
         ]
-        if torch.cuda.is_available():
+        if comfy.model_management.get_torch_device().type == "cuda":
             mem_stats = (
                 f"GPU memory: {torch.cuda.memory_allocated() // 1024**2} MiB used and "
                 f"{torch.cuda.memory_reserved() // 1024**2} MiB reserved"
@@ -306,7 +321,7 @@ class Sam3VideoPredictor:
 
     def _get_torch_and_gpu_properties(self):
         """Get a string for PyTorch and GPU properties (for logging and debugging)."""
-        if torch.cuda.is_available():
+        if comfy.model_management.get_torch_device().type == "cuda":
             torch_and_gpu_str = (
                 f"torch: {torch.__version__} with CUDA arch {torch.cuda.get_arch_list()}, "
                 f"GPU device: {torch.cuda.get_device_properties(torch.cuda.current_device())}"
@@ -461,7 +476,7 @@ class Sam3VideoPredictorMultiGPU(Sam3VideoPredictor):
             device_id=self.device,
         )
         # warm-up the NCCL process group by running a dummy all-reduce
-        tensor = torch.ones(1024, 1024).cuda()
+        tensor = torch.ones(1024, 1024).to(comfy.model_management.get_torch_device())
         torch.distributed.all_reduce(tensor)
         logger.debug(f"started NCCL process group on {rank=} with {world_size=}")
 

@@ -1,21 +1,13 @@
 """
 LoadSAM3Model node - Loads SAM3 model with ComfyUI memory management integration
-
-This node integrates with ComfyUI's model_management system for:
-- Automatic GPU/CPU offloading based on VRAM pressure
-- Proper cleanup when models are unloaded
-- Auto-download from HuggingFace if model not found
-
-Unified model supports both image segmentation and video tracking workflows.
 """
+import logging
 from pathlib import Path
-import gc
+
+log = logging.getLogger("sam3")
 
 import torch
-import comfy.model_management
 from folder_paths import base_path as comfy_base_path
-
-from .sam3_model_patcher import SAM3ModelWrapper, SAM3ModelPatcher
 
 try:
     from huggingface_hub import hf_hub_download
@@ -24,134 +16,31 @@ except ImportError:
     HF_HUB_AVAILABLE = False
 
 
-class SAM3UnifiedModel(SAM3ModelPatcher):
-    """
-    Unified SAM3 model that supports both image segmentation and video tracking.
-
-    Inherits from SAM3ModelPatcher for ComfyUI integration.
-    Exposes both image interface (processor, sam3_wrapper) and video interface
-    (handle_stream_request, model).
-    """
-
-    def __init__(self, video_predictor, processor, load_device, offload_device):
-        """
-        Args:
-            video_predictor: Sam3VideoPredictor instance (for video tracking)
-            processor: Sam3Processor instance (for image segmentation)
-            load_device: Device to load model on for inference
-            offload_device: Device to offload model to when not in use
-        """
-        self._video_predictor = video_predictor
-        self._processor = processor
-        self._load_device = load_device
-        self._offload_device = offload_device
-        self._model = None  # For parent class compatibility
-
-        # Create wrapper for the detector model (used for image segmentation)
-        # The video predictor's model.detector is Sam3ImageOnVideoMultiGPU (inherits from Sam3Image)
-        detector_model = video_predictor.model.detector
-        wrapper = SAM3ModelWrapper(detector_model, processor, load_device, offload_device)
-
-        # Initialize parent SAM3ModelPatcher
-        super().__init__(wrapper)
-
-    # === Image Interface (for SAM3Segmentation, SAM3Grounding, etc.) ===
-
-    @property
-    def processor(self):
-        """Sam3Processor for image segmentation."""
-        return self._processor
-
-    # sam3_wrapper is inherited from SAM3ModelPatcher
-
-    # === Video Interface (for SAM3Propagate, etc.) ===
-
-    @property
-    def model(self):
-        """
-        Access underlying video model for video tracking.
-
-        Video nodes use: sam3_model.model.to(device), sam3_model.model.cpu()
-        """
-        return self._video_predictor.model
-
-    @model.setter
-    def model(self, value):
-        """Allow parent class to set model attribute."""
-        self._model = value
-
-    def __getattr__(self, name):
-        """Forward unknown attributes to video predictor for compatibility."""
-        # Avoid infinite recursion - check if _video_predictor exists
-        if name == '_video_predictor':
-            raise AttributeError(name)
-        # Forward to video predictor
-        if hasattr(self._video_predictor, name):
-            return getattr(self._video_predictor, name)
-        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
-
-    def start_session(self, *args, **kwargs):
-        """Forward to video predictor."""
-        return self._video_predictor.start_session(*args, **kwargs)
-
-    def close_session(self, *args, **kwargs):
-        """Forward to video predictor."""
-        return self._video_predictor.close_session(*args, **kwargs)
-
-    def handle_stream_request(self, request):
-        """
-        Video tracking API - dispatch streaming requests.
-
-        Used by SAM3Propagate for frame-by-frame propagation.
-        """
-        return self._video_predictor.handle_stream_request(request)
-
-    def handle_request(self, request):
-        """
-        Video tracking API - dispatch single requests.
-
-        Used by video nodes for session management, adding prompts, etc.
-        """
-        return self._video_predictor.handle_request(request)
-
-    # === Memory Management ===
-
-    def patch_model(self, device_to=None, lowvram_model_memory=0, load_weights=True, force_patch_weights=False):
-        """Load model to GPU for inference."""
-        result = super().patch_model(device_to, lowvram_model_memory, load_weights, force_patch_weights)
-        # Also move video model components
-        if device_to is None:
-            device_to = self._load_device
-        self._video_predictor.model.to(device_to)
-        return result
-
-    def unpatch_model(self, device_to=None, unpatch_weights=True):
-        """Unload model from GPU."""
-        super().unpatch_model(device_to, unpatch_weights)
-        # Also offload video model components
-        if device_to is None:
-            device_to = self._offload_device
-        self._video_predictor.model.to(device_to)
-        gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-
-
 class LoadSAM3Model:
     """
     Node to load SAM3 model with ComfyUI memory management integration.
-
-    Specify the path to the model checkpoint. If the model doesn't exist,
-    it will be automatically downloaded from HuggingFace.
+    Auto-downloads the model from HuggingFace if not found.
     """
+
+    MODEL_DIR = "models/sam3"
+    MODEL_FILENAME = "sam3.safetensors"
 
     @classmethod
     def INPUT_TYPES(cls):
         return {
-            "required": {
-                "model_path": ("STRING", {
-                    "default": "models/sam3/sam3.pt",
-                    "tooltip": "Path to SAM3 model checkpoint (relative to ComfyUI root or absolute). Auto-downloads if not found."
+            "required": {},
+            "optional": {
+                "precision": (["auto", "bf16", "fp16", "fp32"], {
+                    "default": "auto",
+                    "tooltip": "Model precision. auto: best for your GPU (bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older)."
+                }),
+                "attention": (["auto", "sdpa", "flash_attn", "sage"], {
+                    "default": "auto",
+                    "tooltip": "Attention backend. auto: best available (sage > flash_attn > sdpa). sdpa: PyTorch native. flash_attn: Tri Dao's FlashAttention (FA2/FA3, requires flash-attn package). sage: SageAttention (auto-detects v3 for Blackwell or v2, requires sageattention/sageattn3 package)."
+                }),
+                "compile": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Enable torch.compile for faster inference. Model loading takes longer (pre-compiles all code paths), but inference is significantly faster on every run."
                 }),
             },
         }
@@ -161,93 +50,96 @@ class LoadSAM3Model:
     FUNCTION = "load_model"
     CATEGORY = "SAM3"
 
-    def load_model(self, model_path):
-        """
-        Load SAM3 unified model with ComfyUI integration.
+    def load_model(self, precision="auto", attention="auto", compile=False):
+        from .sam3_model_patcher import SAM3UnifiedModel
+        from .sam3.predictor import Sam3VideoPredictor
+        from .sam3.utils import Sam3Processor
+        import comfy.model_management
 
-        Builds a unified model that supports both image segmentation and video tracking.
-        Instance interactivity (SAM2-style points/boxes) is always enabled.
-        Auto-downloads from HuggingFace if model not found.
-
-        Args:
-            model_path: Path to model checkpoint (relative or absolute)
-
-        Returns:
-            Tuple containing SAM3UnifiedModel for ComfyUI memory management
-        """
-        # Always enable instance interactivity (required by checkpoint)
-        enable_inst_interactivity = True
-        # Import SAM3 from vendored library
-        try:
-            from .sam3_lib.sam3_video_predictor import Sam3VideoPredictor
-            from .sam3_lib.model.sam3_image_processor import Sam3Processor
-        except ImportError as e:
-            raise ImportError(
-                "SAM3 library import failed. This is an internal error.\n"
-                f"Please ensure all files are properly installed in ComfyUI-SAM3/nodes/sam3_lib/\n"
-                f"Error: {e}"
-            )
-
-        # Get devices from ComfyUI's model management
         load_device = comfy.model_management.get_torch_device()
         offload_device = comfy.model_management.unet_offload_device()
 
-        print(f"[SAM3] Load device: {load_device}, Offload device: {offload_device}")
+        # Fixed checkpoint path
+        checkpoint_path = Path(comfy_base_path) / self.MODEL_DIR / self.MODEL_FILENAME
 
-        # Resolve checkpoint path
-        checkpoint_path = Path(model_path)
-        if not checkpoint_path.is_absolute():
-            # Always resolve relative paths against the ComfyUI root directory
-            checkpoint_path = Path(comfy_base_path) / checkpoint_path
-
-        # Check if model exists, download if needed (public repo, no token required)
+        # Auto-download if needed
         if not checkpoint_path.exists():
-            print(f"[SAM3] Model not found at {checkpoint_path}, downloading from HuggingFace...")
-            self._download_from_huggingface(checkpoint_path)
-
-        checkpoint_path_str = str(checkpoint_path)
+            log.info(f"Model not found at {checkpoint_path}, downloading from HuggingFace...")
+            self._download_from_huggingface()
 
         # BPE path for tokenizer
-        bpe_path = Path(__file__).parent / "sam3_lib" / "bpe_simple_vocab_16e6.txt.gz"
-        bpe_path_str = str(bpe_path)
+        bpe_path = str(Path(__file__).parent / "sam3" / "bpe_simple_vocab_16e6.txt.gz")
 
-        print(f"[SAM3] Loading unified model from: {checkpoint_path_str}")
-        print(f"[SAM3] Using BPE tokenizer: {bpe_path_str}")
-
-        # Build video predictor (contains both image and video capabilities)
-        print(f"[SAM3] Building SAM3 unified model...")
-        try:
-            video_predictor = Sam3VideoPredictor(
-                checkpoint_path=checkpoint_path_str,
-                bpe_path=bpe_path_str,
-                enable_inst_interactivity=enable_inst_interactivity,
-            )
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"[SAM3] Checkpoint file not found: {checkpoint_path_str}\n"
-                f"Error: {e}"
-            )
-        except (RuntimeError, ValueError) as e:
-            error_msg = str(e)
-            if "checkpoint" in error_msg.lower() or "state_dict" in error_msg.lower():
-                raise RuntimeError(
-                    f"[SAM3] Invalid or corrupted checkpoint file.\n"
-                    f"Checkpoint: {checkpoint_path_str}\n"
-                    f"Error: {e}"
-                )
-            elif "CUDA" in error_msg or "device" in error_msg.lower():
-                raise RuntimeError(
-                    f"[SAM3] Device error - GPU may not be available or out of memory.\n"
-                    f"Error: {e}"
-                )
+        # Resolve dtype before model creation
+        if precision == "auto":
+            if comfy.model_management.should_use_bf16(load_device):
+                dtype = torch.bfloat16
+            elif comfy.model_management.should_use_fp16(load_device):
+                dtype = torch.float16
             else:
-                raise RuntimeError(f"[SAM3] Failed to load model: {e}")
+                dtype = torch.float32
+        elif precision == "bf16":
+            dtype = torch.bfloat16
+        elif precision == "fp16":
+            dtype = torch.float16
+        else:
+            dtype = torch.float32
 
-        print(f"[SAM3] Video predictor loaded successfully")
+        log.info(f"Loading model from: {checkpoint_path}")
+        if compile:
+            log.info("torch.compile enabled")
 
-        # Create processor for image segmentation using the detector
-        # The detector is Sam3ImageOnVideoMultiGPU which inherits from Sam3Image
-        print(f"[SAM3] Creating SAM3 processor...")
+        video_predictor = Sam3VideoPredictor(
+            checkpoint_path=str(checkpoint_path),
+            bpe_path=bpe_path,
+            enable_inst_interactivity=True,
+            attention_backend=attention,
+            compile=compile,
+        )
+
+        # Tell sam3_attention() what half-precision dtype to target.
+        # This enables centralized dtype normalization for every attention call
+        # site — including self-attention on fp32 token embeddings and
+        # cross-attention after bf16+fp32 positional-encoding type promotion.
+        # Must be called after set_sam3_backend() (inside Sam3VideoPredictor).
+        from .sam3.attention import set_sam3_dtype
+        set_sam3_dtype(dtype if dtype != torch.float32 else None)
+
+        # Selective weight casting: cast only parameters (not buffers) to target
+        # dtype for VRAM savings and half-precision attention.
+        #
+        # Buffers like freqs_cis (complex RoPE tensor in the ViT backbone) must
+        # stay in their original dtype — .to(bf16) on a complex tensor discards
+        # the imaginary part, destroying position information.
+        #
+        # inst_interactive_predictor must also be cast: its no_mem_embed
+        # (nn.Parameter) is added directly to bf16 vision features in
+        # predict_inst(), causing fp32 type promotion. comfy.ops.manual_cast
+        # can't intercept plain + operations — it only casts linear layer
+        # weights. Keeping inst_interactive_predictor in fp32 makes all Q/K/V
+        # tensors fp32, causing flash attention to fall back to SDPA.
+        if dtype != torch.float32:
+            import os
+            detector = video_predictor.model.detector
+            for param in detector.backbone.parameters():
+                param.data = param.data.to(dtype=dtype)
+            if detector.inst_interactive_predictor is not None:
+                for param in detector.inst_interactive_predictor.parameters():
+                    param.data = param.data.to(dtype=dtype)
+            if os.environ.get("DEBUG_COMFYUI_SAM3", "").lower() in ("1", "true", "yes"):
+                log.warning(
+                    "LoadSAM3Model: backbone dtype=%s, inst_interactive_predictor dtype=%s",
+                    next(detector.backbone.parameters()).dtype,
+                    next(detector.inst_interactive_predictor.parameters()).dtype
+                    if detector.inst_interactive_predictor is not None else "N/A",
+                )
+
+        # Run compilation warmup to pre-compile all code paths
+        if compile:
+            log.info("Running compilation warmup (this may take a few minutes on first run)...")
+            video_predictor.model.warm_up_compilation()
+            log.info("Compilation warmup complete")
+
         detector = video_predictor.model.detector
         processor = Sam3Processor(
             model=detector,
@@ -256,55 +148,36 @@ class LoadSAM3Model:
             confidence_threshold=0.2
         )
 
-        print(f"[SAM3] Processor created successfully")
-
-        # Create unified model
         unified_model = SAM3UnifiedModel(
             video_predictor=video_predictor,
             processor=processor,
             load_device=load_device,
-            offload_device=offload_device
+            offload_device=offload_device,
+            dtype=dtype,
         )
 
-        print(f"[SAM3] Unified model ready (size: {unified_model.model_size() / 1024 / 1024:.1f} MB)")
+        log.info(f"Model ready ({unified_model.model_size() / 1024 / 1024:.1f} MB)")
 
         return (unified_model,)
 
-    def _download_from_huggingface(self, target_path):
-        """Download SAM3 model from HuggingFace (public repo, no token needed)."""
+    def _download_from_huggingface(self):
         if not HF_HUB_AVAILABLE:
             raise ImportError(
                 "[SAM3] huggingface_hub is required to download models.\n"
                 "Please install it with: pip install huggingface_hub"
             )
 
-        # Ensure parent directory exists
-        target_path = Path(target_path)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
+        model_dir = Path(comfy_base_path) / self.MODEL_DIR
+        model_dir.mkdir(parents=True, exist_ok=True)
 
-        SAM3_MODEL_ID = "1038lab/sam3"
-        SAM3_CKPT_NAME = "sam3.pt"
-
-        print(f"[SAM3] Downloading from {SAM3_MODEL_ID}...")
-        print(f"[SAM3] Target: {target_path}")
-
-        try:
-            hf_hub_download(
-                repo_id=SAM3_MODEL_ID,
-                filename=SAM3_CKPT_NAME,
-                local_dir=str(target_path.parent),
-            )
-            print(f"[SAM3] Model downloaded successfully to: {target_path.parent / SAM3_CKPT_NAME}")
-
-        except Exception as e:
-            raise RuntimeError(
-                f"[SAM3] Failed to download model from HuggingFace.\n"
-                f"Repo: {SAM3_MODEL_ID}\n"
-                f"Error: {e}"
-            )
+        hf_hub_download(
+            repo_id="apozz/sam3-safetensors",
+            filename=self.MODEL_FILENAME,
+            local_dir=str(model_dir),
+        )
+        log.info(f"Model downloaded to: {model_dir / self.MODEL_FILENAME}")
 
 
-# Register the node
 NODE_CLASS_MAPPINGS = {
     "LoadSAM3Model": LoadSAM3Model
 }
