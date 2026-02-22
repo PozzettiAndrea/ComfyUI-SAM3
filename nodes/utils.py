@@ -173,11 +173,11 @@ def visualize_masks_on_image(image, masks, boxes=None, scores=None, alpha=0.5):
         draw = ImageDraw.Draw(result)
 
         if isinstance(boxes, torch.Tensor):
-            boxes_np = boxes.cpu().numpy()
+            boxes_np = boxes.float().cpu().numpy()
         else:
             boxes_np = boxes
 
-        colors_np = (colors.cpu().numpy() * 255).astype(int)
+        colors_np = (colors.float().cpu().numpy() * 255).astype(int)
         for i, box in enumerate(boxes_np):
             x0, y0, x1, y1 = box
             color_int = tuple(colors_np[i].tolist())

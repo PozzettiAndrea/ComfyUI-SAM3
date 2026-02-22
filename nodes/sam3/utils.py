@@ -1306,14 +1306,15 @@ class Sam3Processor:
             raise ValueError("Image must be a PIL image or a tensor")
         try:
             model_device = next(self.model.parameters()).device
-            model_dtype = next(self.model.parameters()).dtype
         except StopIteration:
             model_device = torch.device(self.device)
-            model_dtype = torch.float32
         image = v2.functional.to_image(image).to(model_device)
         image = self.transform(image).unsqueeze(0)
-        if image.dtype != model_dtype and model_dtype in (torch.float16, torch.bfloat16):
-            image = image.to(dtype=model_dtype)
+        # Native ComfyUI pattern: cast input to target dtype at the pipeline
+        # boundary. manual_cast layers will cast their fp32 weights to match.
+        inference_dtype = getattr(self, '_inference_dtype', None)
+        if inference_dtype is not None and inference_dtype in (torch.float16, torch.bfloat16):
+            image = image.to(dtype=inference_dtype)
         state["original_height"] = height
         state["original_width"] = width
         state["backbone_out"] = self.model.backbone.forward_image(image)
@@ -1347,14 +1348,14 @@ class Sam3Processor:
             model_device = next(self.model.parameters()).device
         except StopIteration:
             model_device = torch.device(self.device)
-        model_dtype = next(self.model.parameters()).dtype
         images = [
             self.transform(v2.functional.to_image(image).to(model_device))
             for image in images
         ]
         images = torch.stack(images, dim=0)
-        if images.dtype != model_dtype and model_dtype in (torch.float16, torch.bfloat16):
-            images = images.to(dtype=model_dtype)
+        inference_dtype = getattr(self, '_inference_dtype', None)
+        if inference_dtype is not None and inference_dtype in (torch.float16, torch.bfloat16):
+            images = images.to(dtype=inference_dtype)
         state["backbone_out"] = self.model.backbone.forward_image(images)
         inst_interactivity_en = self.model.inst_interactive_predictor is not None
         if inst_interactivity_en and "sam2_backbone_out" in state["backbone_out"]:

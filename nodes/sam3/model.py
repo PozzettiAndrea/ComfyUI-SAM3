@@ -24,6 +24,26 @@ import comfy.model_management
 
 ops = comfy.ops.manual_cast
 
+# Dtype debug logging — enable with DEBUG_COMFYUI_SAM3=1
+_SAM3_DEBUG = os.environ.get("DEBUG_COMFYUI_SAM3", "").lower() in ("1", "true", "yes")
+_sam3_log = logging.getLogger("sam3")
+
+def _dtype_debug(label, **tensors):
+    """Log dtype/shape of tensors at component boundaries."""
+    if not _SAM3_DEBUG:
+        return
+    parts = [f"{label}:"]
+    for name, t in tensors.items():
+        if t is None:
+            parts.append(f"  {name}=None")
+        elif isinstance(t, (list, tuple)):
+            dtypes = [x.dtype for x in t if hasattr(x, 'dtype')]
+            parts.append(f"  {name}=[{', '.join(str(d) for d in dtypes)}]")
+        elif hasattr(t, 'dtype'):
+            parts.append(f"  {name}={t.dtype} {list(t.shape)}")
+    _sam3_log.warning(" ".join(parts))
+
+
 try:
     from timm.layers import DropPath, trunc_normal_
 except ModuleNotFoundError:
@@ -521,11 +541,11 @@ def concat_rel_pos(
     k_h, k_w = k_hw
     assert (q_h == q_w) and (k_h == k_w), "only square inputs supported"
     if relative_coords is not None:
-        Rh = rel_pos_h[relative_coords]
-        Rw = rel_pos_w[relative_coords]
+        Rh = rel_pos_h[relative_coords].to(q.dtype)
+        Rw = rel_pos_w[relative_coords].to(q.dtype)
     else:
-        Rh = get_rel_pos(q_h, k_h, rel_pos_h)
-        Rw = get_rel_pos(q_w, k_w, rel_pos_w)
+        Rh = get_rel_pos(q_h, k_h, rel_pos_h).to(q.dtype)
+        Rw = get_rel_pos(q_w, k_w, rel_pos_w).to(q.dtype)
     B, _, dim = q.shape
     r_q = q.reshape(B, q_h, q_w, dim)
     old_scale = dim**0.5
@@ -932,19 +952,20 @@ class ViT(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+        _dtype_debug("ViT.forward IN", x=x)
         x = self.patch_embed(x)
         h, w = x.shape[1], x.shape[2]
 
         s = 0
         if self.retain_cls_token:
-            x = torch.cat([self.class_embedding, x.flatten(1, 2)], dim=1)
+            x = torch.cat([self.class_embedding.to(x.dtype), x.flatten(1, 2)], dim=1)
             s = 1
 
         if self.pos_embed is not None:
             x = x + get_abs_pos(
                 self.pos_embed, self.pretrain_use_cls_token,
                 (h, w), self.retain_cls_token, tiling=self.tile_abs_pos,
-            )
+            ).to(x.dtype)
 
         x = self.ln_pre(x)
 
@@ -967,6 +988,7 @@ class ViT(nn.Module):
                     ).permute(0, 3, 1, 2)
                 outputs.append(feats)
 
+        _dtype_debug("ViT.forward OUT", features=outputs)
         return outputs
 
     def get_layer_id(self, layer_name: str) -> int:
@@ -1166,7 +1188,7 @@ class TransformerEncoder(nn.Module):
                 mask = mask.flatten(1)
             pos_embed = pos_embed.flatten(2).transpose(1, 2)
             if self.level_embed is not None:
-                lvl_pos_embed = pos_embed + self.level_embed[lvl].view(1, 1, -1)
+                lvl_pos_embed = pos_embed + self.level_embed[lvl].view(1, 1, -1).to(pos_embed.dtype)
             else:
                 lvl_pos_embed = pos_embed
             lvl_pos_embed_flatten.append(lvl_pos_embed)
@@ -1260,6 +1282,7 @@ class TransformerEncoderFusion(TransformerEncoder):
         prompt_key_padding_mask=None, prompt_pos=None,
         feat_sizes=None, encoder_extra_kwargs=None,
     ):
+        _dtype_debug("Encoder.forward IN", src=src, prompt=prompt)
         bs = src[0].shape[1]
         if feat_sizes is not None:
             assert len(feat_sizes) == len(src)
@@ -1287,6 +1310,7 @@ class TransformerEncoderFusion(TransformerEncoder):
             prompt_key_padding_mask=prompt_key_padding_mask,
             encoder_extra_kwargs=encoder_extra_kwargs,
         )
+        _dtype_debug("Encoder.forward OUT", memory=out, pos_embed=lvl_pos_embed_flatten, memory_text=prompt)
         return {
             "memory": out,
             "padding_mask": key_padding_masks_flatten,
@@ -1359,10 +1383,12 @@ class TransformerDecoderLayer(nn.Module):
         return tensor if pos is None else tensor + pos
 
     def forward_ffn(self, tgt):
+        input_dtype = tgt.dtype
+        tgt = tgt.float()
         tgt2 = self.linear2(self.dropout3(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout4(tgt2)
         tgt = self.norm3(tgt)
-        return tgt
+        return tgt.to(input_dtype)
 
     def forward(
         self, tgt=None, tgt_query_pos=None, tgt_query_sine_embed=None,
@@ -1624,6 +1650,7 @@ class TransformerDecoder(nn.Module):
         obj_roi_memory_feat=None, obj_roi_memory_mask=None,
         box_head_trk=None,
     ):
+        _dtype_debug("Decoder.forward IN", tgt=tgt, memory=memory, memory_text=memory_text)
         if memory_mask is not None:
             assert self.boxRPB == "none"
         apply_dac = apply_dac if apply_dac is not None else self.dac
@@ -1645,7 +1672,7 @@ class TransformerDecoder(nn.Module):
         presence_feats = None
         if self.box_refine:
             if reference_boxes is None:
-                reference_boxes = self.reference_points.weight.unsqueeze(1)
+                reference_boxes = self.reference_points.weight.unsqueeze(1).to(tgt.dtype)
                 reference_boxes = (
                     reference_boxes.repeat(2, bs, 1) if apply_dac
                     else reference_boxes.repeat(1, bs, 1)
@@ -1658,7 +1685,7 @@ class TransformerDecoder(nn.Module):
         output = tgt
         presence_out = None
         if self.presence_token is not None and is_instance_prompt is False:
-            presence_out = self.presence_token.weight[None].expand(1, bs, -1)
+            presence_out = self.presence_token.weight[None].expand(1, bs, -1).to(tgt.dtype)
         box_head = self.bbox_embed
         if is_instance_prompt and self.instance_bbox_embed is not None:
             box_head = self.instance_bbox_embed
@@ -1673,13 +1700,13 @@ class TransformerDecoder(nn.Module):
             query_sine_embed = gen_sineembed_for_position(
                 reference_points_input[:, :, 0, :], self.d_model
             )
-            query_pos = self.ref_point_head(query_sine_embed)
+            query_pos = self.ref_point_head(query_sine_embed).to(output.dtype)
             if self.boxRPB != "none" and reference_boxes is not None:
                 assert spatial_shapes.shape[0] == 1
                 memory_mask = self._get_rpb_matrix(
                     reference_boxes, (spatial_shapes[0, 0], spatial_shapes[0, 1]),
                 )
-                memory_mask = memory_mask.flatten(0, 1)
+                memory_mask = memory_mask.flatten(0, 1).to(output.dtype)
             output, presence_out = layer(
                 tgt=output, tgt_query_pos=query_pos,
                 tgt_query_sine_embed=query_sine_embed,
@@ -1729,13 +1756,17 @@ class TransformerDecoder(nn.Module):
                     )
                 intermediate_presence_logits.append(intermediate_layer_presence_logits)
                 presence_feats = presence_out.clone()
+        stacked_intermediate = torch.stack(intermediate)
+        stacked_ref_boxes = torch.stack(intermediate_ref_boxes)
+        stacked_presence = (
+            torch.stack(intermediate_presence_logits)
+            if self.presence_token is not None and is_instance_prompt is False else None
+        )
+        _dtype_debug("Decoder.forward OUT", output=stacked_intermediate, ref_boxes=stacked_ref_boxes, presence=stacked_presence)
         return (
-            torch.stack(intermediate),
-            torch.stack(intermediate_ref_boxes),
-            (
-                torch.stack(intermediate_presence_logits)
-                if self.presence_token is not None and is_instance_prompt is False else None
-            ),
+            stacked_intermediate,
+            stacked_ref_boxes,
+            stacked_presence,
             presence_feats,
         )
 
@@ -2053,7 +2084,9 @@ class Sam3DualViTDetNeck(nn.Module):
             self.sam2_convs = deepcopy(self.convs)
 
     def forward(self, tensor_list):
+        _dtype_debug("FPN_Neck.forward IN", input=tensor_list)
         xs = self.trunk(tensor_list)
+        _dtype_debug("FPN_Neck.forward after trunk", trunk_out=xs)
         sam3_out, sam3_pos = [], []
         sam2_out, sam2_pos = None, None
         if self.sam2_convs is not None:
@@ -2069,6 +2102,7 @@ class Sam3DualViTDetNeck(nn.Module):
                 sam2_pos_out = self.position_encoding(sam2_x_out).to(sam2_x_out.dtype)
                 sam2_out.append(sam2_x_out)
                 sam2_pos.append(sam2_pos_out)
+        _dtype_debug("FPN_Neck.forward OUT", sam3_out=sam3_out, sam3_pos=sam3_pos)
         return sam3_out, sam3_pos, sam2_out, sam2_pos
 
 
@@ -2168,7 +2202,7 @@ class CXBlock(nn.Module):
         x = self.act(x)
         x = self.pwconv2(x)
         if self.gamma is not None:
-            x = self.gamma * x
+            x = self.gamma.to(x.dtype) * x
         x = x.permute(0, 3, 1, 2)
         x = input + self.drop_path(x)
         return x
@@ -2389,9 +2423,11 @@ class SequenceGeometryEncoder(nn.Module):
                 scale = scale.to(device=boxes_xyxy.device)
             scale = scale.view(1, 1, 4)
             boxes_xyxy = boxes_xyxy * scale
+            input_dtype = img_feats.dtype
             sampled = torchvision.ops.roi_align(
-                img_feats, boxes_xyxy.float().transpose(0, 1).unbind(0), self.roi_size
+                img_feats.float(), boxes_xyxy.float().transpose(0, 1).unbind(0), self.roi_size
             )
+            sampled = sampled.to(input_dtype)
             assert list(sampled.shape) == [bs * n_boxes, self.d_model, self.roi_size, self.roi_size]
             proj = self.boxes_pool_project(sampled)
             proj = proj.view(bs, n_boxes, self.d_model).transpose(0, 1)
@@ -2494,7 +2530,7 @@ class SequenceGeometryEncoder(nn.Module):
         bs = final_embeds.shape[1]
         assert final_mask.shape[0] == bs
         if self.cls_embed is not None:
-            cls = self.cls_embed.weight.view(1, 1, self.d_model).repeat(1, bs, 1)
+            cls = self.cls_embed.weight.view(1, 1, self.d_model).repeat(1, bs, 1).to(final_embeds.dtype)
             cls_mask = torch.zeros(bs, 1, dtype=final_mask.dtype, device=final_mask.device)
             final_embeds, final_mask = concat_padded_sequences(
                 final_embeds, final_mask, cls, cls_mask
@@ -2939,6 +2975,7 @@ class MaskPredictor(nn.Module):
                               dtype=dtype, device=device, operations=operations)
 
     def forward(self, obj_queries, pixel_embed):
+        pixel_embed = pixel_embed.to(obj_queries.dtype)
         if len(obj_queries.shape) == 3:
             if pixel_embed.ndim == 3:
                 mask_preds = torch.einsum(
@@ -3177,6 +3214,7 @@ class UniversalSegmentationHead(SegmentationHead):
     ) -> Dict[str, Optional[torch.Tensor]]:
         assert encoder_hidden_states is not None
         bs = encoder_hidden_states.shape[1]
+        _dtype_debug("SegHead.forward IN", backbone_feats=backbone_feats, obj_queries=obj_queries, encoder_hidden_states=encoder_hidden_states)
 
         if self.cross_attend_prompt is not None:
             tgt2 = self.cross_attn_norm(encoder_hidden_states)
@@ -3216,9 +3254,11 @@ class UniversalSegmentationHead(SegmentationHead):
         else:
             mask_pred = self.mask_predictor(obj_queries[-1], instance_embeds)
 
+        semantic_seg = self.semantic_seg_head(pixel_embed)
+        _dtype_debug("SegHead.forward OUT", pred_masks=mask_pred, semantic_seg=semantic_seg, presence_logit=presence_logit)
         return {
             "pred_masks": mask_pred,
-            "semantic_seg": self.semantic_seg_head(pixel_embed),
+            "semantic_seg": semantic_seg,
             "presence_logit": presence_logit,
         }
 
@@ -3255,6 +3295,7 @@ class SAM3VLBackbone(nn.Module):
         return output
 
     def forward_image(self, samples: torch.Tensor):
+        _dtype_debug("Backbone.forward_image IN", samples=samples)
         if samples.dtype == torch.uint8:
             samples = samples.float() / 255.0
         try:
@@ -3263,7 +3304,11 @@ class SAM3VLBackbone(nn.Module):
                 samples = samples.to(expected_device)
         except StopIteration:
             pass
-        return self._forward_image_no_act_ckpt(samples)
+        result = self._forward_image_no_act_ckpt(samples)
+        _dtype_debug("Backbone.forward_image OUT",
+                     vision_features=result.get("vision_features"),
+                     backbone_fpn=result.get("backbone_fpn"))
+        return result
 
     def _forward_image_no_act_ckpt(self, samples):
         sam3_features, sam3_pos, sam2_features, sam2_pos = self.vision_backbone.forward(
@@ -3492,6 +3537,11 @@ class Sam3Image(torch.nn.Module):
         feat_tuple = self._get_img_feats(backbone_out, find_input.img_ids)
         backbone_out, img_feats, img_pos_embeds, vis_feat_sizes = feat_tuple
 
+        # Cast text features to match visual features dtype (text encoder
+        # outputs fp32 because Embedding receives integer indices; manual_cast
+        # can't infer target dtype from integers).
+        txt_feats = txt_feats.to(img_feats[-1].dtype)
+
         if prev_mask_pred is not None:
             img_feats = [img_feats[-1] + prev_mask_pred]
         geo_feats, geo_masks = self.geometry_encoder(
@@ -3502,7 +3552,7 @@ class Sam3Image(torch.nn.Module):
         )
         if visual_prompt_embed is None:
             visual_prompt_embed = torch.zeros(
-                (0, *geo_feats.shape[1:]), device=geo_feats.device
+                (0, *geo_feats.shape[1:]), device=geo_feats.device, dtype=geo_feats.dtype
             )
             visual_prompt_mask = torch.zeros(
                 (*geo_masks.shape[:-1], 0),
@@ -3565,7 +3615,7 @@ class Sam3Image(torch.nn.Module):
     ):
         bs = memory.shape[1]
         query_embed = self.transformer.decoder.query_embed.weight
-        tgt = query_embed.unsqueeze(1).repeat(1, bs, 1)
+        tgt = query_embed.unsqueeze(1).repeat(1, bs, 1).to(memory.dtype)
 
         apply_dac = self.transformer.decoder.dac and self.training
         hs, reference_boxes, dec_presence_out, dec_presence_feats = (
@@ -3743,10 +3793,14 @@ class Sam3Image(torch.nn.Module):
             prompt, prompt_mask, backbone_out = self._encode_prompt(
                 backbone_out, find_input, geometric_prompt
             )
+        _dtype_debug("forward_grounding: after _encode_prompt", prompt=prompt, prompt_mask=prompt_mask)
         with torch.profiler.record_function("SAM3Image._run_encoder"):
             backbone_out, encoder_out, _ = self._run_encoder(
                 backbone_out, find_input, prompt, prompt_mask
             )
+        _dtype_debug("forward_grounding: after _run_encoder",
+                     encoder_hidden_states=encoder_out.get("encoder_hidden_states"),
+                     pos_embed=encoder_out.get("pos_embed"))
         out = {
             "encoder_hidden_states": encoder_out["encoder_hidden_states"],
             "prev_encoder_out": {
@@ -3765,6 +3819,9 @@ class Sam3Image(torch.nn.Module):
                 prompt_mask=prompt_mask,
                 encoder_out=encoder_out,
             )
+        _dtype_debug("forward_grounding: after _run_decoder",
+                     encoder_hidden_states=out.get("encoder_hidden_states"),
+                     pred_boxes=out.get("pred_boxes"))
 
         with torch.profiler.record_function("SAM3Image._run_segmentation_heads"):
             self._run_segmentation_heads(
@@ -3777,6 +3834,10 @@ class Sam3Image(torch.nn.Module):
                 prompt_mask=prompt_mask,
                 hs=hs,
             )
+        _dtype_debug("forward_grounding: after _run_segmentation_heads",
+                     pred_logits=out.get("pred_logits"),
+                     pred_masks=out.get("pred_masks"),
+                     pred_boxes=out.get("pred_boxes"))
 
         return out
 

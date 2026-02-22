@@ -268,7 +268,7 @@ class TextTransformer(nn.Module):
         if attn_mask is not None:
             attn_mask = attn_mask[:seq_len, :seq_len]
 
-        x = x + self.positional_embedding[:seq_len]
+        x = x + self.positional_embedding[:seq_len].to(x.dtype)
         x = self.transformer(x, attn_mask=attn_mask)
 
         x = self.ln_final(x)
@@ -277,7 +277,7 @@ class TextTransformer(nn.Module):
             if isinstance(self.text_projection, nn.Linear):
                 pooled = self.text_projection(pooled)
             else:
-                pooled = pooled @ self.text_projection
+                pooled = pooled @ self.text_projection.to(pooled.dtype)
         if self.output_tokens:
             return pooled, tokens
         return pooled
