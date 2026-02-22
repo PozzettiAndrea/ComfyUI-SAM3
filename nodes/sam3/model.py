@@ -1014,7 +1014,7 @@ class ViT(nn.Module):
 # TransformerEncoderLayer (from model/encoder.py)
 # ---------------------------------------------------------------------------
 
-class TransformerEncoderLayer(nn.Module):
+class _TransformerSelfCrossAttnLayer(nn.Module):
     def __init__(
         self,
         activation: str,
@@ -1059,10 +1059,36 @@ class TransformerEncoderLayer(nn.Module):
 
         self.layer_idx = None
 
+    def _cross_attn(
+        self,
+        query,
+        key,
+        value,
+        attn_mask=None,
+        key_padding_mask=None,
+        attn_bias=None,
+    ):
+        if attn_bias is None:
+            return self.cross_attn_image(
+                query=query,
+                key=key,
+                value=value,
+                attn_mask=attn_mask,
+                key_padding_mask=key_padding_mask,
+            )[0]
+        return self.cross_attn_image(
+            query=query,
+            key=key,
+            value=value,
+            attn_mask=attn_mask,
+            key_padding_mask=key_padding_mask,
+            attn_bias=attn_bias,
+        )[0]
+
     def forward_post(
         self, tgt, memory, tgt_mask=None, memory_mask=None,
         tgt_key_padding_mask=None, memory_key_padding_mask=None,
-        pos=None, query_pos=None, **kwargs,
+        pos=None, query_pos=None, attn_bias=None, **kwargs,
     ):
         q = k = tgt + query_pos if self.pos_enc_at_attn else tgt
         tgt2 = self.self_attn(
@@ -1070,13 +1096,14 @@ class TransformerEncoderLayer(nn.Module):
         )[0]
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
-        tgt2 = self.cross_attn_image(
+        tgt2 = self._cross_attn(
             query=tgt + query_pos if self.pos_enc_at_cross_attn_queries else tgt,
             key=memory + pos if self.pos_enc_at_cross_attn_keys else memory,
             value=memory,
             attn_mask=memory_mask,
             key_padding_mask=memory_key_padding_mask,
-        )[0]
+            attn_bias=attn_bias,
+        )
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
@@ -1087,7 +1114,7 @@ class TransformerEncoderLayer(nn.Module):
     def forward_pre(
         self, tgt, memory, dac=False, tgt_mask=None, memory_mask=None,
         tgt_key_padding_mask=None, memory_key_padding_mask=None,
-        pos=None, query_pos=None,
+        pos=None, query_pos=None, attn_bias=None, **kwargs,
     ):
         if dac:
             assert tgt.shape[0] % 2 == 0
@@ -1102,19 +1129,22 @@ class TransformerEncoderLayer(nn.Module):
         if dac:
             tgt = torch.cat((tgt, other_tgt), dim=0)
         tgt2 = self.norm2(tgt)
-        tgt2 = self.cross_attn_image(
+        tgt2 = self._cross_attn(
             query=tgt2 + query_pos if self.pos_enc_at_cross_attn_queries else tgt2,
             key=memory + pos if self.pos_enc_at_cross_attn_keys else memory,
             value=memory,
             attn_mask=memory_mask,
             key_padding_mask=memory_key_padding_mask,
-        )[0]
+            attn_bias=attn_bias,
+        )
         tgt = tgt + self.dropout2(tgt2)
         tgt2 = self.norm3(tgt)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt2))))
         tgt = tgt + self.dropout3(tgt2)
         return tgt
 
+
+class TransformerEncoderLayer(_TransformerSelfCrossAttnLayer):
     def forward(
         self, tgt, memory, dac=False, tgt_mask=None, memory_mask=None,
         tgt_key_padding_mask=None, memory_key_padding_mask=None,
@@ -1858,98 +1888,7 @@ class TransformerEncoderCrossAttention(nn.Module):
 # TransformerDecoderLayerv1 (from model/decoder.py)
 # ---------------------------------------------------------------------------
 
-class TransformerDecoderLayerv1(nn.Module):
-    def __init__(
-        self,
-        activation: str,
-        cross_attention: nn.Module,
-        d_model: int,
-        dim_feedforward: int,
-        dropout: float,
-        pos_enc_at_attn: bool,
-        pos_enc_at_cross_attn_keys: bool,
-        pos_enc_at_cross_attn_queries: bool,
-        pre_norm: bool,
-        self_attention: nn.Module,
-        dtype=None,
-        device=None,
-        operations=ops,
-    ):
-        super().__init__()
-        self.d_model = d_model
-        self.dim_feedforward = dim_feedforward
-        self.dropout_value = dropout
-        self.self_attn = self_attention
-        self.cross_attn_image = cross_attention
-
-        self.linear1 = operations.Linear(d_model, dim_feedforward, dtype=dtype, device=device)
-        self.dropout = nn.Dropout(dropout)
-        self.linear2 = operations.Linear(dim_feedforward, d_model, dtype=dtype, device=device)
-
-        self.norm1 = operations.LayerNorm(d_model, dtype=dtype, device=device)
-        self.norm2 = operations.LayerNorm(d_model, dtype=dtype, device=device)
-        self.norm3 = operations.LayerNorm(d_model, dtype=dtype, device=device)
-        self.dropout1 = nn.Dropout(dropout)
-        self.dropout2 = nn.Dropout(dropout)
-        self.dropout3 = nn.Dropout(dropout)
-
-        self.activation_str = activation
-        self.activation = get_activation_fn(activation)
-        self.pre_norm = pre_norm
-
-        self.pos_enc_at_attn = pos_enc_at_attn
-        self.pos_enc_at_cross_attn_queries = pos_enc_at_cross_attn_queries
-        self.pos_enc_at_cross_attn_keys = pos_enc_at_cross_attn_keys
-
-    def forward_post(
-        self, tgt, memory, tgt_mask=None, memory_mask=None,
-        tgt_key_padding_mask=None, memory_key_padding_mask=None,
-        pos=None, query_pos=None, **kwargs,
-    ):
-        q = k = tgt + query_pos if self.pos_enc_at_attn else tgt
-        tgt2 = self.self_attn(q, k, value=tgt, attn_mask=tgt_mask, key_padding_mask=tgt_key_padding_mask)[0]
-        tgt = tgt + self.dropout1(tgt2)
-        tgt = self.norm1(tgt)
-        tgt2 = self.cross_attn_image(
-            query=tgt + query_pos if self.pos_enc_at_cross_attn_queries else tgt,
-            key=memory + pos if self.pos_enc_at_cross_attn_keys else memory,
-            value=memory, attn_mask=memory_mask, key_padding_mask=memory_key_padding_mask,
-        )[0]
-        tgt = tgt + self.dropout2(tgt2)
-        tgt = self.norm2(tgt)
-        tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
-        tgt = tgt + self.dropout3(tgt2)
-        tgt = self.norm3(tgt)
-        return tgt
-
-    def forward_pre(
-        self, tgt, memory, dac=False, tgt_mask=None, memory_mask=None,
-        tgt_key_padding_mask=None, memory_key_padding_mask=None,
-        pos=None, query_pos=None, attn_bias=None, **kwargs,
-    ):
-        if dac:
-            assert tgt.shape[0] % 2 == 0
-            other_tgt = tgt[tgt.shape[0] // 2:]
-            tgt = tgt[:tgt.shape[0] // 2]
-        tgt2 = self.norm1(tgt)
-        q = k = tgt2 + query_pos if self.pos_enc_at_attn else tgt2
-        tgt2 = self.self_attn(q, k, value=tgt2, attn_mask=tgt_mask, key_padding_mask=tgt_key_padding_mask)[0]
-        tgt = tgt + self.dropout1(tgt2)
-        if dac:
-            tgt = torch.cat((tgt, other_tgt), dim=0)
-        tgt2 = self.norm2(tgt)
-        tgt2 = self.cross_attn_image(
-            query=tgt2 + query_pos if self.pos_enc_at_cross_attn_queries else tgt2,
-            key=memory + pos if self.pos_enc_at_cross_attn_keys else memory,
-            value=memory, attn_mask=memory_mask, key_padding_mask=memory_key_padding_mask,
-            attn_bias=attn_bias,
-        )[0]
-        tgt = tgt + self.dropout2(tgt2)
-        tgt2 = self.norm3(tgt)
-        tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt2))))
-        tgt = tgt + self.dropout3(tgt2)
-        return tgt
-
+class TransformerDecoderLayerv1(_TransformerSelfCrossAttnLayer):
     def forward(
         self, tgt, memory, dac=False, tgt_mask=None, memory_mask=None,
         tgt_key_padding_mask=None, memory_key_padding_mask=None,
@@ -2538,6 +2477,9 @@ class SequenceGeometryEncoder(nn.Module):
         if self.final_proj is not None:
             final_embeds = self.norm(self.final_proj(final_embeds))
         if self.encode is not None:
+            # Cast geometry embeddings to match visual features dtype.
+            # Embedding layers output fp32 (integer indices bypass manual_cast).
+            final_embeds = final_embeds.to(seq_first_img_feats.dtype)
             for lay in self.encode:
                 final_embeds = lay(
                     tgt=final_embeds, memory=seq_first_img_feats,
@@ -9592,13 +9534,3 @@ class SAM3InteractiveImagePredictor(nn.Module):
         self._features = None
         self._orig_hw = None
         self._is_batch = False
-
-
-# ---------------------------------------------------------------------------
-# Utility: is_image_type
-# ---------------------------------------------------------------------------
-
-def is_image_type(resource_path: str) -> bool:
-    if isinstance(resource_path, list):
-        return len(resource_path) == 1
-    return resource_path.lower().endswith(tuple(IMAGE_EXTS))
