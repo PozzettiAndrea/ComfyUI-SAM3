@@ -44,6 +44,15 @@ def _dtype_debug(label, **tensors):
     _sam3_log.warning(" ".join(parts))
 
 
+def is_image_type(resource_path):
+    """Return True if resource_path points to a single image file."""
+    _IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
+    return (
+        isinstance(resource_path, str)
+        and os.path.splitext(resource_path)[-1].lower() in _IMAGE_EXTS
+    )
+
+
 try:
     from timm.layers import DropPath, trunc_normal_
 except ModuleNotFoundError:
@@ -2857,7 +2866,7 @@ class MaskDecoder(nn.Module):
                 "predict_masks: hs=%s mask_tokens=%s hyper_in=%s upscaled=%s",
                 hs.dtype, mask_tokens_out.dtype, hyper_in.dtype, upscaled_embedding.dtype,
             )
-        masks = (hyper_in @ upscaled_embedding.view(b, c, h * w)).view(b, -1, h, w)
+        masks = (hyper_in @ upscaled_embedding.to(hyper_in.dtype).view(b, c, h * w)).view(b, -1, h, w)
 
         # Generate mask quality predictions
         iou_pred = self.iou_prediction_head(iou_token_out)
