@@ -491,12 +491,12 @@ app.registerExtension({
                 tab.appendChild(label);
 
                 // Running: full CSS circle spinner
-                if (this.canvasWidget.isRunning && prompt.isRunning) {
+                if (this.canvasWidget.isProcessing && prompt.isRunning) {
                     const spinner = document.createElement("span");
                     spinner.className = "sam3-spinner";
                     tab.appendChild(spinner);
                 // Pending: waiting its turn in the queue
-                } else if (this.canvasWidget.isRunning && prompt.isPending) {
+                } else if (this.canvasWidget.isProcessing && prompt.isPending) {
                     const dots = document.createElement("span");
                     dots.textContent = "...";
                     dots.style.cssText = "color: #555; margin-left: 4px; font-size: 10px; letter-spacing: 1px; vertical-align: middle;";
