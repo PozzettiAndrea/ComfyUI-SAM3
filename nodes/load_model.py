@@ -1,6 +1,3 @@
-"""
-LoadSAM3Model node - Loads SAM3 model with ComfyUI memory management integration
-"""
 import logging
 from pathlib import Path
 
@@ -8,13 +5,7 @@ log = logging.getLogger("sam3")
 
 import torch
 from folder_paths import base_path as comfy_base_path
-
-try:
-    from huggingface_hub import hf_hub_download
-    HF_HUB_AVAILABLE = True
-except ImportError:
-    HF_HUB_AVAILABLE = False
-
+from huggingface_hub import hf_hub_download
 
 class LoadSAM3Model:
     """
