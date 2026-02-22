@@ -27,7 +27,6 @@ try:
 except Exception:
     server = None
     _SERVER_AVAILABLE = False
-import comfy.model_management
 from .utils import comfy_image_to_pil, visualize_masks_on_image, masks_to_comfy_mask, pil_to_comfy_image
 
 log = logging.getLogger("sam3")
@@ -662,6 +661,7 @@ class SAM3InteractiveCollector:
     # -- main execution (workflow queue) -----------------------------------
 
     def segment(self, sam3_model, image, multi_prompts_store, unique_id=None):
+        import comfy.model_management
         comfy.model_management.load_models_gpu([sam3_model])
         pil_image = comfy_image_to_pil(image)
         img_w, img_h = pil_image.size
@@ -758,6 +758,7 @@ def _run_segment_sync(cached, raw_prompts):
     pil_image = cached["pil_image"]
     img_w, img_h = cached["img_size"]
 
+    import comfy.model_management
     comfy.model_management.load_models_gpu([sam3_model])
 
     multi_prompts = SAM3InteractiveCollector._parse_raw_prompts(raw_prompts, img_w, img_h)
@@ -801,6 +802,7 @@ def _run_segment_sync_one(cached, raw_prompt, prompt_name):
     pil_image = cached["pil_image"]
     img_w, img_h = cached["img_size"]
 
+    import comfy.model_management
     comfy.model_management.load_models_gpu([sam3_model])
 
     multi_prompts = SAM3InteractiveCollector._parse_raw_prompts([raw_prompt], img_w, img_h)
