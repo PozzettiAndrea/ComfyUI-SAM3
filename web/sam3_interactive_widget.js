@@ -6,7 +6,7 @@
 
 import { app } from "../../scripts/app.js";
 
-console.log("[SAM3] ===== INTERACTIVE COLLECTOR VERSION 1 =====");
+console.log("[SAM3] ===== INTERACTIVE COLLECTOR VERSION 2 =====");
 
 const PROMPT_COLORS = [
     { name: "cyan",    primary: "#00FFFF", dim: "#006666" },
@@ -34,6 +34,30 @@ function hideWidgetForGood(node, widget, suffix = '') {
     }
 }
 
+function ensureSpinnerCSS() {
+    if (document.getElementById("sam3-spinner-css")) return;
+    const style = document.createElement("style");
+    style.id = "sam3-spinner-css";
+    style.textContent = `
+        @keyframes sam3spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .sam3-spinner {
+            display: inline-block;
+            width: 10px; height: 10px;
+            border: 2px solid rgba(136, 204, 255, 0.2);
+            border-top-color: #8cf;
+            border-radius: 50%;
+            animation: sam3spin 0.65s linear infinite;
+            vertical-align: middle;
+            margin-left: 4px;
+            flex-shrink: 0;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 app.registerExtension({
     name: "Comfy.SAM3.InteractiveCollector",
 
@@ -41,6 +65,7 @@ app.registerExtension({
         if (nodeData.name !== "SAM3InteractiveCollector") return;
 
         console.log("[SAM3] Registering SAM3InteractiveCollector node");
+        ensureSpinnerCSS();
         const onNodeCreated = nodeType.prototype.onNodeCreated;
 
         nodeType.prototype.onNodeCreated = function () {
@@ -109,18 +134,27 @@ app.registerExtension({
             tabBar.style.cssText = "display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; background: #1a1a1a; border-top: 1px solid #333;";
             container.appendChild(tabBar);
 
+            // Queue panel — shown below tab bar when something is running/queued
+            const queuePanel = document.createElement("div");
+            queuePanel.style.cssText = "display: none; padding: 4px 8px; background: #111; border-top: 1px solid #2a2a2a; font-size: 11px; font-family: monospace; color: #aaa;";
+            container.appendChild(queuePanel);
+
             // State
             this.canvasWidget = {
                 canvas, ctx, container, canvasWrapper,
                 image: null,
                 overlayImage: null,   // mask overlay from Run
                 overlayStale: false,  // true when prompts changed since last Run
-                isRunning: false,     // true during API call
+                isProcessing: false,     // true while the processing loop is active
+                promptQueue: [],         // {prompt, index} entries waiting to be processed
+                completedPrompts: new Set(), // prompt objects successfully segmented
+                queuePanel,
                 prompts: [{
                     positive_points: [],
                     negative_points: [],
                     positive_boxes: [],
-                    negative_boxes: []
+                    negative_boxes: [],
+                    name: "Prompt 1",
                 }],
                 activePromptIndex: 0,
                 currentBox: null,
@@ -139,6 +173,7 @@ app.registerExtension({
             };
 
             this.rebuildTabBar();
+            this.updateRunButton();
 
             // ---- Run button handler ----
             runBtn.addEventListener("click", (e) => {
@@ -301,6 +336,10 @@ app.registerExtension({
                 try {
                     const stored = JSON.parse(storeWidget.value);
                     if (Array.isArray(stored) && stored.length > 0) {
+                        // Ensure each restored prompt has a name
+                        stored.forEach((p, i) => {
+                            if (!p.name) p.name = `Prompt ${i + 1}`;
+                        });
                         this.canvasWidget.prompts = stored;
                         this.canvasWidget.activePromptIndex = 0;
                         this.rebuildTabBar();
@@ -312,69 +351,103 @@ app.registerExtension({
             }
         };
 
-        // ---- Run interactive segment via API ----
-        nodeType.prototype.runInteractiveSegment = async function() {
+        // ---- Run: dispatch only the active prompt ----
+        nodeType.prototype.runInteractiveSegment = function() {
             const cw = this.canvasWidget;
-            if (cw.isRunning) return;
             if (!cw.image) {
                 console.warn("[SAM3] No image loaded. Queue the workflow first.");
                 return;
             }
 
-            // Check if any prompts have content
-            const hasContent = cw.prompts.some(p =>
-                p.positive_points.length > 0 || p.negative_points.length > 0 ||
-                p.positive_boxes.length > 0 || p.negative_boxes.length > 0
-            );
+            const idx = cw.activePromptIndex;
+            const prompt = cw.prompts[idx];
+
+            // Already queued or running — button should be disabled, but guard here too
+            if (prompt.isRunning || prompt.isPending) return;
+
+            // Nothing to dispatch
+            const hasContent = prompt.positive_points.length > 0 || prompt.negative_points.length > 0 ||
+                               prompt.positive_boxes.length > 0 || prompt.negative_boxes.length > 0;
             if (!hasContent) return;
 
-            // Auto-open a new prompt tab immediately on Run click
-            this.addNewPrompt();
+            // Enqueue this prompt
+            prompt.isPending = true;
+            cw.promptQueue.push({ prompt, index: idx });
+            this.rebuildTabBar();
+            this.updateRunButton();
+            this.updateQueuePanel();
 
-            // Set loading state
-            cw.isRunning = true;
-            cw.runBtn.textContent = "...";
-            cw.runBtn.style.background = "#555";
-            cw.runBtn.disabled = true;
+            // Open an empty tab so the user can draw the next prompt immediately
+            if (!this.hasEmptyPrompt()) this.addNewPrompt();
 
-            try {
-                const resp = await fetch("/sam3/interactive_segment", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        node_id: String(this.id),
-                        prompts: cw.prompts
-                    })
-                });
-                const data = await resp.json();
+            // Kick off the processing loop if it isn't already running
+            this.processQueue();
+        };
 
-                if (!resp.ok || data.error) {
-                    console.error("[SAM3] Interactive segment error:", data.error);
-                    // Brief flash red
-                    cw.runBtn.style.background = "#a22";
-                    setTimeout(() => { cw.runBtn.style.background = "#2a7a2a"; }, 800);
-                    return;
+        // ---- Sequential processing loop ----
+        nodeType.prototype.processQueue = async function() {
+            const cw = this.canvasWidget;
+            if (cw.isProcessing) return;
+            cw.isProcessing = true;
+
+            while (cw.promptQueue.length > 0) {
+                const { prompt, index } = cw.promptQueue.shift();
+                this.updateQueuePanel();
+
+                prompt.isPending = false;
+                prompt.isRunning = true;
+                this.rebuildTabBar();
+                this.updateRunButton();
+
+                const name = prompt.name;
+                console.log(`[SAM3] Prompt "${name}" dispatched`);
+                try {
+                    const resp = await fetch("/sam3/interactive_segment_one", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            node_id: String(this.id),
+                            prompt,
+                            prompt_name: name,
+                            prompt_index: index,
+                        })
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok || data.error) {
+                        console.error(`[SAM3] Prompt "${name}" error:`, data.error);
+                    } else {
+                        console.log(`[SAM3] Prompt "${name}" result received`);
+                        cw.completedPrompts.add(prompt);
+                        await this.fetchProgressiveOverlay([...cw.completedPrompts]);
+                    }
+                } catch (err) {
+                    console.error(`[SAM3] Prompt "${name}" fetch failed:`, err);
+                } finally {
+                    prompt.isRunning = false;
+                    prompt.isPending = false;
+                    this.rebuildTabBar();
+                    this.updateRunButton();
                 }
-
-                if (data.overlay) {
-                    const oimg = new Image();
-                    oimg.onload = () => {
-                        cw.overlayImage = oimg;
-                        cw.overlayStale = false;
-                        this.redrawCanvas();
-                    };
-                    oimg.src = "data:image/jpeg;base64," + data.overlay;
-                }
-            } catch (err) {
-                console.error("[SAM3] Interactive segment fetch failed:", err);
-                cw.runBtn.style.background = "#a22";
-                setTimeout(() => { cw.runBtn.style.background = "#2a7a2a"; }, 800);
-            } finally {
-                cw.isRunning = false;
-                cw.runBtn.textContent = "Run";
-                cw.runBtn.style.background = "#2a7a2a";
-                cw.runBtn.disabled = false;
             }
+
+            // Loop done — sweep any stuck flags
+            cw.prompts.forEach(p => { p.isRunning = false; p.isPending = false; });
+            cw.isProcessing = false;
+            this.rebuildTabBar();
+            this.updateRunButton();
+            this.updateQueuePanel();
+        };
+
+        // ---- Run button state ----
+        nodeType.prototype.updateRunButton = function() {
+            const cw = this.canvasWidget;
+            const active = cw.prompts[cw.activePromptIndex];
+            const blocked = active && (active.isRunning || active.isPending);
+            cw.runBtn.textContent = "Run";
+            cw.runBtn.disabled = !!blocked;
+            cw.runBtn.style.background = blocked ? "#333" : "#2a7a2a";
+            cw.runBtn.style.borderColor  = blocked ? "#444" : "#3a9a3a";
+            cw.runBtn.style.color        = blocked ? "#555" : "#fff";
         };
 
         // ---- Tab bar ----
@@ -396,12 +469,39 @@ app.registerExtension({
                 `;
 
                 const colorDot = document.createElement("span");
-                colorDot.style.cssText = `width: 10px; height: 10px; border-radius: 2px; background: ${color.primary};`;
+                colorDot.style.cssText = `width: 10px; height: 10px; border-radius: 2px; background: ${color.primary}; flex-shrink: 0;`;
                 tab.appendChild(colorDot);
 
+                // Ensure every prompt has a stable name before rendering
+                if (!prompt.name) {
+                    prompt.name = `Prompt ${idx + 1}`;
+                }
+
+                // Rename-able label
                 const label = document.createElement("span");
-                label.textContent = `Prompt ${idx + 1}`;
+                label.textContent = prompt.name;
+                label.dataset.renameTarget = String(idx);
+                label.title = "Right-click to rename";
+                label.style.cssText = "cursor: default; user-select: none; min-width: 40px;";
+                label.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.startRename(idx);
+                };
                 tab.appendChild(label);
+
+                // Running: full CSS circle spinner
+                if (this.canvasWidget.isRunning && prompt.isRunning) {
+                    const spinner = document.createElement("span");
+                    spinner.className = "sam3-spinner";
+                    tab.appendChild(spinner);
+                // Pending: waiting its turn in the queue
+                } else if (this.canvasWidget.isRunning && prompt.isPending) {
+                    const dots = document.createElement("span");
+                    dots.textContent = "...";
+                    dots.style.cssText = "color: #555; margin-left: 4px; font-size: 10px; letter-spacing: 1px; vertical-align: middle;";
+                    tab.appendChild(dots);
+                }
 
                 if (this.canvasWidget.prompts.length > 1) {
                     const deleteBtn = document.createElement("span");
@@ -438,19 +538,112 @@ app.registerExtension({
             this.updateCounter();
         };
 
+        // ---- Inline rename ----
+        nodeType.prototype.startRename = function(idx) {
+            // Rebuild tab bar with this tab active first
+            this.rebuildTabBar();
+
+            // Find the label by data attribute
+            const labelEl = this.canvasWidget.tabBar.querySelector(`[data-rename-target="${idx}"]`);
+            if (!labelEl) return;
+
+            const prompt = this.canvasWidget.prompts[idx];
+            const color = PROMPT_COLORS[idx % PROMPT_COLORS.length];
+            const currentName = prompt.name || `Prompt ${idx + 1}`;
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.value = currentName;
+            input.style.cssText = `
+                background: #1a1a1a; color: #fff;
+                border: 1px solid ${color.primary}; border-radius: 2px;
+                font-size: 11px; width: 80px; padding: 1px 3px;
+                outline: none;
+            `;
+
+            // Swap label for input
+            labelEl.replaceWith(input);
+            input.focus();
+            input.select();
+
+            const commit = () => {
+                const newName = input.value.trim() || `Prompt ${idx + 1}`;
+                prompt.name = newName;
+                this.updateStorage();
+                this.rebuildTabBar();
+            };
+
+            input.onblur = commit;
+            input.onkeydown = (e) => {
+                if (e.key === "Enter") { e.preventDefault(); input.blur(); }
+                if (e.key === "Escape") {
+                    input.value = currentName;
+                    input.blur();
+                }
+                e.stopPropagation();
+            };
+            // Don't trigger tab switch while typing
+            input.onclick = (e) => e.stopPropagation();
+        };
+
+        // ---- Progressive overlay: fetch combined mask for completed prompts ----
+        nodeType.prototype.fetchProgressiveOverlay = async function(completedRawPrompts) {
+            const cw = this.canvasWidget;
+            try {
+                const resp = await fetch("/sam3/interactive_segment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        node_id: String(this.id),
+                        prompts: completedRawPrompts,
+                    })
+                });
+                const data = await resp.json();
+                if (resp.ok && data.overlay) {
+                    const oimg = new Image();
+                    oimg.onload = () => {
+                        cw.overlayImage = oimg;
+                        cw.overlayStale = false;
+                        this.redrawCanvas();
+                    };
+                    oimg.src = "data:image/jpeg;base64," + data.overlay;
+                }
+            } catch (err) {
+                console.error("[SAM3] Progressive overlay fetch failed:", err);
+            }
+        };
+
+        // ---- Queue panel ----
+        nodeType.prototype.updateQueuePanel = function() {
+            const cw = this.canvasWidget;
+            const panel = cw.queuePanel;
+            const n = cw.promptQueue.length;
+
+            if (n === 0) {
+                panel.style.display = "none";
+                return;
+            }
+
+            panel.style.display = "block";
+            panel.textContent = `${n} prompt${n !== 1 ? "s" : ""} queued`;
+        };
+
         nodeType.prototype.setActivePrompt = function(index) {
             this.canvasWidget.activePromptIndex = index;
             this.rebuildTabBar();
+            this.updateRunButton();
             this.redrawCanvas();
         };
 
         nodeType.prototype.addNewPrompt = function() {
             if (this.canvasWidget.prompts.length >= MAX_PROMPTS) return;
+            const newIndex = this.canvasWidget.prompts.length + 1;
             this.canvasWidget.prompts.push({
                 positive_points: [],
                 negative_points: [],
                 positive_boxes: [],
-                negative_boxes: []
+                negative_boxes: [],
+                name: `Prompt ${newIndex}`,
             });
             this.canvasWidget.activePromptIndex = this.canvasWidget.prompts.length - 1;
             this.rebuildTabBar();
@@ -459,15 +652,22 @@ app.registerExtension({
         };
 
         nodeType.prototype.deletePrompt = function(index) {
-            if (this.canvasWidget.prompts.length <= 1) {
+            const cw = this.canvasWidget;
+            if (cw.prompts.length <= 1) {
                 this.clearActivePrompt();
                 return;
             }
-            this.canvasWidget.prompts.splice(index, 1);
-            if (this.canvasWidget.activePromptIndex >= this.canvasWidget.prompts.length) {
-                this.canvasWidget.activePromptIndex = this.canvasWidget.prompts.length - 1;
+            const removed = cw.prompts[index];
+            cw.prompts.splice(index, 1);
+            // Clean up queue and completed set for the removed prompt
+            cw.promptQueue = cw.promptQueue.filter(e => e.prompt !== removed);
+            cw.completedPrompts.delete(removed);
+            if (cw.activePromptIndex >= cw.prompts.length) {
+                cw.activePromptIndex = cw.prompts.length - 1;
             }
             this.rebuildTabBar();
+            this.updateRunButton();
+            this.updateQueuePanel();
             this.updateStorage();
             this.redrawCanvas();
         };
@@ -483,18 +683,33 @@ app.registerExtension({
         };
 
         nodeType.prototype.clearAllPrompts = function() {
-            this.canvasWidget.prompts = [{
+            const cw = this.canvasWidget;
+            cw.prompts = [{
                 positive_points: [],
                 negative_points: [],
                 positive_boxes: [],
-                negative_boxes: []
+                negative_boxes: [],
+                name: "Prompt 1",
             }];
-            this.canvasWidget.activePromptIndex = 0;
-            this.canvasWidget.overlayImage = null;
-            this.canvasWidget.overlayStale = false;
+            cw.activePromptIndex = 0;
+            cw.overlayImage = null;
+            cw.overlayStale = false;
+            cw.promptQueue = [];
+            cw.completedPrompts.clear();
             this.rebuildTabBar();
+            this.updateRunButton();
+            this.updateQueuePanel();
             this.updateStorage();
             this.redrawCanvas();
+        };
+
+        nodeType.prototype.hasEmptyPrompt = function() {
+            return this.canvasWidget.prompts.some(p =>
+                p.positive_points.length === 0 &&
+                p.negative_points.length === 0 &&
+                p.positive_boxes.length === 0 &&
+                p.negative_boxes.length === 0
+            );
         };
 
         nodeType.prototype.findItemAt = function(x, y) {
@@ -528,7 +743,15 @@ app.registerExtension({
         nodeType.prototype.updateStorage = function() {
             const widget = this._hiddenWidgets?.multi_prompts_store;
             if (widget) {
-                widget.value = JSON.stringify(this.canvasWidget.prompts);
+                // Strip transient runtime state before serializing
+                const toStore = this.canvasWidget.prompts.map(p => ({
+                    positive_points: p.positive_points,
+                    negative_points: p.negative_points,
+                    positive_boxes: p.positive_boxes,
+                    negative_boxes: p.negative_boxes,
+                    name: p.name,
+                }));
+                widget.value = JSON.stringify(toStore);
             }
             // Mark overlay as stale since prompts changed
             this.canvasWidget.overlayStale = true;
@@ -536,10 +759,11 @@ app.registerExtension({
         };
 
         nodeType.prototype.updateCounter = function() {
-            const prompt = this.canvasWidget.prompts[this.canvasWidget.activePromptIndex];
+            const idx = this.canvasWidget.activePromptIndex;
+            const prompt = this.canvasWidget.prompts[idx];
             const pts = prompt.positive_points.length + prompt.negative_points.length;
             const boxes = prompt.positive_boxes.length + prompt.negative_boxes.length;
-            this.canvasWidget.counter.textContent = `Prompt ${this.canvasWidget.activePromptIndex + 1}: ${pts} pts, ${boxes} boxes`;
+            this.canvasWidget.counter.textContent = `${prompt.name}: ${pts} pts, ${boxes} boxes`;
         };
 
         // ---- Canvas rendering ----

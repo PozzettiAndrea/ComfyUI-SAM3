@@ -14,6 +14,7 @@ import logging
 import json
 import io
 import base64
+import threading
 
 import numpy as np
 import torch
@@ -30,6 +31,9 @@ log = logging.getLogger("sam3")
 # Interactive segmentation cache — keyed by node unique_id
 # ---------------------------------------------------------------------------
 _INTERACTIVE_CACHE = {}
+
+# Serializes GPU work from parallel per-prompt requests
+_SEGMENT_LOCK = threading.Lock()
 
 
 class SAM3PointCollector:
@@ -780,6 +784,65 @@ def _run_segment_sync(cached, raw_prompts):
     overlay_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
     return {"overlay": overlay_b64, "num_masks": len(all_masks)}
+
+
+def _run_segment_sync_one(cached, raw_prompt, prompt_name):
+    """Run segmentation for a single named prompt. Thread-safe via _SEGMENT_LOCK."""
+    log.info("Prompt '%s' dispatched", prompt_name)
+
+    sam3_model = cached["sam3_model"]
+    model = cached["model"]
+    state = cached["state"]
+    pil_image = cached["pil_image"]
+    img_w, img_h = cached["img_size"]
+
+    comfy.model_management.load_models_gpu([sam3_model])
+
+    multi_prompts = SAM3InteractiveCollector._parse_raw_prompts([raw_prompt], img_w, img_h)
+    if not multi_prompts:
+        log.info("Prompt '%s' result ready (no valid points/boxes)", prompt_name)
+        return {"error": "No valid prompt content", "num_masks": 0}
+
+    with _SEGMENT_LOCK:
+        all_masks, all_scores = SAM3InteractiveCollector._run_prompts(
+            model, state, multi_prompts, img_w, img_h
+        )
+
+    log.info("Prompt '%s' result ready", prompt_name)
+
+    if not all_masks:
+        return {"error": "No masks generated", "num_masks": 0}
+
+    return {"num_masks": len(all_masks)}
+
+
+@server.PromptServer.instance.routes.post("/sam3/interactive_segment_one")
+async def _interactive_segment_one_handler(request):
+    try:
+        body = await request.json()
+    except Exception:
+        return web.json_response({"error": "Invalid JSON"}, status=400)
+
+    node_id = str(body.get("node_id", ""))
+    raw_prompt = body.get("prompt", {})
+    prompt_name = str(body.get("prompt_name", "Prompt"))
+
+    cached = _INTERACTIVE_CACHE.get(node_id)
+    if not cached:
+        return web.json_response(
+            {"error": "Model not loaded. Queue the workflow first (Ctrl+Enter)."},
+            status=400,
+        )
+
+    try:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None, _run_segment_sync_one, cached, raw_prompt, prompt_name
+        )
+        return web.json_response(result)
+    except Exception as exc:
+        log.exception("Interactive segmentation (single prompt '%s') failed", prompt_name)
+        return web.json_response({"error": str(exc)}, status=500)
 
 
 @server.PromptServer.instance.routes.post("/sam3/interactive_segment")
