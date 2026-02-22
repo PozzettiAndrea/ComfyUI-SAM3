@@ -70,6 +70,21 @@ class LoadSAM3Model:
         # BPE path for tokenizer
         bpe_path = str(Path(__file__).parent / "sam3" / "bpe_simple_vocab_16e6.txt.gz")
 
+        # Resolve dtype before model creation
+        if precision == "auto":
+            if comfy.model_management.should_use_bf16(load_device):
+                dtype = torch.bfloat16
+            elif comfy.model_management.should_use_fp16(load_device):
+                dtype = torch.float16
+            else:
+                dtype = torch.float32
+        elif precision == "bf16":
+            dtype = torch.bfloat16
+        elif precision == "fp16":
+            dtype = torch.float16
+        else:
+            dtype = torch.float32
+
         log.info(f"Loading model from: {checkpoint_path}")
         if compile:
             log.info("torch.compile enabled")
@@ -81,6 +96,16 @@ class LoadSAM3Model:
             attention_backend=attention,
             compile=compile,
         )
+
+        # Selective weight casting: cast only parameters (not buffers) in the
+        # backbone to target dtype for VRAM savings. Buffers like freqs_cis
+        # (complex RoPE tensor) must stay in their original dtype — .to(bf16)
+        # on a complex tensor discards the imaginary part, destroying position
+        # information. Keep decoder/scoring heads in fp32 for score precision.
+        if dtype != torch.float32:
+            detector = video_predictor.model.detector
+            for param in detector.backbone.parameters():
+                param.data = param.data.to(dtype=dtype)
 
         # Run compilation warmup to pre-compile all code paths
         if compile:
@@ -95,21 +120,6 @@ class LoadSAM3Model:
             device=str(load_device),
             confidence_threshold=0.2
         )
-
-        # Resolve dtype
-        if precision == "auto":
-            if comfy.model_management.should_use_bf16(load_device):
-                dtype = torch.bfloat16
-            elif comfy.model_management.should_use_fp16(load_device):
-                dtype = torch.float16
-            else:
-                dtype = torch.float32
-        elif precision == "bf16":
-            dtype = torch.bfloat16
-        elif precision == "fp16":
-            dtype = torch.float16
-        else:
-            dtype = torch.float32
 
         unified_model = SAM3UnifiedModel(
             video_predictor=video_predictor,
