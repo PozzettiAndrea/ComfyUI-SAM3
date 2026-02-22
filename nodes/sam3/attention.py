@@ -85,7 +85,7 @@ def sam3_attention(q, k, v, num_heads):
 
     Normalizes Q/K/V to ``_sam3_target_dtype`` (set by set_sam3_dtype) when
     the model is configured for half precision.  This covers all sources of
-    fp32 activations — positional-encoding additions that promote bf16→fp32,
+    fp32 activations -- positional-encoding additions that promote bf16->fp32,
     self-attention on fp32 token embeddings from the prompt encoder, etc. —
     so flash attention always receives the expected dtype regardless of call
     site.
