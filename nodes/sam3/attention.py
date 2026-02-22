@@ -25,6 +25,7 @@ ops = comfy.ops.manual_cast
 
 _sam3_attn_fn = None  # None = not yet configured, falls back to optimized_attention
 _sam3_attn_printed = False
+_sam3_target_dtype = None  # None = no forced dtype; set to torch.bfloat16/float16 to normalize
 
 _BACKEND_MAP = {
     "flash_attn": "flash",
@@ -63,14 +64,57 @@ def set_sam3_backend(name: str = "auto"):
     _sam3_attn_printed = False
 
 
+def set_sam3_dtype(dtype):
+    """Set the model's target dtype for attention normalization.
+
+    When set to bfloat16 or float16, sam3_attention() will cast all Q/K/V
+    tensors to this dtype before the attention call. This covers cases where
+    fp32 activations arise from type promotion (e.g. bf16_tensor + fp32_pe),
+    ensuring flash attention always receives half-precision inputs.
+    """
+    global _sam3_target_dtype, _sam3_attn_printed
+    _sam3_target_dtype = dtype
+    _sam3_attn_printed = False  # reset so the new dtype shows in the log
+
+
 def sam3_attention(q, k, v, num_heads):
     """ComfyUI-native attention dispatch.
 
     Drop-in replacement for comfy_attn.dispatch_attention.
     Expects q, k, v in shape [B, H, L, D]. Returns [B, H, L, D].
+
+    Normalizes Q/K/V to ``_sam3_target_dtype`` (set by set_sam3_dtype) when
+    the model is configured for half precision.  This covers all sources of
+    fp32 activations — positional-encoding additions that promote bf16→fp32,
+    self-attention on fp32 token embeddings from the prompt encoder, etc. —
+    so flash attention always receives the expected dtype regardless of call
+    site.
     """
     global _sam3_attn_printed
     fn = _sam3_attn_fn if _sam3_attn_fn is not None else optimized_attention
+
+    # Normalize dtype centrally:
+    # 1. If _sam3_target_dtype is set (half precision model), cast everything.
+    # 2. Otherwise fall back to the per-call mixed-dtype check so we at least
+    #    avoid the crash from mismatched Q/K/V dtypes.
+    target = _sam3_target_dtype
+    if target is not None and target in (torch.bfloat16, torch.float16):
+        if q.dtype != target:
+            q = q.to(target)
+        if k.dtype != target:
+            k = k.to(target)
+        if v.dtype != target:
+            v = v.to(target)
+    elif not (q.dtype == k.dtype == v.dtype):
+        all_dtypes = (q.dtype, k.dtype, v.dtype)
+        if torch.bfloat16 in all_dtypes:
+            target = torch.bfloat16
+        elif torch.float16 in all_dtypes:
+            target = torch.float16
+        else:
+            target = q.dtype
+        q, k, v = q.to(target), k.to(target), v.to(target)
+
     if not _sam3_attn_printed:
         log.info("attention backend: %s | dtype: %s", fn.__name__, q.dtype)
         _sam3_attn_printed = True
@@ -119,11 +163,20 @@ class SplitMultiheadAttention(nn.Module):
         if value is None:
             value = key
 
-        # Ensure matching dtypes for cross-attention (bf16 model + fp32 features)
-        if key.dtype != query.dtype:
-            key = key.to(query.dtype)
-        if value.dtype != query.dtype:
-            value = value.to(query.dtype)
+        # Normalize dtypes: prefer half precision so flash attention can run.
+        # Cross-attention between fp32 point embeddings and bf16 image features
+        # would otherwise promote everything to fp32 (query-dominant).
+        if not (query.dtype == key.dtype == value.dtype):
+            all_dtypes = (query.dtype, key.dtype, value.dtype)
+            if torch.bfloat16 in all_dtypes:
+                target = torch.bfloat16
+            elif torch.float16 in all_dtypes:
+                target = torch.float16
+            else:
+                target = query.dtype
+            query = query.to(target)
+            key = key.to(target)
+            value = value.to(target)
 
         if not self.batch_first:
             query = query.transpose(0, 1)   # [L, B, D] -> [B, L, D]
@@ -374,6 +427,20 @@ class Attention(nn.Module):
         q = self._separate_heads(q, self.num_heads)
         k = self._separate_heads(k, self.num_heads)
         v = self._separate_heads(v, self.num_heads)
+
+        # Normalize dtype: cross-attention between fp32 point embeddings and
+        # bf16 image features produces mixed Q/K/V dtypes (e.g. K=fp32 from
+        # keys+key_pe type promotion, V=bf16 from direct keys reference).
+        # Flash attention requires all three to match — prefer half precision.
+        if not (q.dtype == k.dtype == v.dtype):
+            dtypes = (q.dtype, k.dtype, v.dtype)
+            if torch.bfloat16 in dtypes:
+                target = torch.bfloat16
+            elif torch.float16 in dtypes:
+                target = torch.float16
+            else:
+                target = q.dtype
+            q, k, v = q.to(target), k.to(target), v.to(target)
 
         # ComfyUI optimized attention — q, k, v are [B, H, L, D]
         out = sam3_attention(q, k, v, self.num_heads)

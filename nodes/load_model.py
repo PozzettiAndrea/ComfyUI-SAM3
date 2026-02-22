@@ -97,15 +97,42 @@ class LoadSAM3Model:
             compile=compile,
         )
 
-        # Selective weight casting: cast only parameters (not buffers) in the
-        # backbone to target dtype for VRAM savings. Buffers like freqs_cis
-        # (complex RoPE tensor) must stay in their original dtype — .to(bf16)
-        # on a complex tensor discards the imaginary part, destroying position
-        # information. Keep decoder/scoring heads in fp32 for score precision.
+        # Tell sam3_attention() what half-precision dtype to target.
+        # This enables centralized dtype normalization for every attention call
+        # site — including self-attention on fp32 token embeddings and
+        # cross-attention after bf16+fp32 positional-encoding type promotion.
+        # Must be called after set_sam3_backend() (inside Sam3VideoPredictor).
+        from .sam3.attention import set_sam3_dtype
+        set_sam3_dtype(dtype if dtype != torch.float32 else None)
+
+        # Selective weight casting: cast only parameters (not buffers) to target
+        # dtype for VRAM savings and half-precision attention.
+        #
+        # Buffers like freqs_cis (complex RoPE tensor in the ViT backbone) must
+        # stay in their original dtype — .to(bf16) on a complex tensor discards
+        # the imaginary part, destroying position information.
+        #
+        # inst_interactive_predictor must also be cast: its no_mem_embed
+        # (nn.Parameter) is added directly to bf16 vision features in
+        # predict_inst(), causing fp32 type promotion. comfy.ops.manual_cast
+        # can't intercept plain + operations — it only casts linear layer
+        # weights. Keeping inst_interactive_predictor in fp32 makes all Q/K/V
+        # tensors fp32, causing flash attention to fall back to SDPA.
         if dtype != torch.float32:
+            import os
             detector = video_predictor.model.detector
             for param in detector.backbone.parameters():
                 param.data = param.data.to(dtype=dtype)
+            if detector.inst_interactive_predictor is not None:
+                for param in detector.inst_interactive_predictor.parameters():
+                    param.data = param.data.to(dtype=dtype)
+            if os.environ.get("DEBUG_COMFYUI_SAM3", "").lower() in ("1", "true", "yes"):
+                log.warning(
+                    "LoadSAM3Model: backbone dtype=%s, inst_interactive_predictor dtype=%s",
+                    next(detector.backbone.parameters()).dtype,
+                    next(detector.inst_interactive_predictor.parameters()).dtype
+                    if detector.inst_interactive_predictor is not None else "N/A",
+                )
 
         # Run compilation warmup to pre-compile all code paths
         if compile:
