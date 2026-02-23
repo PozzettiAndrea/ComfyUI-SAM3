@@ -97,6 +97,7 @@ def sam3_attention(q, k, v, num_heads):
     # 1. If _sam3_target_dtype is set (half precision model), cast everything.
     # 2. Otherwise fall back to the per-call mixed-dtype check so we at least
     #    avoid the crash from mismatched Q/K/V dtypes.
+    orig_dtype = q.dtype
     target = _sam3_target_dtype
     if target is not None and target in (torch.bfloat16, torch.float16):
         if q.dtype != target:
@@ -114,6 +115,8 @@ def sam3_attention(q, k, v, num_heads):
         else:
             target = q.dtype
         q, k, v = q.to(target), k.to(target), v.to(target)
+    if q.dtype != orig_dtype:
+        log.debug("sam3_attention: cast Q/K/V %s -> %s", orig_dtype, q.dtype)
 
     if not _sam3_attn_printed:
         log.info("attention backend: %s | dtype: %s", fn.__name__, q.dtype)
@@ -199,8 +202,7 @@ class SplitMultiheadAttention(nn.Module):
             pytorch_attn = get_attention_function("pytorch")
             out = pytorch_attn(q, k, v, heads=self.num_heads, mask=sdpa_mask, skip_reshape=True)
         else:
-            fn = _sam3_attn_fn if _sam3_attn_fn is not None else optimized_attention
-            out = fn(q, k, v, heads=self.num_heads, skip_reshape=True)
+            out = sam3_attention(q, k, v, self.num_heads)
 
         out = out.reshape(B, L_q, self.embed_dim)
         out = self.out_proj(out)
