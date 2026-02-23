@@ -715,8 +715,11 @@ class SAM3VideoOutput:
         # ============================================================
         # STREAMING: Create memory-mapped files on disk
         # Data is written directly to disk, not accumulated in RAM
+        # Use unique subdir per (obj_id, plot_all_masks) to avoid
+        # Windows file locking when previous mmaps are still cached.
         # ============================================================
-        mmap_dir = os.path.join(video_state.temp_dir, "mmap_output")
+        mmap_subdir = f"mmap_obj{obj_id}_{'all' if plot_all_masks else 'single'}"
+        mmap_dir = os.path.join(video_state.temp_dir, mmap_subdir)
         os.makedirs(mmap_dir, exist_ok=True)
 
         mask_path = os.path.join(mmap_dir, "masks.mmap")
