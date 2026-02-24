@@ -26,6 +26,8 @@ Install via ComfyUI Manager.
 
 ![video](docs/video.png)
 
+https://github.com/user-attachments/assets/57721801-f599-4ef1-8647-13468211ef63
+
 ## Credits
 
 - **SAM3**: Meta AI Research (https://github.com/facebookresearch/sam3)
