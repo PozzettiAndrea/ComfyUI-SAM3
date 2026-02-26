@@ -121,7 +121,10 @@ def sam3_attention(q, k, v, num_heads):
     if not _sam3_attn_printed:
         log.info("attention backend: %s | dtype: %s", fn.__name__, q.dtype)
         _sam3_attn_printed = True
-    return fn(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
+    log.debug("[sam3_attention] q=%s k=%s v=%s heads=%d", list(q.shape), list(k.shape), list(v.shape), num_heads)
+    result = fn(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
+    log.debug("[sam3_attention] result=%s", list(result.shape))
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -193,6 +196,10 @@ class SplitMultiheadAttention(nn.Module):
         k = self.to_k(key).reshape(B, L_k, self.num_heads, self.head_dim).transpose(1, 2)
         v = self.to_v(value).reshape(B, L_k, self.num_heads, self.head_dim).transpose(1, 2)
 
+        log.debug("[SplitMHA] input: query=%s key=%s value=%s | q=%s k=%s v=%s",
+                  list(query.shape), list(key.shape), list(value.shape),
+                  list(q.shape), list(k.shape), list(v.shape))
+
         # Prepare mask for attention
         sdpa_mask = self._prepare_mask(attn_mask, key_padding_mask, B, L_q, L_k, q.dtype, q.device)
 
@@ -201,10 +208,17 @@ class SplitMultiheadAttention(nn.Module):
         if sdpa_mask is not None:
             pytorch_attn = get_attention_function("pytorch")
             out = pytorch_attn(q, k, v, heads=self.num_heads, mask=sdpa_mask, skip_reshape=True)
+            # pytorch_attn returns [B, L, H*D] (skip_output_reshape defaults to False)
+            log.debug("[SplitMHA] masked path -> out=%s", list(out.shape))
         else:
             out = sam3_attention(q, k, v, self.num_heads)
+            # sam3_attention returns [B, H, L, D] — transpose to [B, L, H, D]
+            log.debug("[SplitMHA] sam3_attn path -> out=%s (before transpose)", list(out.shape))
+            out = out.transpose(1, 2)
+            log.debug("[SplitMHA] after transpose -> out=%s", list(out.shape))
 
         out = out.reshape(B, L_q, self.embed_dim)
+        log.debug("[SplitMHA] after reshape -> out=%s", list(out.shape))
         out = self.out_proj(out)
 
         if not self.batch_first:
@@ -445,9 +459,12 @@ class Attention(nn.Module):
             q, k, v = q.to(target), k.to(target), v.to(target)
 
         # ComfyUI optimized attention — q, k, v are [B, H, L, D]
+        log.debug("[SAMAttention] q=%s k=%s v=%s", list(q.shape), list(k.shape), list(v.shape))
         out = sam3_attention(q, k, v, self.num_heads)
+        log.debug("[SAMAttention] attn out=%s", list(out.shape))
 
         out = self._recombine_heads(out)
+        log.debug("[SAMAttention] recombined=%s", list(out.shape))
         out = self.out_proj(out)
         return out
 

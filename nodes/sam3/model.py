@@ -30,18 +30,19 @@ _sam3_log = logging.getLogger("sam3")
 
 def _dtype_debug(label, **tensors):
     """Log dtype/shape of tensors at component boundaries."""
-    if not _SAM3_DEBUG:
-        return
     parts = [f"{label}:"]
     for name, t in tensors.items():
         if t is None:
             parts.append(f"  {name}=None")
         elif isinstance(t, (list, tuple)):
-            dtypes = [x.dtype for x in t if hasattr(x, 'dtype')]
-            parts.append(f"  {name}=[{', '.join(str(d) for d in dtypes)}]")
+            info = []
+            for x in t:
+                if hasattr(x, 'dtype'):
+                    info.append(f"{x.dtype} {list(x.shape)}")
+            parts.append(f"  {name}=[{', '.join(info)}]")
         elif hasattr(t, 'dtype'):
-            parts.append(f"  {name}={t.dtype} {list(t.shape)}")
-    _sam3_log.warning(" ".join(parts))
+            parts.append(f"  {name}={t.dtype} {list(t.shape)} min={t.min():.4f} max={t.max():.4f}")
+    _sam3_log.info(" ".join(parts))
 
 
 def is_image_type(resource_path):
@@ -3544,6 +3545,8 @@ class Sam3Image(torch.nn.Module):
         backbone_out, img_feats, img_pos_embeds, vis_feat_sizes = feat_tuple
 
         prompt_pos_embed = torch.zeros_like(prompt)
+        _dtype_debug("_run_encoder inputs",
+                     img_feats=img_feats, prompt=prompt, prompt_mask=prompt_mask)
         memory = self.transformer.encoder(
             src=img_feats.copy(),
             src_key_padding_mask=None,
@@ -3554,6 +3557,7 @@ class Sam3Image(torch.nn.Module):
             feat_sizes=vis_feat_sizes,
             encoder_extra_kwargs=encoder_extra_kwargs,
         )
+        _dtype_debug("_run_encoder output", memory=memory.get("memory"), pos_embed=memory.get("pos_embed"))
         encoder_out = {
             "encoder_hidden_states": memory["memory"],
             "pos_embed": memory["pos_embed"],
@@ -3583,6 +3587,8 @@ class Sam3Image(torch.nn.Module):
         tgt = query_embed.unsqueeze(1).repeat(1, bs, 1).to(memory.dtype)
 
         apply_dac = self.transformer.decoder.dac and self.training
+        _dtype_debug("_run_decoder inputs", tgt=tgt, memory=memory, pos_embed=pos_embed,
+                     prompt=prompt, prompt_mask=prompt_mask)
         hs, reference_boxes, dec_presence_out, dec_presence_feats = (
             self.transformer.decoder(
                 tgt=tgt,
@@ -3599,6 +3605,8 @@ class Sam3Image(torch.nn.Module):
                 apply_dac=apply_dac,
             )
         )
+        _dtype_debug("_run_decoder output", hs=hs, reference_boxes=reference_boxes,
+                     dec_presence_out=dec_presence_out)
         hs = hs.transpose(1, 2)
         reference_boxes = reference_boxes.transpose(1, 2)
         if dec_presence_out is not None:
@@ -3630,6 +3638,7 @@ class Sam3Image(torch.nn.Module):
         num_o2m = hs.size(2) - num_o2o
         assert num_o2m == (num_o2o if apply_dac else 0)
         out["queries"] = hs[-1][:, :num_o2o]
+        _dtype_debug("_update_scores_and_boxes", hs=hs, prompt=prompt, prompt_mask=prompt_mask)
         if self.use_dot_prod_scoring:
             dot_prod_scoring_head = self.dot_prod_scoring
             if is_instance_prompt and self.instance_dot_prod_scoring is not None:
@@ -3640,6 +3649,7 @@ class Sam3Image(torch.nn.Module):
             if is_instance_prompt and self.instance_class_embed is not None:
                 class_embed_head = self.instance_class_embed
             outputs_class = class_embed_head(hs)
+        _dtype_debug("_update_scores: outputs_class", outputs_class=outputs_class)
 
         box_head = self.transformer.decoder.bbox_embed
         if (
@@ -3662,9 +3672,12 @@ class Sam3Image(torch.nn.Module):
             prob_dec_presence_out = dec_presence_out.clone().sigmoid()
             if self.detach_presence_in_joint_score:
                 prob_dec_presence_out = prob_dec_presence_out.detach()
+            _dtype_debug("_update_scores: before joint_box_scores",
+                         outputs_class_pre=outputs_class, dec_presence_out=dec_presence_out)
             outputs_class = inverse_sigmoid(
                 outputs_class.sigmoid() * prob_dec_presence_out.unsqueeze(2)
             ).clamp(min=-10.0, max=10.0)
+            _dtype_debug("_update_scores: after joint_box_scores", outputs_class_post=outputs_class)
 
         _update_out(
             out, "pred_logits", outputs_class[:, :, :num_o2o], update_aux=self.training

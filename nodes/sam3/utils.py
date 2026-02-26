@@ -1315,9 +1315,18 @@ class Sam3Processor:
         inference_dtype = getattr(self, '_inference_dtype', None)
         if inference_dtype is not None and inference_dtype in (torch.float16, torch.bfloat16):
             image = image.to(dtype=inference_dtype)
+        log.info(f"[DEBUG] set_image: input shape={image.shape}, dtype={image.dtype}, "
+                 f"min={image.min():.4f}, max={image.max():.4f}, device={image.device}")
         state["original_height"] = height
         state["original_width"] = width
         state["backbone_out"] = self.model.backbone.forward_image(image)
+        # Debug: inspect backbone output
+        backbone_out = state["backbone_out"]
+        log.info(f"[DEBUG] set_image: backbone_out keys: {list(backbone_out.keys())}")
+        if "backbone_fpn" in backbone_out:
+            for i, feat in enumerate(backbone_out["backbone_fpn"]):
+                log.info(f"[DEBUG]   backbone_fpn[{i}]: shape={feat.shape}, dtype={feat.dtype}, "
+                         f"min={feat.min():.4f}, max={feat.max():.4f}")
         inst_interactivity_en = self.model.inst_interactive_predictor is not None
         if inst_interactivity_en and "sam2_backbone_out" in state["backbone_out"]:
             sam2_backbone_out = state["backbone_out"]["sam2_backbone_out"]
@@ -1376,7 +1385,17 @@ class Sam3Processor:
     def set_text_prompt(self, prompt: str, state: Dict):
         if "backbone_out" not in state:
             raise ValueError("You must call set_image before set_text_prompt")
+        log.info(f"[DEBUG] set_text_prompt: prompt='{prompt}', device={self.device}")
         text_outputs = self.model.backbone.forward_text([prompt], device=self.device)
+        # Debug: inspect text encoder output
+        if "language_features" in text_outputs:
+            lf = text_outputs["language_features"]
+            log.info(f"[DEBUG] language_features: shape={lf.shape}, dtype={lf.dtype}, "
+                     f"min={lf.min():.4f}, max={lf.max():.4f}, mean={lf.mean():.4f}")
+        if "language_mask" in text_outputs:
+            lm = text_outputs["language_mask"]
+            log.info(f"[DEBUG] language_mask: shape={lm.shape}, dtype={lm.dtype}, "
+                     f"num_valid={(~lm).sum().item()}, num_padding={lm.sum().item()}")
         state["backbone_out"].update(text_outputs)
         if "geometric_prompt" not in state:
             state["geometric_prompt"] = self.model._get_dummy_prompt()
@@ -1474,6 +1493,8 @@ class Sam3Processor:
 
     @torch.inference_mode()
     def _forward_grounding(self, state: Dict):
+        from .perflib import nms_masks
+
         outputs = self.model.forward_grounding(
             backbone_out=state["backbone_out"],
             find_input=self.find_stage,
@@ -1483,11 +1504,54 @@ class Sam3Processor:
         out_bbox = outputs["pred_boxes"]
         out_logits = outputs["pred_logits"]
         out_masks = outputs["pred_masks"]
+
+        # Debug: print raw output shapes and stats
+        log.info(f"[DEBUG] forward_grounding output keys: {list(outputs.keys())}")
+        log.info(f"[DEBUG] pred_logits shape: {out_logits.shape}, min: {out_logits.min():.4f}, max: {out_logits.max():.4f}")
+        log.info(f"[DEBUG] pred_boxes shape: {out_bbox.shape}")
+        log.info(f"[DEBUG] pred_masks shape: {out_masks.shape}")
+
+        # pred_logits already have presence baked in via supervise_joint_box_scores:
+        #   pred_logits = inverse_sigmoid(sigmoid(class_raw) * sigmoid(presence))
+        # So sigmoid(pred_logits) = sigmoid(class_raw) * sigmoid(presence).
+        # Do NOT multiply by presence again — that would square its effect.
         out_probs = out_logits.sigmoid().squeeze(-1)
+
+        if "presence_logit_dec" in outputs:
+            presence_raw = outputs["presence_logit_dec"]
+            log.info(f"[DEBUG] presence_logit_dec: {presence_raw.shape}, "
+                     f"val={presence_raw.flatten().tolist()}, sigmoid={presence_raw.sigmoid().flatten().tolist()}")
+        log.info(f"[DEBUG] out_probs (joint_box_scores, no double presence): "
+                 f"min={out_probs.min():.4f}, max={out_probs.max():.4f}")
+
+        log.info(f"[DEBUG] confidence_threshold: {self.confidence_threshold}")
+        log.info(f"[DEBUG] detections above threshold: {(out_probs > self.confidence_threshold).sum().item()} / {out_probs.numel()}")
+
+        # Top-10 probabilities for debugging
+        topk_vals, topk_idxs = out_probs.flatten().topk(min(10, out_probs.numel()))
+        log.info(f"[DEBUG] top-10 probs: {[f'{v:.4f}' for v in topk_vals.tolist()]}")
+
         keep = out_probs > self.confidence_threshold
         out_probs = out_probs[keep]
         out_masks = out_masks[keep]
         out_bbox = out_bbox[keep]
+
+        log.info(f"[DEBUG] after threshold: {out_probs.numel()} detections")
+
+        # Apply mask-based NMS to suppress overlapping detections
+        if out_probs.numel() > 1:
+            nms_keep = nms_masks(
+                pred_probs=out_probs,
+                pred_masks=out_masks,
+                prob_threshold=0.0,  # already thresholded above
+                iou_threshold=0.5,
+            )
+            n_before = out_probs.numel()
+            out_probs = out_probs[nms_keep]
+            out_masks = out_masks[nms_keep]
+            out_bbox = out_bbox[nms_keep]
+            log.info(f"[DEBUG] after NMS (iou_thresh=0.5): {out_probs.numel()} detections (suppressed {n_before - out_probs.numel()})")
+
         boxes = box_cxcywh_to_xyxy(out_bbox)
         img_h = state["original_height"]
         img_w = state["original_width"]
