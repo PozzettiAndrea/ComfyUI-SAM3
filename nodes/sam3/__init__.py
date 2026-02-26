@@ -635,7 +635,7 @@ def _load_checkpoint(model, checkpoint_path):
     # Convert nn.MultiheadAttention in_proj_weight/bias to split q/k/v
     sam3_image_ckpt = convert_mha_state_dict(sam3_image_ckpt)
 
-    missing_keys, unexpected_keys = model.load_state_dict(sam3_image_ckpt, strict=False, assign=True)
+    missing_keys, unexpected_keys = model.load_state_dict(sam3_image_ckpt, strict=False)
 
     # Check for missing inst_interactive_predictor keys
     critical_missing = [k for k in missing_keys if 'inst_interactive_predictor' in k]
@@ -903,7 +903,7 @@ def build_sam3_video_model(
         remapped_ckpt = convert_mha_state_dict(remapped_ckpt)
 
         missing_keys, unexpected_keys = model.load_state_dict(
-            remapped_ckpt, strict=strict_state_dict_loading, assign=True
+            remapped_ckpt, strict=strict_state_dict_loading
         )
         if missing_keys:
             log.info(f"Missing keys: {len(missing_keys)}")
