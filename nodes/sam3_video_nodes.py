@@ -444,9 +444,7 @@ class SAM3Propagate:
             raise ValueError("[SAM3 Video] No prompts added. Add point, box, or text prompts before propagating.")
 
         # Ensure model is on GPU before inference (may have been offloaded)
-        if hasattr(sam3_model, 'model') and hasattr(sam3_model.model, 'to'):
-            device = comfy.model_management.get_torch_device()
-            sam3_model.model.to(device)
+        comfy.model_management.load_models_gpu([sam3_model])
 
         log.info(f"Starting propagation: frames {start_frame} to {end_frame if end_frame >= 0 else 'end'}")
         log.info(f"Prompts: {len(video_state.prompts)}")

@@ -57,10 +57,7 @@ class SAM3UnifiedModel(ModelPatcher):
     @property
     def current_device(self):
         """Current device the model is on."""
-        try:
-            return next(self.model.parameters()).device
-        except StopIteration:
-            return self._offload_device
+        return self.model.device
 
     # -- Video predictor delegation -------------------------------------------
 
@@ -127,17 +124,17 @@ class SAM3UnifiedModel(ModelPatcher):
     # -- Internal helpers -----------------------------------------------------
 
     def _sync_processor_device(self, device):
-        """Sync processor's cached device state after model movement."""
-        # Tell the processor what dtype to cast image inputs to.
-        # manual_cast layers will then match their weights to the input dtype.
+        """Sync processor's device and dtype after model movement.
+
+        Follows the native ComfyUI pattern: the patcher owns device state and
+        pushes it to the processor as a torch.device (like ClipVisionModel.load_device).
+        """
         self._processor._inference_dtype = self._model_dtype
-        if hasattr(self._processor, 'sync_device_with_model'):
-            self._processor.sync_device_with_model()
-        elif hasattr(self._processor, 'device'):
-            self._processor.device = str(device)
-            if hasattr(self._processor, 'find_stage') and self._processor.find_stage is not None:
-                fs = self._processor.find_stage
-                if hasattr(fs, 'img_ids') and fs.img_ids is not None:
-                    fs.img_ids = fs.img_ids.to(device)
-                if hasattr(fs, 'text_ids') and fs.text_ids is not None:
-                    fs.text_ids = fs.text_ids.to(device)
+        if hasattr(self._processor, 'device'):
+            self._processor.device = device
+        if hasattr(self._processor, 'find_stage') and self._processor.find_stage is not None:
+            fs = self._processor.find_stage
+            if hasattr(fs, 'img_ids') and fs.img_ids is not None:
+                fs.img_ids = fs.img_ids.to(device)
+            if hasattr(fs, 'text_ids') and fs.text_ids is not None:
+                fs.text_ids = fs.text_ids.to(device)

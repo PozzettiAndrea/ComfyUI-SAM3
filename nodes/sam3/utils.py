@@ -1275,7 +1275,9 @@ class Sam3Processor:
         self.model = model
         self.resolution = resolution
         if device is None:
-            device = str(comfy.model_management.get_torch_device())
+            device = comfy.model_management.get_torch_device()
+        elif isinstance(device, str):
+            device = torch.device(device)
         self.device = device
         self.transform = v2.Compose(
             [
@@ -1304,11 +1306,7 @@ class Sam3Processor:
             height, width = image.shape[-2:]
         else:
             raise ValueError("Image must be a PIL image or a tensor")
-        try:
-            model_device = next(self.model.parameters()).device
-        except StopIteration:
-            model_device = torch.device(self.device)
-        image = v2.functional.to_image(image).to(model_device)
+        image = v2.functional.to_image(image).to(self.device)
         image = self.transform(image).unsqueeze(0)
         # Native ComfyUI pattern: cast input to target dtype at the pipeline
         # boundary. manual_cast layers will cast their fp32 weights to match.
@@ -1353,12 +1351,8 @@ class Sam3Processor:
         assert isinstance(images[0], Image.Image), "Images must be a list of PIL images"
         state["original_heights"] = [image.height for image in images]
         state["original_widths"] = [image.width for image in images]
-        try:
-            model_device = next(self.model.parameters()).device
-        except StopIteration:
-            model_device = torch.device(self.device)
         images = [
-            self.transform(v2.functional.to_image(image).to(model_device))
+            self.transform(v2.functional.to_image(image).to(self.device))
             for image in images
         ]
         images = torch.stack(images, dim=0)
@@ -1460,18 +1454,6 @@ class Sam3Processor:
             mask = mask.unsqueeze(0)
         state["geometric_prompt"].append_masks(mask)
         return self._forward_grounding(state)
-
-    def sync_device_with_model(self):
-        try:
-            model_device = next(self.model.parameters()).device
-            self.device = str(model_device)
-            if self.find_stage is not None:
-                if self.find_stage.img_ids is not None:
-                    self.find_stage.img_ids = self.find_stage.img_ids.to(model_device)
-                if self.find_stage.text_ids is not None:
-                    self.find_stage.text_ids = self.find_stage.text_ids.to(model_device)
-        except StopIteration:
-            pass
 
     def reset_all_prompts(self, state: Dict):
         if "backbone_out" in state:

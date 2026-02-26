@@ -3064,6 +3064,10 @@ class SegmentationHead(nn.Module):
         self._device = getattr(self, "_device", None) or next(self.parameters()).device
         return self._device
 
+    @device.setter
+    def device(self, value):
+        self._device = value
+
     def to(self, *args, **kwargs):
         self._device = None
         return super().to(*args, **kwargs)
@@ -3275,12 +3279,6 @@ class SAM3VLBackbone(nn.Module):
         _dtype_debug("Backbone.forward_image IN", samples=samples)
         if samples.dtype == torch.uint8:
             samples = samples.float() / 255.0
-        try:
-            expected_device = next(self.vision_backbone.parameters()).device
-            if samples.device != expected_device:
-                samples = samples.to(expected_device)
-        except StopIteration:
-            pass
         result = self._forward_image_no_act_ckpt(samples)
         _dtype_debug("Backbone.forward_image OUT",
                      vision_features=result.get("vision_features"),
@@ -3453,6 +3451,10 @@ class Sam3Image(torch.nn.Module):
         self._device = getattr(self, "_device", None) or next(self.parameters()).device
         return self._device
 
+    @device.setter
+    def device(self, value):
+        self._device = value
+
     def to(self, *args, **kwargs):
         self._device = None
         return super().to(*args, **kwargs)
@@ -3507,8 +3509,9 @@ class Sam3Image(torch.nn.Module):
         encode_text=True,
         prev_mask_pred=None,
     ):
-        txt_ids = find_input.text_ids
-        txt_feats = backbone_out["language_features"][:, txt_ids]
+        lang_feats = backbone_out["language_features"]
+        txt_ids = find_input.text_ids.to(lang_feats.device)
+        txt_feats = lang_feats[:, txt_ids]
         txt_masks = backbone_out["language_mask"][txt_ids]
 
         feat_tuple = self._get_img_feats(backbone_out, find_input.img_ids)
@@ -4288,7 +4291,11 @@ class Sam3TrackerBase(torch.nn.Module):
 
     @property
     def device(self):
-        return next(self.parameters()).device
+        return getattr(self, "_device", None) or next(self.parameters()).device
+
+    @device.setter
+    def device(self, value):
+        self._device = value
 
     def _get_tpos_enc(self, rel_pos_list, device, max_abs_pos=None, dummy=False):
         if dummy:
@@ -6359,6 +6366,10 @@ class Sam3VideoBase(nn.Module):
         self._device = getattr(self, "_device", None) or next(self.parameters()).device
         return self._device
 
+    @device.setter
+    def device(self, value):
+        self._device = value
+
     def _init_dist_pg_cpu(self):
         timeout_sec = int(os.getenv("SAM3_COLLECTIVE_OP_TIMEOUT_SEC", "180"))
         timeout = datetime.timedelta(seconds=timeout_sec)
@@ -7719,8 +7730,7 @@ class Sam3VideoInference(Sam3VideoBase):
         video_loader_type="cv2",
     ):
         """Initialize an inference state from `resource_path` (an image or a video)."""
-        # Get actual current device from model parameters
-        device = next(self.parameters()).device
+        device = self.device
 
         images, orig_height, orig_width = load_resource_as_video_frames(
             resource_path=resource_path,
@@ -7778,8 +7788,7 @@ class Sam3VideoInference(Sam3VideoBase):
         """Construct an initial `BatchedDatapoint` instance as input."""
         # 1) img_batch
         num_frames = len(images)
-        # Get actual current device from model parameters (handles dynamic device changes)
-        device = next(self.parameters()).device
+        device = self.device
 
         # 2) find_text_batch
         # "<text placeholder>" will be replaced by the actual text prompt when adding prompts
@@ -9590,6 +9599,10 @@ class SAM3InteractiveImagePredictor(nn.Module):
     @property
     def device(self):
         return self.model.device
+
+    @device.setter
+    def device(self, value):
+        self.model.device = value
 
     def reset_predictor(self):
         """Resets the image embeddings and other state variables."""
