@@ -32,7 +32,8 @@ class LayerScale(nn.Module):
         self.gamma = nn.Parameter(init_values * torch.ones(dim))
 
     def forward(self, x: Tensor) -> Tensor:
-        return x.mul_(self.gamma) if self.inplace else x * self.gamma
+        gamma = comfy.ops.cast_to_input(self.gamma, x)
+        return x.mul_(gamma) if self.inplace else x * gamma
 
 
 # ---------------------------------------------------------------------------
@@ -97,7 +98,7 @@ class ResidualAttentionBlock(nn.Module):
         v_x = v_x if v_x is not None else q_x
         if attn_mask is not None:
             if not attn_mask.dtype == torch.bool:
-                attn_mask = attn_mask.to(q_x.dtype)
+                attn_mask = comfy.ops.cast_to_input(attn_mask, q_x)
 
         return self.attn(q_x, k_x, v_x, need_weights=False, attn_mask=attn_mask)[0]
 
@@ -268,7 +269,7 @@ class TextTransformer(nn.Module):
         if attn_mask is not None:
             attn_mask = attn_mask[:seq_len, :seq_len]
 
-        x = x + self.positional_embedding[:seq_len].to(x.dtype)
+        x = x + comfy.ops.cast_to_input(self.positional_embedding[:seq_len], x)
         x = self.transformer(x, attn_mask=attn_mask)
 
         x = self.ln_final(x)
@@ -277,7 +278,7 @@ class TextTransformer(nn.Module):
             if isinstance(self.text_projection, nn.Linear):
                 pooled = self.text_projection(pooled)
             else:
-                pooled = pooled @ self.text_projection.to(pooled.dtype)
+                pooled = pooled @ comfy.ops.cast_to_input(self.text_projection, pooled)
         if self.output_tokens:
             return pooled, tokens
         return pooled

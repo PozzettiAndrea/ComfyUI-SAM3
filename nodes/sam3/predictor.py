@@ -69,21 +69,18 @@ class Sam3VideoPredictor:
 
         logger.info(f"Sam3VideoPredictor using device: {self.device}")
 
-        self.model = (
-            build_sam3_video_model(
-                checkpoint_path=checkpoint_path,
-                bpe_path=bpe_path,
-                has_presence_token=has_presence_token,
-                geo_encoder_use_img_cross_attn=geo_encoder_use_img_cross_attn,
-                strict_state_dict_loading=strict_state_dict_loading,
-                apply_temporal_disambiguation=apply_temporal_disambiguation,
-                enable_inst_interactivity=enable_inst_interactivity,
-                attention_backend=attention_backend,
-                compile=compile,
-            )
-            .to(self.device)
-            .eval()
-        )
+        # Model stays on CPU — ModelPatcher handles device placement.
+        self.model = build_sam3_video_model(
+            checkpoint_path=checkpoint_path,
+            bpe_path=bpe_path,
+            has_presence_token=has_presence_token,
+            geo_encoder_use_img_cross_attn=geo_encoder_use_img_cross_attn,
+            strict_state_dict_loading=strict_state_dict_loading,
+            apply_temporal_disambiguation=apply_temporal_disambiguation,
+            enable_inst_interactivity=enable_inst_interactivity,
+            attention_backend=attention_backend,
+            compile=compile,
+        ).eval()
 
     @torch.inference_mode()
     def handle_request(self, request):

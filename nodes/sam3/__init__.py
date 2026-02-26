@@ -738,7 +738,7 @@ def build_sam3_image_model(
     if checkpoint_path is not None:
         _load_checkpoint(model, checkpoint_path)
 
-    model = model.to(device)
+    # Model stays on CPU — ModelPatcher handles device placement.
     if eval_mode:
         model.eval()
 
@@ -772,8 +772,8 @@ def build_sam3_video_model(
     from .attention import set_sam3_backend
     set_sam3_backend(attention_backend)
 
-    if device is None:
-        device = comfy.model_management.get_torch_device()
+    # device parameter kept for API compat but no longer used —
+    # ModelPatcher handles device placement.
 
     if bpe_path is None:
         bpe_path = os.path.join(
@@ -910,7 +910,7 @@ def build_sam3_video_model(
         if unexpected_keys:
             log.info(f"Unexpected keys: {len(unexpected_keys)}")
 
-    model.to(device=device)
+    # Model stays on CPU — ModelPatcher handles device placement.
     return model
 
 

@@ -87,21 +87,17 @@ class SAM3UnifiedModel(ModelPatcher):
     # -- ModelPatcher overrides -----------------------------------------------
 
     def patch_model(self, device_to=None, lowvram_model_memory=0, load_weights=True, force_patch_weights=False):
+        result = super().patch_model(device_to, lowvram_model_memory, load_weights, force_patch_weights)
         if device_to is None:
             device_to = self._load_device
-        self.model.to(device_to)
-        # Native ComfyUI pattern: weights stay in checkpoint dtype (fp32).
-        # manual_cast handles per-layer casting to match input dtype.
         self._sync_processor_device(device_to)
-        return self.model
+        return result
 
     def unpatch_model(self, device_to=None, unpatch_weights=True):
+        super().unpatch_model(device_to, unpatch_weights)
         if device_to is None:
             device_to = self._offload_device
-        self.model.to(device_to)
         self._sync_processor_device(device_to)
-        gc.collect()
-        comfy.model_management.soft_empty_cache()
 
     def clone(self):
         n = SAM3UnifiedModel(
@@ -121,33 +117,6 @@ class SAM3UnifiedModel(ModelPatcher):
         base_memory = self.model_size()
         activation_memory = 1008 * 1008 * 256 * 4 * 10
         return base_memory + activation_memory
-
-    def model_patches_to(self, device):
-        pass
-
-    def model_patches_models(self):
-        return []
-
-    def current_loaded_device(self):
-        return self.current_device
-
-    def loaded_size(self):
-        device = self.current_device
-        if device is not None and device.type != "cpu":
-            return self.model_size()
-        return 0
-
-    def partially_load(self, device_to, extra_memory=0, force_patch_weights=False):
-        self.patch_model(device_to)
-        return self.model_size()
-
-    def partially_unload(self, device_to, memory_to_free=0, force_patch_weights=False):
-        self.unpatch_model(device_to)
-        return self.model_size()
-
-    def cleanup(self):
-        self.unpatch_model()
-        super().cleanup()
 
     def __del__(self):
         try:

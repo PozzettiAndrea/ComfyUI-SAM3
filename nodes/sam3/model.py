@@ -421,8 +421,8 @@ class PositionEmbeddingRandom(nn.Module):
 
     def _pe_encoding(self, coords: torch.Tensor) -> torch.Tensor:
         coords = 2 * coords - 1
-        coords = coords.to(self.positional_encoding_gaussian_matrix.dtype)
-        coords = coords @ self.positional_encoding_gaussian_matrix
+        pe_matrix = comfy.ops.cast_to_input(self.positional_encoding_gaussian_matrix, coords)
+        coords = coords @ pe_matrix
         coords = 2 * np.pi * coords
         return torch.cat([torch.sin(coords), torch.cos(coords)], dim=-1)
 
@@ -551,11 +551,11 @@ def concat_rel_pos(
     k_h, k_w = k_hw
     assert (q_h == q_w) and (k_h == k_w), "only square inputs supported"
     if relative_coords is not None:
-        Rh = rel_pos_h[relative_coords].to(q.dtype)
-        Rw = rel_pos_w[relative_coords].to(q.dtype)
+        Rh = comfy.ops.cast_to_input(rel_pos_h[relative_coords], q)
+        Rw = comfy.ops.cast_to_input(rel_pos_w[relative_coords], q)
     else:
-        Rh = get_rel_pos(q_h, k_h, rel_pos_h).to(q.dtype)
-        Rw = get_rel_pos(q_w, k_w, rel_pos_w).to(q.dtype)
+        Rh = comfy.ops.cast_to_input(get_rel_pos(q_h, k_h, rel_pos_h), q)
+        Rw = comfy.ops.cast_to_input(get_rel_pos(q_w, k_w, rel_pos_w), q)
     B, _, dim = q.shape
     r_q = q.reshape(B, q_h, q_w, dim)
     old_scale = dim**0.5
@@ -968,14 +968,14 @@ class ViT(nn.Module):
 
         s = 0
         if self.retain_cls_token:
-            x = torch.cat([self.class_embedding.to(x.dtype), x.flatten(1, 2)], dim=1)
+            x = torch.cat([comfy.ops.cast_to_input(self.class_embedding, x), x.flatten(1, 2)], dim=1)
             s = 1
 
         if self.pos_embed is not None:
-            x = x + get_abs_pos(
+            x = x + comfy.ops.cast_to_input(get_abs_pos(
                 self.pos_embed, self.pretrain_use_cls_token,
                 (h, w), self.retain_cls_token, tiling=self.tile_abs_pos,
-            ).to(x.dtype)
+            ), x)
 
         x = self.ln_pre(x)
 
@@ -1228,7 +1228,7 @@ class TransformerEncoder(nn.Module):
                 mask = mask.flatten(1)
             pos_embed = pos_embed.flatten(2).transpose(1, 2)
             if self.level_embed is not None:
-                lvl_pos_embed = pos_embed + self.level_embed[lvl].view(1, 1, -1).to(pos_embed.dtype)
+                lvl_pos_embed = pos_embed + comfy.ops.cast_to_input(self.level_embed[lvl].view(1, 1, -1), pos_embed)
             else:
                 lvl_pos_embed = pos_embed
             lvl_pos_embed_flatten.append(lvl_pos_embed)
@@ -2151,7 +2151,7 @@ class CXBlock(nn.Module):
         x = self.act(x)
         x = self.pwconv2(x)
         if self.gamma is not None:
-            x = self.gamma.to(x.dtype) * x
+            x = comfy.ops.cast_to_input(self.gamma, x) * x
         x = x.permute(0, 3, 1, 2)
         x = input + self.drop_path(x)
         return x
@@ -2570,27 +2570,27 @@ class PromptEncoder(nn.Module):
 
         point_embedding = torch.where(
             (labels == -1).unsqueeze(-1),
-            torch.zeros_like(point_embedding) + self.not_a_point_embed.weight,
+            torch.zeros_like(point_embedding) + comfy.ops.cast_to_input(self.not_a_point_embed.weight, point_embedding),
             point_embedding,
         )
         point_embedding = torch.where(
             (labels == 0).unsqueeze(-1),
-            point_embedding + self.point_embeddings[0].weight,
+            point_embedding + comfy.ops.cast_to_input(self.point_embeddings[0].weight, point_embedding),
             point_embedding,
         )
         point_embedding = torch.where(
             (labels == 1).unsqueeze(-1),
-            point_embedding + self.point_embeddings[1].weight,
+            point_embedding + comfy.ops.cast_to_input(self.point_embeddings[1].weight, point_embedding),
             point_embedding,
         )
         point_embedding = torch.where(
             (labels == 2).unsqueeze(-1),
-            point_embedding + self.point_embeddings[2].weight,
+            point_embedding + comfy.ops.cast_to_input(self.point_embeddings[2].weight, point_embedding),
             point_embedding,
         )
         point_embedding = torch.where(
             (labels == 3).unsqueeze(-1),
-            point_embedding + self.point_embeddings[3].weight,
+            point_embedding + comfy.ops.cast_to_input(self.point_embeddings[3].weight, point_embedding),
             point_embedding,
         )
         return point_embedding
@@ -2602,8 +2602,8 @@ class PromptEncoder(nn.Module):
         corner_embedding = self.pe_layer.forward_with_coords(
             coords, self.input_image_size
         )
-        corner_embedding[:, 0, :] += self.point_embeddings[2].weight
-        corner_embedding[:, 1, :] += self.point_embeddings[3].weight
+        corner_embedding[:, 0, :] += comfy.ops.cast_to_input(self.point_embeddings[2].weight, corner_embedding)
+        corner_embedding[:, 1, :] += comfy.ops.cast_to_input(self.point_embeddings[3].weight, corner_embedding)
         return corner_embedding
 
     def _embed_masks(self, masks: torch.Tensor) -> torch.Tensor:
@@ -2636,9 +2636,18 @@ class PromptEncoder(nn.Module):
         masks: Optional[torch.Tensor],
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         bs = self._get_batch_size(points, boxes, masks)
+        # Derive device/dtype from input tensors (always on compute device),
+        # not from .weight which may be offloaded to CPU in lowvram mode.
+        if points is not None:
+            device, dtype = points[0].device, points[0].dtype
+        elif boxes is not None:
+            device, dtype = boxes.device, boxes.dtype
+        elif masks is not None:
+            device, dtype = masks.device, masks.dtype
+        else:
+            device, dtype = self._get_device(), self.point_embeddings[0].weight.dtype
         sparse_embeddings = torch.empty(
-            (bs, 0, self.embed_dim), device=self._get_device(),
-            dtype=self.point_embeddings[0].weight.dtype,
+            (bs, 0, self.embed_dim), device=device, dtype=dtype,
         )
         if points is not None:
             coords, labels = points
@@ -2651,7 +2660,9 @@ class PromptEncoder(nn.Module):
         if masks is not None:
             dense_embeddings = self._embed_masks(masks)
         else:
-            dense_embeddings = self.no_mask_embed.weight.reshape(1, -1, 1, 1).expand(
+            dense_embeddings = comfy.ops.cast_to_input(
+                self.no_mask_embed.weight, sparse_embeddings
+            ).reshape(1, -1, 1, 1).expand(
                 bs, -1, self.image_embedding_size[0], self.image_embedding_size[1]
             )
 
@@ -4454,7 +4465,7 @@ class Sam3TrackerBase(torch.nn.Module):
         lambda_is_obj_appearing = is_obj_appearing.float()
 
         obj_ptr = lambda_is_obj_appearing * obj_ptr
-        obj_ptr = obj_ptr + (1 - lambda_is_obj_appearing) * self.no_obj_ptr
+        obj_ptr = obj_ptr + (1 - lambda_is_obj_appearing) * comfy.ops.cast_to_input(self.no_obj_ptr, obj_ptr)
 
         return (
             low_res_multimasks,
@@ -4492,7 +4503,7 @@ class Sam3TrackerBase(torch.nn.Module):
         lambda_is_obj_appearing = is_obj_appearing.float()
         object_score_logits = out_scale * lambda_is_obj_appearing + out_bias
         obj_ptr = lambda_is_obj_appearing * obj_ptr
-        obj_ptr = obj_ptr + (1 - lambda_is_obj_appearing) * self.no_obj_ptr
+        obj_ptr = obj_ptr + (1 - lambda_is_obj_appearing) * comfy.ops.cast_to_input(self.no_obj_ptr, obj_ptr)
 
         return (
             low_res_masks,
@@ -4696,11 +4707,11 @@ class Sam3TrackerBase(torch.nn.Module):
                     is_selected_cond_frame
                     and getattr(self, "cond_frame_spatial_embedding", None) is not None
                 ):
-                    maskmem_enc = maskmem_enc + self.cond_frame_spatial_embedding
+                    maskmem_enc = maskmem_enc + comfy.ops.cast_to_input(self.cond_frame_spatial_embedding, maskmem_enc)
 
                 t = t_pos if not is_selected_cond_frame else 0
                 maskmem_enc = (
-                    maskmem_enc + self.maskmem_tpos_enc[self.num_maskmem - t - 1]
+                    maskmem_enc + comfy.ops.cast_to_input(self.maskmem_tpos_enc[self.num_maskmem - t - 1], maskmem_enc)
                 )
                 to_cat_prompt_pos_embed.append(maskmem_enc)
 
@@ -4780,13 +4791,13 @@ class Sam3TrackerBase(torch.nn.Module):
             else:
                 num_obj_ptr_tokens = 0
         else:
-            pix_feat_with_mem = current_vision_feats[-1] + self.no_mem_embed
+            pix_feat_with_mem = current_vision_feats[-1] + comfy.ops.cast_to_input(self.no_mem_embed, current_vision_feats[-1])
             pix_feat_with_mem = pix_feat_with_mem.permute(1, 2, 0).view(B, C, H, W)
             return pix_feat_with_mem
 
-            to_cat_prompt = [self.no_mem_embed.expand(1, B, self.mem_dim)]
+            to_cat_prompt = [comfy.ops.cast_to_input(self.no_mem_embed, current_vision_feats[-1]).expand(1, B, self.mem_dim)]
             to_cat_prompt_mask = [torch.zeros(B, 1, device=device, dtype=bool)]
-            to_cat_prompt_pos_embed = [self.no_mem_pos_enc.expand(1, B, self.mem_dim)]
+            to_cat_prompt_pos_embed = [comfy.ops.cast_to_input(self.no_mem_pos_enc, current_vision_feats[-1]).expand(1, B, self.mem_dim)]
 
         prompt = torch.cat(to_cat_prompt, dim=0)
         prompt_mask = None
@@ -4845,7 +4856,7 @@ class Sam3TrackerBase(torch.nn.Module):
         is_obj_appearing = (object_score_logits > 0).float()
         maskmem_features += (
             1 - is_obj_appearing[..., None, None]
-        ) * self.no_obj_embed_spatial[..., None, None].expand(*maskmem_features.shape)
+        ) * comfy.ops.cast_to_input(self.no_obj_embed_spatial, maskmem_features)[..., None, None].expand(*maskmem_features.shape)
 
         return maskmem_features, maskmem_pos_enc
 
