@@ -56,31 +56,35 @@ class Sam3VideoPredictor:
         video_loader_type="cv2",
         apply_temporal_disambiguation: bool = True,
         enable_inst_interactivity=False,
-        attention_backend: str = "auto",
         compile: bool = False,
+        model=None,
     ):
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
         self._compile = compile
-        from . import build_sam3_video_model
 
         # Determine device
         self.device = comfy.model_management.get_torch_device()
 
         logger.info(f"Sam3VideoPredictor using device: {self.device}")
 
-        # Model stays on CPU — ModelPatcher handles device placement.
-        self.model = build_sam3_video_model(
-            checkpoint_path=checkpoint_path,
-            bpe_path=bpe_path,
-            has_presence_token=has_presence_token,
-            geo_encoder_use_img_cross_attn=geo_encoder_use_img_cross_attn,
-            strict_state_dict_loading=strict_state_dict_loading,
-            apply_temporal_disambiguation=apply_temporal_disambiguation,
-            enable_inst_interactivity=enable_inst_interactivity,
-            attention_backend=attention_backend,
-            compile=compile,
-        ).eval()
+        if model is not None:
+            # Accept a pre-built model (e.g. from meta-device construction).
+            self.model = model
+        else:
+            from . import build_sam3_video_model
+
+            # Model stays on CPU — ModelPatcher handles device placement.
+            self.model = build_sam3_video_model(
+                checkpoint_path=checkpoint_path,
+                bpe_path=bpe_path,
+                has_presence_token=has_presence_token,
+                geo_encoder_use_img_cross_attn=geo_encoder_use_img_cross_attn,
+                strict_state_dict_loading=strict_state_dict_loading,
+                apply_temporal_disambiguation=apply_temporal_disambiguation,
+                enable_inst_interactivity=enable_inst_interactivity,
+                compile=compile,
+            ).eval()
 
     @torch.inference_mode()
     def handle_request(self, request):

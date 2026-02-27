@@ -12,7 +12,7 @@ import torch.nn as nn
 from torch import Tensor
 
 import comfy.ops
-from comfy.ldm.modules.attention import optimized_attention, get_attention_function
+from comfy.ldm.modules.attention import optimized_attention_for_device, attention_pytorch
 
 log = logging.getLogger("sam3")
 
@@ -20,48 +20,11 @@ ops = comfy.ops.manual_cast
 
 
 # ---------------------------------------------------------------------------
-# ComfyUI attention dispatch — per-model backend override
+# ComfyUI attention dispatch
 # ---------------------------------------------------------------------------
 
-_sam3_attn_fn = None  # None = not yet configured, falls back to optimized_attention
 _sam3_attn_printed = False
 _sam3_target_dtype = None  # None = no forced dtype; set to torch.bfloat16/float16 to normalize
-
-_BACKEND_MAP = {
-    "flash_attn": "flash",
-    "sage": "sage",
-    "sage3": "sage3",
-    "xformers": "xformers",
-    "sdpa": "pytorch",
-    "sub_quad": "sub_quad",
-    "split": "split",
-}
-
-
-def set_sam3_backend(name: str = "auto"):
-    """Configure SAM3's attention backend.
-
-    ``auto`` uses the global ``optimized_attention``, but if SageAttention is
-    active globally, falls back to flash_attn — SAM3 is incompatible with sage
-    due to relative position bias concatenation modifying Q/K dimensions.
-    Explicit user choices are respected (including ``sage`` at user's risk).
-    """
-    global _sam3_attn_fn, _sam3_attn_printed
-    pytorch = get_attention_function("pytorch")
-    if name == "auto":
-        if optimized_attention.__name__ in ("attention_sage", "attention3_sage"):
-            _sam3_attn_fn = get_attention_function("flash", default=pytorch)
-            log.warning(
-                "SageAttention is not compatible with SAM3 "
-                "(relative position bias modifies Q/K dimensions). "
-                "Using %s instead.", _sam3_attn_fn.__name__
-            )
-        else:
-            _sam3_attn_fn = optimized_attention
-    else:
-        reg_name = _BACKEND_MAP.get(name, "pytorch")
-        _sam3_attn_fn = get_attention_function(reg_name, default=pytorch)
-    _sam3_attn_printed = False
 
 
 def set_sam3_dtype(dtype):
@@ -91,7 +54,18 @@ def sam3_attention(q, k, v, num_heads):
     site.
     """
     global _sam3_attn_printed
-    fn = _sam3_attn_fn if _sam3_attn_fn is not None else optimized_attention
+    fn = optimized_attention_for_device(q.device)
+
+    # SageAttention is incompatible with SAM3 — relative position bias
+    # concatenation modifies Q/K dimensions which sage doesn't support.
+    if fn.__name__ in ("attention_sage", "attention3_sage"):
+        if not _sam3_attn_printed:
+            log.warning(
+                "SageAttention is not compatible with SAM3 "
+                "(relative position bias modifies Q/K dimensions). "
+                "Using attention_pytorch instead."
+            )
+        fn = attention_pytorch
 
     # Normalize dtype centrally:
     # 1. If _sam3_target_dtype is set (half precision model), cast everything.
@@ -206,8 +180,8 @@ class SplitMultiheadAttention(nn.Module):
         # When mask is needed, use SDPA (pytorch) which supports masks natively.
         # Flash/sage/xformers don't support arbitrary attention masks.
         if sdpa_mask is not None:
-            pytorch_attn = get_attention_function("pytorch")
-            out = pytorch_attn(q, k, v, heads=self.num_heads, mask=sdpa_mask, skip_reshape=True)
+            masked_fn = optimized_attention_for_device(q.device, mask=True)
+            out = masked_fn(q, k, v, heads=self.num_heads, mask=sdpa_mask, skip_reshape=True)
             # pytorch_attn returns [B, L, H*D] (skip_output_reshape defaults to False)
             log.debug("[SplitMHA] masked path -> out=%s", list(out.shape))
         else:

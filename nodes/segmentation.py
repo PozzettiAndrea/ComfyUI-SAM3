@@ -11,7 +11,12 @@ import torch
 import numpy as np
 import gc
 
+import comfy.model_management
+import comfy.utils
+
 log = logging.getLogger("sam3")
+
+from comfy_api.latest import io
 
 from .utils import (
     comfy_image_to_pil,
@@ -22,7 +27,7 @@ from .utils import (
 )
 
 
-class SAM3Grounding:
+class SAM3Grounding(io.ComfyNode):
     """
     Text-based grounding detection using SAM3.
 
@@ -40,52 +45,37 @@ class SAM3Grounding:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "sam3_model": ("SAM3_MODEL", {
-                    "tooltip": "SAM3 model loaded from LoadSAM3Model node"
-                }),
-                "image": ("IMAGE", {
-                    "tooltip": "Input image to perform segmentation on"
-                }),
-                "confidence_threshold": ("FLOAT", {
-                    "default": 0.2,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.01,
-                    "tooltip": "Minimum confidence score to keep detections. Lower threshold (0.2) works better with SAM3's presence scoring"
-                }),
-            },
-            "optional": {
-                "text_prompt": ("STRING", {
-                    "default": "",
-                    "multiline": False,
-                    "placeholder": "e.g., 'cat', 'person in red', 'car'",
-                    "tooltip": "Describe what to segment using natural language (e.g., 'person', 'cat', 'red car', 'shoes')"
-                }),
-                "positive_boxes": ("SAM3_BOXES_PROMPT", {
-                    "tooltip": "Optional box prompts to focus detection on specific regions. Connect from SAM3CombineBoxes node."
-                }),
-                "negative_boxes": ("SAM3_BOXES_PROMPT", {
-                    "tooltip": "Optional box prompts to exclude specific regions from detection. Connect from SAM3CombineBoxes node."
-                }),
-                "max_detections": ("INT", {
-                    "default": -1,
-                    "min": -1,
-                    "max": 100,
-                    "step": 1,
-                    "tooltip": "Maximum number of detections to return (-1 for all)"
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3Grounding",
+            display_name="SAM3 Text Segmentation",
+            category="SAM3/Grounding",
+            inputs=[
+                io.Custom("SAM3_MODEL").Input("sam3_model",
+                                              tooltip="SAM3 model loaded from LoadSAM3Model node"),
+                io.Image.Input("image",
+                               tooltip="Input image to perform segmentation on"),
+                io.Float.Input("confidence_threshold", default=0.2, min=0.0, max=1.0, step=0.01,
+                               tooltip="Minimum confidence score to keep detections. Lower threshold (0.2) works better with SAM3's presence scoring"),
+                io.String.Input("text_prompt", default="", multiline=False, optional=True,
+                                tooltip="Describe what to segment using natural language (e.g., 'person', 'cat', 'red car', 'shoes')"),
+                io.Custom("SAM3_BOXES_PROMPT").Input("positive_boxes", optional=True,
+                                                     tooltip="Optional box prompts to focus detection on specific regions. Connect from SAM3CombineBoxes node."),
+                io.Custom("SAM3_BOXES_PROMPT").Input("negative_boxes", optional=True,
+                                                     tooltip="Optional box prompts to exclude specific regions from detection. Connect from SAM3CombineBoxes node."),
+                io.Int.Input("max_detections", default=-1, min=-1, max=100, step=1, optional=True,
+                             tooltip="Maximum number of detections to return (-1 for all)"),
+            ],
+            outputs=[
+                io.Mask.Output(display_name="masks"),
+                io.Image.Output(display_name="visualization"),
+                io.String.Output(display_name="boxes"),
+                io.String.Output(display_name="scores"),
+            ],
+        )
 
-    RETURN_TYPES = ("MASK", "IMAGE", "STRING", "STRING")
-    RETURN_NAMES = ("masks", "visualization", "boxes", "scores")
-    FUNCTION = "segment"
-    CATEGORY = "SAM3/Grounding"
-
-    def segment(self, sam3_model, image, confidence_threshold=0.2,
+    @classmethod
+    def execute(cls, sam3_model, image, confidence_threshold=0.2,
                 text_prompt="", positive_boxes=None, negative_boxes=None,
                 max_detections=-1):
         """
@@ -131,14 +121,15 @@ class SAM3Grounding:
         img_w, img_h = pil_image.size
         log.info(f"Image size: {pil_image.size}")
 
-        result = self._segment_grounding(
+        result = cls._segment_grounding(
             sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
             positive_boxes, negative_boxes, max_detections
         )
 
         return result
 
-    def _segment_grounding(self, sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
+    @staticmethod
+    def _segment_grounding(sam3_model, pil_image, img_w, img_h, confidence_threshold, text_prompt,
                            positive_boxes, negative_boxes, max_detections):
         """
         Grounding mode - text-based detection with optional box refinement.
@@ -193,7 +184,7 @@ class SAM3Grounding:
             del state
             gc.collect()
             comfy.model_management.soft_empty_cache()
-            return (empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
+            return io.NodeOutput(empty_mask, pil_to_comfy_image(pil_image), "[]", "[]")
 
         log.info(f"Found {len(masks)} detections above threshold {confidence_threshold}")
 
@@ -244,10 +235,10 @@ class SAM3Grounding:
         gc.collect()
         comfy.model_management.soft_empty_cache()
 
-        return (comfy_masks, vis_tensor, boxes_json, scores_json)
+        return io.NodeOutput(comfy_masks, vis_tensor, boxes_json, scores_json)
 
 
-class SAM3CreateBox:
+class SAM3CreateBox(io.ComfyNode):
     """
     Helper node to create a box prompt visually
 
@@ -255,63 +246,39 @@ class SAM3CreateBox:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "center_x": ("FLOAT", {
-                    "default": 0.5,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.01,
-                    "display": "slider",
-                    "tooltip": "Box center X (normalized 0-1)"
-                }),
-                "center_y": ("FLOAT", {
-                    "default": 0.5,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.01,
-                    "display": "slider",
-                    "tooltip": "Box center Y (normalized 0-1)"
-                }),
-                "width": ("FLOAT", {
-                    "default": 0.3,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.01,
-                    "display": "slider",
-                    "tooltip": "Box width (normalized 0-1)"
-                }),
-                "height": ("FLOAT", {
-                    "default": 0.3,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.01,
-                    "display": "slider",
-                    "tooltip": "Box height (normalized 0-1)"
-                }),
-                "is_positive": ("BOOLEAN", {
-                    "default": True,
-                    "tooltip": "True for positive (include), False for negative (exclude)"
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3CreateBox",
+            display_name="SAM3 Create Box",
+            category="SAM3/prompts",
+            inputs=[
+                io.Float.Input("center_x", default=0.5, min=0.0, max=1.0, step=0.01,
+                               display="slider", tooltip="Box center X (normalized 0-1)"),
+                io.Float.Input("center_y", default=0.5, min=0.0, max=1.0, step=0.01,
+                               display="slider", tooltip="Box center Y (normalized 0-1)"),
+                io.Float.Input("width", default=0.3, min=0.0, max=1.0, step=0.01,
+                               display="slider", tooltip="Box width (normalized 0-1)"),
+                io.Float.Input("height", default=0.3, min=0.0, max=1.0, step=0.01,
+                               display="slider", tooltip="Box height (normalized 0-1)"),
+                io.Boolean.Input("is_positive", default=True,
+                                 tooltip="True for positive (include), False for negative (exclude)"),
+            ],
+            outputs=[
+                io.Custom("SAM3_BOX_PROMPT").Output(display_name="box_prompt"),
+            ],
+        )
 
-    RETURN_TYPES = ("SAM3_BOX_PROMPT",)
-    RETURN_NAMES = ("box_prompt",)
-    FUNCTION = "create_box"
-    CATEGORY = "SAM3/prompts"
-
-    def create_box(self, center_x, center_y, width, height, is_positive):
+    @classmethod
+    def execute(cls, center_x, center_y, width, height, is_positive):
         """Create a box prompt"""
         box_prompt = {
             "box": [center_x, center_y, width, height],
             "label": is_positive
         }
-        return (box_prompt,)
+        return io.NodeOutput(box_prompt)
 
 
-class SAM3CreatePoint:
+class SAM3CreatePoint(io.ComfyNode):
     """
     Helper node to create a point prompt visually
 
@@ -319,47 +286,35 @@ class SAM3CreatePoint:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "x": ("FLOAT", {
-                    "default": 0.5,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.01,
-                    "display": "slider",
-                    "tooltip": "Point X (normalized 0-1)"
-                }),
-                "y": ("FLOAT", {
-                    "default": 0.5,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.01,
-                    "display": "slider",
-                    "tooltip": "Point Y (normalized 0-1)"
-                }),
-                "is_foreground": ("BOOLEAN", {
-                    "default": True,
-                    "tooltip": "True for foreground, False for background"
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3CreatePoint",
+            display_name="SAM3 Create Point",
+            category="SAM3/prompts",
+            inputs=[
+                io.Float.Input("x", default=0.5, min=0.0, max=1.0, step=0.01,
+                               display="slider", tooltip="Point X (normalized 0-1)"),
+                io.Float.Input("y", default=0.5, min=0.0, max=1.0, step=0.01,
+                               display="slider", tooltip="Point Y (normalized 0-1)"),
+                io.Boolean.Input("is_foreground", default=True,
+                                 tooltip="True for foreground, False for background"),
+            ],
+            outputs=[
+                io.Custom("SAM3_POINT_PROMPT").Output(display_name="point_prompt"),
+            ],
+        )
 
-    RETURN_TYPES = ("SAM3_POINT_PROMPT",)
-    RETURN_NAMES = ("point_prompt",)
-    FUNCTION = "create_point"
-    CATEGORY = "SAM3/prompts"
-
-    def create_point(self, x, y, is_foreground):
+    @classmethod
+    def execute(cls, x, y, is_foreground):
         """Create a point prompt"""
         point_prompt = {
             "point": [x, y],
             "label": 1 if is_foreground else 0
         }
-        return (point_prompt,)
+        return io.NodeOutput(point_prompt)
 
 
-class SAM3CombineBoxes:
+class SAM3CombineBoxes(io.ComfyNode):
     """
     Combine multiple box prompts into a single input
 
@@ -367,34 +322,30 @@ class SAM3CombineBoxes:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {},
-            "optional": {
-                "box_1": ("SAM3_BOX_PROMPT", {
-                    "tooltip": "Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."
-                }),
-                "box_2": ("SAM3_BOX_PROMPT", {
-                    "tooltip": "Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."
-                }),
-                "box_3": ("SAM3_BOX_PROMPT", {
-                    "tooltip": "Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."
-                }),
-                "box_4": ("SAM3_BOX_PROMPT", {
-                    "tooltip": "Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."
-                }),
-                "box_5": ("SAM3_BOX_PROMPT", {
-                    "tooltip": "Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3CombineBoxes",
+            display_name="SAM3 Combine Boxes",
+            category="SAM3/prompts",
+            inputs=[
+                io.Custom("SAM3_BOX_PROMPT").Input("box_1", optional=True,
+                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_BOX_PROMPT").Input("box_2", optional=True,
+                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_BOX_PROMPT").Input("box_3", optional=True,
+                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_BOX_PROMPT").Input("box_4", optional=True,
+                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_BOX_PROMPT").Input("box_5", optional=True,
+                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
+            ],
+            outputs=[
+                io.Custom("SAM3_BOXES_PROMPT").Output(display_name="boxes_prompt"),
+            ],
+        )
 
-    RETURN_TYPES = ("SAM3_BOXES_PROMPT",)
-    RETURN_NAMES = ("boxes_prompt",)
-    FUNCTION = "combine_boxes"
-    CATEGORY = "SAM3/prompts"
-
-    def combine_boxes(self, **kwargs):
+    @classmethod
+    def execute(cls, **kwargs):
         """Combine multiple box prompts"""
         boxes = []
         labels = []
@@ -410,10 +361,10 @@ class SAM3CombineBoxes:
             "boxes": boxes,
             "labels": labels
         }
-        return (combined,)
+        return io.NodeOutput(combined)
 
 
-class SAM3CombinePoints:
+class SAM3CombinePoints(io.ComfyNode):
     """
     Combine multiple point prompts into a single input
 
@@ -421,49 +372,40 @@ class SAM3CombinePoints:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {},
-            "optional": {
-                "point_1": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-                "point_2": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-                "point_3": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-                "point_4": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-                "point_5": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-                "point_6": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-                "point_7": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-                "point_8": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-                "point_9": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-                "point_10": ("SAM3_POINT_PROMPT", {
-                    "tooltip": "Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3CombinePoints",
+            display_name="SAM3 Combine Points",
+            category="SAM3/prompts",
+            inputs=[
+                io.Custom("SAM3_POINT_PROMPT").Input("point_1", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_POINT_PROMPT").Input("point_2", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_POINT_PROMPT").Input("point_3", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_POINT_PROMPT").Input("point_4", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_POINT_PROMPT").Input("point_5", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_POINT_PROMPT").Input("point_6", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_POINT_PROMPT").Input("point_7", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_POINT_PROMPT").Input("point_8", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_POINT_PROMPT").Input("point_9", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+                io.Custom("SAM3_POINT_PROMPT").Input("point_10", optional=True,
+                                                     tooltip="Connect point prompts from SAM3CreatePoint nodes. Combines multiple points into a single prompt for SAM3Segmentation."),
+            ],
+            outputs=[
+                io.Custom("SAM3_POINTS_PROMPT").Output(display_name="points_prompt"),
+            ],
+        )
 
-    RETURN_TYPES = ("SAM3_POINTS_PROMPT",)
-    RETURN_NAMES = ("points_prompt",)
-    FUNCTION = "combine_points"
-    CATEGORY = "SAM3/prompts"
-
-    def combine_points(self, **kwargs):
+    @classmethod
+    def execute(cls, **kwargs):
         """Combine multiple point prompts"""
         points = []
         labels = []
@@ -479,10 +421,10 @@ class SAM3CombinePoints:
             "points": points,
             "labels": labels
         }
-        return (combined,)
+        return io.NodeOutput(combined)
 
 
-class SAM3Segmentation:
+class SAM3Segmentation(io.ComfyNode):
     """
     Click-based interactive segmentation using SAM3.
 
@@ -495,49 +437,40 @@ class SAM3Segmentation:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "sam3_model": ("SAM3_MODEL", {
-                    "tooltip": "SAM3 model loaded from LoadSAM3Model node"
-                }),
-                "image": ("IMAGE", {
-                    "tooltip": "Input image to perform segmentation on"
-                }),
-            },
-            "optional": {
-                "positive_points": ("SAM3_POINTS_PROMPT", {
-                    "tooltip": "Foreground points - segment objects at these locations. Connect from SAM3CombinePoints or SAM3PointCollector."
-                }),
-                "negative_points": ("SAM3_POINTS_PROMPT", {
-                    "tooltip": "Background points - exclude these areas from segmentation. Connect from SAM3CombinePoints or SAM3PointCollector."
-                }),
-                "box": ("SAM3_BOXES_PROMPT", {
-                    "tooltip": "Box prompt to constrain segmentation region. Only first box is used. Connect from SAM3CombineBoxes."
-                }),
-                "refinement_iterations": ("INT", {
-                    "default": 0,
-                    "min": 0,
-                    "max": 10,
-                    "tooltip": "Number of refinement passes. Each pass feeds the mask back for cleaner edges."
-                }),
-                "use_multimask": ("BOOLEAN", {
-                    "default": True,
-                    "tooltip": "If True, generates 3 mask candidates at different granularities (subpart/part/whole). Better for ambiguous single clicks. If False, generates single mask directly - faster, good for multiple points."
-                }),
-                "output_best_mask": ("BOOLEAN", {
-                    "default": True,
-                    "tooltip": "If True, automatically selects the highest-scoring mask. If False, outputs all mask candidates (3 if use_multimask=True) so you can choose."
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3Segmentation",
+            display_name="SAM3 Point Segmentation",
+            category="SAM3",
+            inputs=[
+                io.Custom("SAM3_MODEL").Input("sam3_model",
+                                              tooltip="SAM3 model loaded from LoadSAM3Model node"),
+                io.Image.Input("image",
+                               tooltip="Input image to perform segmentation on"),
+                io.Custom("SAM3_POINTS_PROMPT").Input("positive_points", optional=True,
+                                                      tooltip="Foreground points - segment objects at these locations. Connect from SAM3CombinePoints or SAM3PointCollector."),
+                io.Custom("SAM3_POINTS_PROMPT").Input("negative_points", optional=True,
+                                                      tooltip="Background points - exclude these areas from segmentation. Connect from SAM3CombinePoints or SAM3PointCollector."),
+                io.Custom("SAM3_BOXES_PROMPT").Input("box", optional=True,
+                                                     tooltip="Box prompt to constrain segmentation region. Only first box is used. Connect from SAM3CombineBoxes."),
+                io.Int.Input("refinement_iterations", default=0, min=0, max=10, optional=True,
+                             tooltip="Number of refinement passes. Each pass feeds the mask back for cleaner edges."),
+                io.Boolean.Input("use_multimask", default=True, optional=True,
+                                 tooltip="If True, generates 3 mask candidates at different granularities (subpart/part/whole). Better for ambiguous single clicks. If False, generates single mask directly - faster, good for multiple points."),
+                io.Boolean.Input("output_best_mask", default=True, optional=True,
+                                 tooltip="If True, automatically selects the highest-scoring mask. If False, outputs all mask candidates (3 if use_multimask=True) so you can choose."),
+            ],
+            outputs=[
+                io.Mask.Output(display_name="mask"),
+                io.Mask.Output(display_name="mask_logits"),
+                io.Image.Output(display_name="visualization"),
+                io.String.Output(display_name="boxes"),
+                io.String.Output(display_name="scores"),
+            ],
+        )
 
-    RETURN_TYPES = ("MASK", "MASK", "IMAGE", "STRING", "STRING")
-    RETURN_NAMES = ("mask", "mask_logits", "visualization", "boxes", "scores")
-    FUNCTION = "segment"
-    CATEGORY = "SAM3"
-
-    def segment(self, sam3_model, image, positive_points=None, negative_points=None,
+    @classmethod
+    def execute(cls, sam3_model, image, positive_points=None, negative_points=None,
                 box=None, refinement_iterations=0, use_multimask=True, output_best_mask=True):
         """
         Perform SAM2-style interactive segmentation at point/box locations.
@@ -548,10 +481,12 @@ class SAM3Segmentation:
             positive_points: Foreground point prompts
             negative_points: Background point prompts
             box: Box prompt (first box used)
-            multimask_output: Return multiple mask candidates
+            refinement_iterations: Number of refinement passes
+            use_multimask: Return multiple mask candidates
+            output_best_mask: Select best mask automatically
 
         Returns:
-            Tuple of (masks, visualization, boxes_json, scores_json)
+            Tuple of (masks, mask_logits, visualization, boxes_json, scores_json)
         """
         import json
 
@@ -574,7 +509,7 @@ class SAM3Segmentation:
             img_w, img_h = pil_image.size
             empty_mask = torch.zeros(1, img_h, img_w)
             empty_logits = torch.zeros(1, 256, 256)  # low-res placeholder
-            return (empty_mask, empty_logits, pil_to_comfy_image(pil_image), "[]", "[]")
+            return io.NodeOutput(empty_mask, empty_logits, pil_to_comfy_image(pil_image), "[]", "[]")
 
         log.info("Using click-based interactive segmentation")
 
@@ -641,7 +576,7 @@ class SAM3Segmentation:
             log.error("No prompts provided. Provide points or box.")
             empty_mask = torch.zeros(1, img_h, img_w)
             empty_logits = torch.zeros(1, 256, 256)
-            return (empty_mask, empty_logits, pil_to_comfy_image(pil_image), "[]", "[]")
+            return io.NodeOutput(empty_mask, empty_logits, pil_to_comfy_image(pil_image), "[]", "[]")
 
         # Call predict_inst which uses inst_interactive_predictor
         masks_np, scores_np, low_res_masks = model.predict_inst(
@@ -655,7 +590,10 @@ class SAM3Segmentation:
         )
 
         # Refinement iterations - feed mask back for cleaner edges
+        if refinement_iterations > 0:
+            pbar = comfy.utils.ProgressBar(refinement_iterations)
         for i in range(refinement_iterations):
+            comfy.model_management.throw_exception_if_processing_interrupted()
             best_idx = np.argmax(scores_np)
             masks_np, scores_np, low_res_masks = model.predict_inst(
                 state,
@@ -667,6 +605,7 @@ class SAM3Segmentation:
                 normalize_coords=True,
             )
             log.info(f"Refinement {i+1}/{refinement_iterations}, best score: {scores_np.max():.4f}")
+            pbar.update(1)
 
         log.info(f"Prediction returned {masks_np.shape[0]} masks")
         log.info(f"  Mask shape: {masks_np.shape}")
@@ -729,10 +668,10 @@ class SAM3Segmentation:
         gc.collect()
         comfy.model_management.soft_empty_cache()
 
-        return (comfy_masks, low_res_tensor, vis_tensor, boxes_json, scores_json)
+        return io.NodeOutput(comfy_masks, low_res_tensor, vis_tensor, boxes_json, scores_json)
 
 
-class SAM3MultipromptSegmentation:
+class SAM3MultipromptSegmentation(io.ComfyNode):
     """
     Multi-region segmentation using SAM3.
 
@@ -746,39 +685,31 @@ class SAM3MultipromptSegmentation:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "sam3_model": ("SAM3_MODEL", {
-                    "tooltip": "SAM3 model loaded from LoadSAM3Model node"
-                }),
-                "image": ("IMAGE", {
-                    "tooltip": "Input image to perform segmentation on"
-                }),
-                "multi_prompts": ("SAM3_MULTI_PROMPTS", {
-                    "tooltip": "Multi-region prompts from SAM3MultiRegionCollector. Each prompt region produces a separate mask."
-                }),
-            },
-            "optional": {
-                "refinement_iterations": ("INT", {
-                    "default": 0,
-                    "min": 0,
-                    "max": 10,
-                    "tooltip": "Number of refinement passes per region. Each pass feeds the mask back for cleaner edges."
-                }),
-                "use_multimask": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "If True, generates 3 mask candidates at different granularities for each prompt. If False, generates single mask directly."
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3MultipromptSegmentation",
+            display_name="SAM3 Multiprompt Segmentation",
+            category="SAM3",
+            inputs=[
+                io.Custom("SAM3_MODEL").Input("sam3_model",
+                                              tooltip="SAM3 model loaded from LoadSAM3Model node"),
+                io.Image.Input("image",
+                               tooltip="Input image to perform segmentation on"),
+                io.Custom("SAM3_MULTI_PROMPTS").Input("multi_prompts",
+                                                      tooltip="Multi-region prompts from SAM3MultiRegionCollector. Each prompt region produces a separate mask."),
+                io.Int.Input("refinement_iterations", default=0, min=0, max=10, optional=True,
+                             tooltip="Number of refinement passes per region. Each pass feeds the mask back for cleaner edges."),
+                io.Boolean.Input("use_multimask", default=False, optional=True,
+                                 tooltip="If True, generates 3 mask candidates at different granularities for each prompt. If False, generates single mask directly."),
+            ],
+            outputs=[
+                io.Mask.Output(display_name="masks"),
+                io.Image.Output(display_name="visualization"),
+            ],
+        )
 
-    RETURN_TYPES = ("MASK", "IMAGE")
-    RETURN_NAMES = ("masks", "visualization")
-    FUNCTION = "segment"
-    CATEGORY = "SAM3"
-
-    def segment(self, sam3_model, image, multi_prompts, refinement_iterations=0,
+    @classmethod
+    def execute(cls, sam3_model, image, multi_prompts, refinement_iterations=0,
                 use_multimask=False):
         """
         Perform multi-region segmentation.
@@ -811,7 +742,7 @@ class SAM3MultipromptSegmentation:
             pil_image = comfy_image_to_pil(image)
             img_w, img_h = pil_image.size
             empty_mask = torch.zeros(1, img_h, img_w)
-            return (empty_mask, pil_to_comfy_image(pil_image))
+            return io.NodeOutput(empty_mask, pil_to_comfy_image(pil_image))
 
         # Convert ComfyUI image to PIL
         pil_image = comfy_image_to_pil(image)
@@ -822,7 +753,7 @@ class SAM3MultipromptSegmentation:
         if len(multi_prompts) == 0:
             log.info("No prompts provided")
             empty_mask = torch.zeros(1, img_h, img_w)
-            return (empty_mask, pil_to_comfy_image(pil_image))
+            return io.NodeOutput(empty_mask, pil_to_comfy_image(pil_image))
 
         # Set image once (feature extraction)
         state = processor.set_image(pil_image)
@@ -831,7 +762,9 @@ class SAM3MultipromptSegmentation:
         all_scores = []
 
         # Process each prompt region
+        pbar = comfy.utils.ProgressBar(len(multi_prompts))
         for prompt_idx, prompt in enumerate(multi_prompts):
+            comfy.model_management.throw_exception_if_processing_interrupted()
             log.info(f"Processing prompt region {prompt_idx + 1}/{len(multi_prompts)}")
 
             # Collect points for this prompt
@@ -888,6 +821,7 @@ class SAM3MultipromptSegmentation:
 
             # Refinement iterations
             for i in range(refinement_iterations):
+                comfy.model_management.throw_exception_if_processing_interrupted()
                 best_idx = np.argmax(scores_np)
                 masks_np, scores_np, low_res_masks = model.predict_inst(
                     state,
@@ -907,11 +841,12 @@ class SAM3MultipromptSegmentation:
             all_masks.append(torch.from_numpy(best_mask).float())
             all_scores.append(best_score)
             log.info(f"  Mask score: {best_score:.4f}")
+            pbar.update(1)
 
         if len(all_masks) == 0:
             log.info("No valid masks generated")
             empty_mask = torch.zeros(1, img_h, img_w)
-            return (empty_mask, pil_to_comfy_image(pil_image))
+            return io.NodeOutput(empty_mask, pil_to_comfy_image(pil_image))
 
         # Stack all masks into batch
         masks = torch.stack(all_masks, dim=0)  # [N, H, W]
@@ -947,7 +882,7 @@ class SAM3MultipromptSegmentation:
         gc.collect()
         comfy.model_management.soft_empty_cache()
 
-        return (comfy_masks, vis_tensor)
+        return io.NodeOutput(comfy_masks, vis_tensor)
 
 
 # Register the nodes

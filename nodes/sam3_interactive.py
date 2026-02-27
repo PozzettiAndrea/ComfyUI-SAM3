@@ -1,5 +1,5 @@
 """
-SAM3 Interactive Collectors — Point, BBox, Multi-Region, and Interactive Segmentation
+SAM3 Interactive Collectors -- Point, BBox, Multi-Region, and Interactive Segmentation
 
 Point/BBox editor widgets adapted from ComfyUI-KJNodes
 Original: https://github.com/kijai/ComfyUI-KJNodes
@@ -12,13 +12,18 @@ import gc
 import hashlib
 import logging
 import json
-import io
+import io as stdio
 import base64
 import threading
 
 import numpy as np
 import torch
 from PIL import Image
+
+import comfy.model_management
+import comfy.utils
+
+from comfy_api.latest import io
 
 try:
     import server
@@ -32,7 +37,7 @@ from .utils import comfy_image_to_pil, visualize_masks_on_image, masks_to_comfy_
 log = logging.getLogger("sam3")
 
 # ---------------------------------------------------------------------------
-# Interactive segmentation cache — keyed by node unique_id
+# Interactive segmentation cache -- keyed by node unique_id
 # ---------------------------------------------------------------------------
 _INTERACTIVE_CACHE = {}
 
@@ -40,7 +45,7 @@ _INTERACTIVE_CACHE = {}
 _SEGMENT_LOCK = threading.Lock()
 
 
-class SAM3PointCollector:
+class SAM3PointCollector(io.ComfyNode):
     """
     Interactive Point Collector for SAM3
 
@@ -54,26 +59,30 @@ class SAM3PointCollector:
     _cache = {}
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "image": ("IMAGE", {
-                    "tooltip": "Image to display in interactive canvas. Left-click to add positive points (green), Shift+Left-click or Right-click to add negative points (red). Points are automatically normalized to image dimensions."
-                }),
-                "points_store": ("STRING", {"multiline": False, "default": "{}"}),
-                "coordinates": ("STRING", {"multiline": False, "default": "[]"}),
-                "neg_coordinates": ("STRING", {"multiline": False, "default": "[]"}),
-            },
-        }
-
-    RETURN_TYPES = ("SAM3_POINTS_PROMPT", "SAM3_POINTS_PROMPT")
-    RETURN_NAMES = ("positive_points", "negative_points")
-    FUNCTION = "collect_points"
-    CATEGORY = "SAM3"
-    OUTPUT_NODE = True  # Makes node executable even without outputs connected
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3PointCollector",
+            display_name="SAM3 Point Collector",
+            category="SAM3",
+            is_output_node=True,
+            inputs=[
+                io.Image.Input("image",
+                               tooltip="Image to display in interactive canvas. Left-click to add positive points (green), Shift+Left-click or Right-click to add negative points (red). Points are automatically normalized to image dimensions."),
+                io.String.Input("points_store", multiline=False, default="{}"),
+                io.String.Input("coordinates", multiline=False, default="[]"),
+                io.String.Input("neg_coordinates", multiline=False, default="[]"),
+            ],
+            outputs=[
+                io.Custom("SAM3_POINTS_PROMPT").Output(display_name="positive_points"),
+                io.Custom("SAM3_POINTS_PROMPT").Output(display_name="negative_points"),
+            ],
+        )
 
     @classmethod
-    def IS_CHANGED(cls, image, points_store, coordinates, neg_coordinates):
+    def fingerprint_inputs(cls, **kwargs):
+        image = kwargs.get("image")
+        coordinates = kwargs.get("coordinates")
+        neg_coordinates = kwargs.get("neg_coordinates")
         # Return hash based on actual point content, not object identity
         # This ensures downstream nodes don't re-run when points haven't changed
         import hashlib
@@ -82,11 +91,12 @@ class SAM3PointCollector:
         h.update(coordinates.encode())
         h.update(neg_coordinates.encode())
         result = h.hexdigest()
-        log.debug(f"IS_CHANGED SAM3PointCollector: shape={image.shape}, coords={coordinates}, neg_coords={neg_coordinates}")
-        log.debug(f"IS_CHANGED SAM3PointCollector: returning hash={result}")
+        log.debug(f"fingerprint_inputs SAM3PointCollector: shape={image.shape}, coords={coordinates}, neg_coords={neg_coordinates}")
+        log.debug(f"fingerprint_inputs SAM3PointCollector: returning hash={result}")
         return result
 
-    def collect_points(self, image, points_store, coordinates, neg_coordinates):
+    @classmethod
+    def execute(cls, image, points_store, coordinates, neg_coordinates):
         """
         Collect points from interactive canvas
 
@@ -112,11 +122,8 @@ class SAM3PointCollector:
             cached = SAM3PointCollector._cache[cache_key]
             log.info(f"CACHE HIT - returning cached result for key={cache_key[:8]}")
             # Still need to return UI update
-            img_base64 = self.tensor_to_base64(image)
-            return {
-                "ui": {"bg_image": [img_base64]},
-                "result": cached  # Return the SAME objects
-            }
+            img_base64 = cls._tensor_to_base64(image)
+            return io.NodeOutput(cached[0], cached[1], ui={"bg_image": [img_base64]})
 
         log.info(f"CACHE MISS - computing new result for key={cache_key[:8]}")
 
@@ -158,18 +165,15 @@ class SAM3PointCollector:
         log.info(f"Output: {len(positive_points['points'])} positive, {len(negative_points['points'])} negative")
 
         # Cache the result
-        result = (positive_points, negative_points)
-        SAM3PointCollector._cache[cache_key] = result
+        SAM3PointCollector._cache[cache_key] = (positive_points, negative_points)
 
         # Send image back to widget as base64
-        img_base64 = self.tensor_to_base64(image)
+        img_base64 = cls._tensor_to_base64(image)
 
-        return {
-            "ui": {"bg_image": [img_base64]},
-            "result": result
-        }
+        return io.NodeOutput(positive_points, negative_points, ui={"bg_image": [img_base64]})
 
-    def tensor_to_base64(self, tensor):
+    @staticmethod
+    def _tensor_to_base64(tensor):
         """Convert ComfyUI image tensor to base64 string for JavaScript widget"""
         # Convert from [B, H, W, C] to PIL Image
         # Take first image if batch
@@ -179,7 +183,7 @@ class SAM3PointCollector:
         pil_img = Image.fromarray(img_array)
 
         # Convert to base64
-        buffered = io.BytesIO()
+        buffered = stdio.BytesIO()
         pil_img.save(buffered, format="JPEG", quality=75)
         img_bytes = buffered.getvalue()
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
@@ -187,7 +191,7 @@ class SAM3PointCollector:
         return img_base64
 
 
-class SAM3BBoxCollector:
+class SAM3BBoxCollector(io.ComfyNode):
     """
     Interactive BBox Collector for SAM3
 
@@ -201,25 +205,29 @@ class SAM3BBoxCollector:
     _cache = {}
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "image": ("IMAGE", {
-                    "tooltip": "Image to display in interactive canvas. Click and drag to draw positive bboxes (cyan), Shift+Click/Right-click and drag to draw negative bboxes (red). Bounding boxes are automatically normalized to image dimensions."
-                }),
-                "bboxes": ("STRING", {"multiline": False, "default": "[]"}),
-                "neg_bboxes": ("STRING", {"multiline": False, "default": "[]"}),
-            },
-        }
-
-    RETURN_TYPES = ("SAM3_BOXES_PROMPT", "SAM3_BOXES_PROMPT")
-    RETURN_NAMES = ("positive_bboxes", "negative_bboxes")
-    FUNCTION = "collect_bboxes"
-    CATEGORY = "SAM3"
-    OUTPUT_NODE = True  # Makes node executable even without outputs connected
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3BBoxCollector",
+            display_name="SAM3 BBox Collector",
+            category="SAM3",
+            is_output_node=True,
+            inputs=[
+                io.Image.Input("image",
+                               tooltip="Image to display in interactive canvas. Click and drag to draw positive bboxes (cyan), Shift+Click/Right-click and drag to draw negative bboxes (red). Bounding boxes are automatically normalized to image dimensions."),
+                io.String.Input("bboxes", multiline=False, default="[]"),
+                io.String.Input("neg_bboxes", multiline=False, default="[]"),
+            ],
+            outputs=[
+                io.Custom("SAM3_BOXES_PROMPT").Output(display_name="positive_bboxes"),
+                io.Custom("SAM3_BOXES_PROMPT").Output(display_name="negative_bboxes"),
+            ],
+        )
 
     @classmethod
-    def IS_CHANGED(cls, image, bboxes, neg_bboxes):
+    def fingerprint_inputs(cls, **kwargs):
+        image = kwargs.get("image")
+        bboxes = kwargs.get("bboxes")
+        neg_bboxes = kwargs.get("neg_bboxes")
         # Return hash based on actual bbox content, not object identity
         # This ensures downstream nodes don't re-run when bboxes haven't changed
         import hashlib
@@ -228,11 +236,12 @@ class SAM3BBoxCollector:
         h.update(bboxes.encode())
         h.update(neg_bboxes.encode())
         result = h.hexdigest()
-        log.debug(f"IS_CHANGED SAM3BBoxCollector: shape={image.shape}, bboxes={bboxes}, neg_bboxes={neg_bboxes}")
-        log.debug(f"IS_CHANGED SAM3BBoxCollector: returning hash={result}")
+        log.debug(f"fingerprint_inputs SAM3BBoxCollector: shape={image.shape}, bboxes={bboxes}, neg_bboxes={neg_bboxes}")
+        log.debug(f"fingerprint_inputs SAM3BBoxCollector: returning hash={result}")
         return result
 
-    def collect_bboxes(self, image, bboxes, neg_bboxes):
+    @classmethod
+    def execute(cls, image, bboxes, neg_bboxes):
         """
         Collect bounding boxes from interactive canvas
 
@@ -257,11 +266,8 @@ class SAM3BBoxCollector:
             cached = SAM3BBoxCollector._cache[cache_key]
             log.info(f"CACHE HIT - returning cached result for key={cache_key[:8]}")
             # Still need to return UI update
-            img_base64 = self.tensor_to_base64(image)
-            return {
-                "ui": {"bg_image": [img_base64]},
-                "result": cached  # Return the SAME objects
-            }
+            img_base64 = cls._tensor_to_base64(image)
+            return io.NodeOutput(cached[0], cached[1], ui={"bg_image": [img_base64]})
 
         log.info(f"CACHE MISS - computing new result for key={cache_key[:8]}")
 
@@ -336,18 +342,15 @@ class SAM3BBoxCollector:
         }
 
         # Cache the result
-        result = (positive_prompt, negative_prompt)
-        SAM3BBoxCollector._cache[cache_key] = result
+        SAM3BBoxCollector._cache[cache_key] = (positive_prompt, negative_prompt)
 
         # Send image back to widget as base64
-        img_base64 = self.tensor_to_base64(image)
+        img_base64 = cls._tensor_to_base64(image)
 
-        return {
-            "ui": {"bg_image": [img_base64]},
-            "result": result
-        }
+        return io.NodeOutput(positive_prompt, negative_prompt, ui={"bg_image": [img_base64]})
 
-    def tensor_to_base64(self, tensor):
+    @staticmethod
+    def _tensor_to_base64(tensor):
         """Convert ComfyUI image tensor to base64 string for JavaScript widget"""
         # Convert from [B, H, W, C] to PIL Image
         # Take first image if batch
@@ -357,7 +360,7 @@ class SAM3BBoxCollector:
         pil_img = Image.fromarray(img_array)
 
         # Convert to base64
-        buffered = io.BytesIO()
+        buffered = stdio.BytesIO()
         pil_img.save(buffered, format="JPEG", quality=75)
         img_bytes = buffered.getvalue()
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
@@ -365,7 +368,7 @@ class SAM3BBoxCollector:
         return img_base64
 
 
-class SAM3MultiRegionCollector:
+class SAM3MultiRegionCollector(io.ComfyNode):
     """
     Interactive Multi-Region Collector for SAM3
 
@@ -382,31 +385,34 @@ class SAM3MultiRegionCollector:
     _cache = {}
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "image": ("IMAGE", {
-                    "tooltip": "Image to display in interactive canvas. Click to add points, Shift+drag to draw boxes. Use tab bar to manage multiple prompt regions."
-                }),
-                "multi_prompts_store": ("STRING", {"multiline": False, "default": "[]"}),
-            },
-        }
-
-    RETURN_TYPES = ("SAM3_MULTI_PROMPTS",)
-    RETURN_NAMES = ("multi_prompts",)
-    FUNCTION = "collect_prompts"
-    CATEGORY = "SAM3"
-    OUTPUT_NODE = True
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3MultiRegionCollector",
+            display_name="SAM3 Multi-Region Collector",
+            category="SAM3",
+            is_output_node=True,
+            inputs=[
+                io.Image.Input("image",
+                               tooltip="Image to display in interactive canvas. Click to add points, Shift+drag to draw boxes. Use tab bar to manage multiple prompt regions."),
+                io.String.Input("multi_prompts_store", multiline=False, default="[]"),
+            ],
+            outputs=[
+                io.Custom("SAM3_MULTI_PROMPTS").Output(display_name="multi_prompts"),
+            ],
+        )
 
     @classmethod
-    def IS_CHANGED(cls, image, multi_prompts_store):
+    def fingerprint_inputs(cls, **kwargs):
+        image = kwargs.get("image")
+        multi_prompts_store = kwargs.get("multi_prompts_store")
         import hashlib
         h = hashlib.md5()
         h.update(str(image.shape).encode())
         h.update(multi_prompts_store.encode())
         return h.hexdigest()
 
-    def collect_prompts(self, image, multi_prompts_store):
+    @classmethod
+    def execute(cls, image, multi_prompts_store):
         """
         Collect multiple prompt regions from interactive canvas.
 
@@ -427,11 +433,8 @@ class SAM3MultiRegionCollector:
         if cache_key in SAM3MultiRegionCollector._cache:
             cached = SAM3MultiRegionCollector._cache[cache_key]
             log.info(f"CACHE HIT - returning cached result for key={cache_key[:8]}")
-            img_base64 = self.tensor_to_base64(image)
-            return {
-                "ui": {"bg_image": [img_base64]},
-                "result": cached
-            }
+            img_base64 = cls._tensor_to_base64(image)
+            return io.NodeOutput(cached[0], ui={"bg_image": [img_base64]})
 
         log.info(f"CACHE MISS - computing new result for key={cache_key[:8]}")
 
@@ -513,22 +516,19 @@ class SAM3MultiRegionCollector:
         log.info(f"Output: {len(multi_prompts)} non-empty prompts")
 
         # Cache and return
-        result = (multi_prompts,)
-        SAM3MultiRegionCollector._cache[cache_key] = result
-        img_base64 = self.tensor_to_base64(image)
+        SAM3MultiRegionCollector._cache[cache_key] = (multi_prompts,)
+        img_base64 = cls._tensor_to_base64(image)
 
-        return {
-            "ui": {"bg_image": [img_base64]},
-            "result": result
-        }
+        return io.NodeOutput(multi_prompts, ui={"bg_image": [img_base64]})
 
-    def tensor_to_base64(self, tensor):
+    @staticmethod
+    def _tensor_to_base64(tensor):
         """Convert ComfyUI image tensor to base64 string for JavaScript widget"""
         img_array = tensor[0].cpu().numpy()
         img_array = (img_array * 255).astype(np.uint8)
         pil_img = Image.fromarray(img_array)
 
-        buffered = io.BytesIO()
+        buffered = stdio.BytesIO()
         pil_img.save(buffered, format="JPEG", quality=75)
         img_bytes = buffered.getvalue()
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
@@ -536,7 +536,7 @@ class SAM3MultiRegionCollector:
         return img_base64
 
 
-class SAM3InteractiveCollector:
+class SAM3InteractiveCollector(io.ComfyNode):
     """
     Interactive Collector with live segmentation preview.
 
@@ -548,36 +548,37 @@ class SAM3InteractiveCollector:
     _cache = {}
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "sam3_model": ("SAM3_MODEL", {
-                    "tooltip": "SAM3 model from LoadSAM3Model node."
-                }),
-                "image": ("IMAGE", {
-                    "tooltip": "Image to segment. Draw points/boxes on the canvas, then click Run for a live mask preview."
-                }),
-                "multi_prompts_store": ("STRING", {"multiline": False, "default": "[]"}),
-            },
-            "hidden": {
-                "unique_id": "UNIQUE_ID",
-            },
-        }
-
-    RETURN_TYPES = ("MASK", "IMAGE", "SAM3_MULTI_PROMPTS")
-    RETURN_NAMES = ("masks", "visualization", "multi_prompts")
-    FUNCTION = "segment"
-    CATEGORY = "SAM3"
-    OUTPUT_NODE = True
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3InteractiveCollector",
+            display_name="SAM3 Interactive Collector",
+            category="SAM3",
+            is_output_node=True,
+            inputs=[
+                io.Custom("SAM3_MODEL").Input("sam3_model",
+                                              tooltip="SAM3 model from LoadSAM3Model node."),
+                io.Image.Input("image",
+                               tooltip="Image to segment. Draw points/boxes on the canvas, then click Run for a live mask preview."),
+                io.String.Input("multi_prompts_store", multiline=False, default="[]"),
+            ],
+            outputs=[
+                io.Mask.Output(display_name="masks"),
+                io.Image.Output(display_name="visualization"),
+                io.Custom("SAM3_MULTI_PROMPTS").Output(display_name="multi_prompts"),
+            ],
+            hidden=[io.Hidden.unique_id],
+        )
 
     @classmethod
-    def IS_CHANGED(cls, sam3_model, image, multi_prompts_store, unique_id=None):
+    def fingerprint_inputs(cls, **kwargs):
+        image = kwargs.get("image")
+        multi_prompts_store = kwargs.get("multi_prompts_store")
         h = hashlib.md5()
         h.update(str(image.shape).encode())
         h.update(multi_prompts_store.encode())
         return h.hexdigest()
 
-    # -- helpers reused by both segment() and the API route ----------------
+    # -- helpers reused by both execute() and the API route ----------------
 
     @staticmethod
     def _parse_raw_prompts(raw_prompts, img_w, img_h):
@@ -624,7 +625,9 @@ class SAM3InteractiveCollector:
         """Run predict_inst for each prompt, return stacked masks + scores."""
         all_masks = []
         all_scores = []
+        pbar = comfy.utils.ProgressBar(len(multi_prompts))
         for prompt in multi_prompts:
+            comfy.model_management.throw_exception_if_processing_interrupted()
             pts, labels = [], []
             for pt in prompt["positive_points"]["points"]:
                 pts.append([pt[0] * img_w, pt[1] * img_h])
@@ -656,11 +659,13 @@ class SAM3InteractiveCollector:
             best_idx = np.argmax(scores_np)
             all_masks.append(torch.from_numpy(masks_np[best_idx]).float())
             all_scores.append(scores_np[best_idx])
+            pbar.update(1)
         return all_masks, all_scores
 
     # -- main execution (workflow queue) -----------------------------------
 
-    def segment(self, sam3_model, image, multi_prompts_store, unique_id=None):
+    @classmethod
+    def execute(cls, sam3_model, image, multi_prompts_store, unique_id=None):
         import comfy.model_management
         comfy.model_management.load_models_gpu([sam3_model])
         pil_image = comfy_image_to_pil(image)
@@ -690,19 +695,16 @@ class SAM3InteractiveCollector:
             raw_prompts = json.loads(multi_prompts_store) if multi_prompts_store.strip() else []
         except json.JSONDecodeError:
             raw_prompts = []
-        multi_prompts = self._parse_raw_prompts(raw_prompts, img_w, img_h)
+        multi_prompts = cls._parse_raw_prompts(raw_prompts, img_w, img_h)
 
         # Run segmentation
-        all_masks, all_scores = self._run_prompts(model, state, multi_prompts, img_w, img_h)
+        all_masks, all_scores = cls._run_prompts(model, state, multi_prompts, img_w, img_h)
 
         if not all_masks:
             empty_mask = torch.zeros(1, img_h, img_w)
             vis_tensor = pil_to_comfy_image(pil_image)
-            img_b64 = self._tensor_to_base64(image)
-            return {
-                "ui": {"bg_image": [img_b64]},
-                "result": (empty_mask, vis_tensor, multi_prompts),
-            }
+            img_b64 = cls._tensor_to_base64(image)
+            return io.NodeOutput(empty_mask, vis_tensor, multi_prompts, ui={"bg_image": [img_b64]})
 
         masks = torch.stack(all_masks, dim=0)
         scores = torch.tensor(all_scores)
@@ -722,26 +724,24 @@ class SAM3InteractiveCollector:
         vis_image = visualize_masks_on_image(pil_image, masks, boxes, scores, alpha=0.5)
         vis_tensor = pil_to_comfy_image(vis_image)
 
-        img_b64 = self._tensor_to_base64(image)
-        overlay_b64 = self._pil_to_base64(vis_image)
+        img_b64 = cls._tensor_to_base64(image)
+        overlay_b64 = cls._pil_to_base64(vis_image)
 
-        return {
-            "ui": {"bg_image": [img_b64], "overlay_image": [overlay_b64]},
-            "result": (comfy_masks, vis_tensor, multi_prompts),
-        }
+        return io.NodeOutput(comfy_masks, vis_tensor, multi_prompts,
+                             ui={"bg_image": [img_b64], "overlay_image": [overlay_b64]})
 
     @staticmethod
     def _tensor_to_base64(tensor):
         arr = tensor[0].cpu().numpy()
         arr = (arr * 255).astype(np.uint8)
         pil_img = Image.fromarray(arr)
-        buf = io.BytesIO()
+        buf = stdio.BytesIO()
         pil_img.save(buf, format="JPEG", quality=75)
         return base64.b64encode(buf.getvalue()).decode("utf-8")
 
     @staticmethod
     def _pil_to_base64(pil_img):
-        buf = io.BytesIO()
+        buf = stdio.BytesIO()
         pil_img.save(buf, format="JPEG", quality=75)
         return base64.b64encode(buf.getvalue()).decode("utf-8")
 
@@ -751,7 +751,7 @@ class SAM3InteractiveCollector:
 # ---------------------------------------------------------------------------
 
 def _run_segment_sync(cached, raw_prompts):
-    """Blocking helper — called from the async route via run_in_executor."""
+    """Blocking helper -- called from the async route via run_in_executor."""
     sam3_model = cached["sam3_model"]  # ModelPatcher for GPU management
     model = cached["model"]            # processor.model with predict_inst
     state = cached["state"]
@@ -785,7 +785,7 @@ def _run_segment_sync(cached, raw_prompts):
     boxes = torch.tensor(boxes_list).float()
 
     vis_image = visualize_masks_on_image(pil_image, masks, boxes, scores, alpha=0.5)
-    buf = io.BytesIO()
+    buf = stdio.BytesIO()
     vis_image.save(buf, format="JPEG", quality=80)
     overlay_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 

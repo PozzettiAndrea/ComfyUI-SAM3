@@ -63,7 +63,6 @@ from copy import copy
 from torch import Tensor
 from torchvision.ops import masks_to_boxes
 from torchvision.ops.roi_align import RoIAlign
-from tqdm.auto import tqdm
 from typing_extensions import override
 
 from .attention import (
@@ -5816,9 +5815,7 @@ class Sam3TrackerPredictor(Sam3TrackerBase):
             reverse,
         )
 
-        for frame_idx in tqdm(
-            processing_order, desc="propagate in video", disable=tqdm_disable
-        ):
+        for frame_idx in processing_order:
             if frame_idx in consolidated_frame_inds["cond_frame_outputs"]:
                 storage_key = "cond_frame_outputs"
                 current_out = output_dict[storage_key][frame_idx]
@@ -7960,9 +7957,7 @@ class Sam3VideoInference(Sam3VideoBase):
         # e.g., we output an object on frame 4 only if it becomes confirmed on frame 6.
         unconfirmed_status_delay = self.masklet_confirmation_consecutive_det_thresh - 1
         unconfirmed_obj_ids_per_frame = {}  # frame_idx -> hidden_obj_ids
-        for frame_idx in tqdm(
-            processing_order, desc="propagate_in_video", disable=self.rank > 0
-        ):
+        for frame_idx in processing_order:
             out = self._run_single_frame_inference(inference_state, frame_idx, reverse)
 
             if self.hotstart_delay > 0:
@@ -8300,7 +8295,7 @@ class Sam3VideoInference(Sam3VideoBase):
         feat_size = self.tracker.sam_image_embedding_size**2  # 72 * 72 = 5184
         hidden_dim = self.tracker.hidden_dim  # 256
         mem_dim = self.tracker.mem_dim  # 64
-        for _ in tqdm(range(num_iters)):
+        for _ in range(num_iters):
             for b in range(1, self.num_obj_for_compile + 1):
                 for i in range(
                     1,
@@ -8587,7 +8582,7 @@ class Sam3VideoInferenceWithInstanceInteractivity(Sam3VideoInference):
 
         # if fetch just return from output
         if propagation_type == "propagation_fetch":
-            for frame_idx in tqdm(processing_order):
+            for frame_idx in processing_order:
                 if self.rank == 0:
                     obj_id_to_mask = inference_state["cached_frame_outputs"].get(
                         frame_idx, {}
@@ -8628,7 +8623,7 @@ class Sam3VideoInferenceWithInstanceInteractivity(Sam3VideoInference):
                     tracker_state, run_mem_encoder=True
                 )
 
-        for frame_idx in tqdm(processing_order):
+        for frame_idx in processing_order:
             # run Tracker propagation
             if propagation_type == "propagation_partial":
                 self._prepare_backbone_feats(inference_state, frame_idx, reverse)

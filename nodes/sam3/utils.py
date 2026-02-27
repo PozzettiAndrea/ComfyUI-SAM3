@@ -1125,9 +1125,10 @@ class AsyncVideoFileLoaderWithTorchCodec:
             img_std = torch.tensor(img_std, dtype=float_dtype)[:, None, None]
         self.img_std = img_std
         if self.gpu_acceleration:
-            self.img_mean = self.img_mean.to(f"cuda:{self.gpu_id}")
-            self.img_std = self.img_std.to(f"cuda:{self.gpu_id}")
-            decoder_option = {"device": f"cuda:{self.gpu_id}"}
+            _gpu_device = comfy.model_management.get_torch_device()
+            self.img_mean = self.img_mean.to(_gpu_device)
+            self.img_std = self.img_std.to(_gpu_device)
+            decoder_option = {"device": str(_gpu_device)}
         else:
             self.img_mean = self.img_mean.to(out_device)
             self.img_std = self.img_std.to(out_device)
