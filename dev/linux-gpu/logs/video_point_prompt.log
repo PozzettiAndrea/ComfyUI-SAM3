@@ -1,0 +1,954 @@
+Capturing execution frames: video_point_prompt.json
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui.js" is deprecated and will be removed in v1.34.
+  [Console-warning] [ComfyUI Notice] "scripts/widgets.js" is an internal module, not part of the public API. Future updates may break this import.
+  [Console-warning] [ComfyUI Notice] "extensions/core/widgetInputs.js" is an internal module, not part of the public API. Future updates may break this import.
+  [Console-warning] [ComfyUI Notice] "scripts/utils.js" is an internal module, not part of the public API. Future updates may break this import.
+  [Console-warning] [MaskEditor] ComfyApp.open_maskeditor is deprecated. Plugins should migrate to using the command system or direct node context menu integration.
+  [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/buttonGroup.js" is deprecated and will be removed in v1.34.
+  [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/button.js" is deprecated and will be removed in v1.34.
+  Frame 1 saved (frame_000.jpg, t=0.0s)
+  Validating workflow...
+  [ComfyUI] === /validate endpoint called ===
+  [ComfyUI] Received JSON with keys: ['prompt']
+  Queuing workflow for execution...
+  [ComfyUI] Prompt has 11 nodes
+  [ComfyUI]   Node 9: VHS_LoadVideo
+  [ComfyUI]     Inputs: {"video": "bedroom.mp4", "force_rate": 0, "custom_width": 0, "custom_height": 0, "frame_load_cap": 30, "skip_first_frames": 0, "select_every_nth": 1, "format": "AnimateDiff"}
+  [ComfyUI]   Node 13: CreateVideo
+  [ComfyUI]     Inputs: {"fps": 30, "images": ["14", 0]}
+  [ComfyUI]   Node 14: MaskToImage
+  [ComfyUI]     Inputs: {"mask": ["21", 0]}
+  [ComfyUI]   Node 15: SaveVideo
+  [ComfyUI]     Inputs: {"filename_prefix": "video/ComfyUI", "format": "auto", "codec": "auto", "video": ["13", 0]}
+  [ComfyUI]   Node 21: SAM3VideoOutput
+  [ComfyUI]     Inputs: {"obj_id": 0, "plot_all_masks": true, "masks": ["32", 0], "video_state": ["32", 2], "scores": ["32", 1]}
+  [ComfyUI]   Node 24: CreateVideo
+  [ComfyUI]     Inputs: {"fps": 30, "images": ["21", 2]}
+  [ComfyUI]   Node 25: SaveVideo
+  [ComfyUI]     Inputs: {"filename_prefix": "video/ComfyUI", "format": "auto", "codec": "auto", "video": ["24", 0]}
+  [ComfyUI]   Node 27: SAM3VideoSegmentation
+  [ComfyUI]     Inputs: {"prompt_mode": "point", "frame_idx": 0.3, "score_threshold": 0.3, "video_frames": ["9", 0], "positive_points": ["28", 0]}
+  [ComfyUI]   Node 28: SAM3PointCollector
+  [ComfyUI]     Inputs: {"points_store": "{\"positive\":[{\"x\":365.8296849641195,\"y\":82.1138596932428},{\"x\":389.5481601701001,\"y\":179.95494578458334},{\"x\":413.26663537608084,\"y\":52.465045726169905}],\"negative\":[
+  [ComfyUI]   Node 30: LoadSAM3Model
+  [ComfyUI]     Inputs: {"precision": "auto", "attention": "auto", "compile": false}
+  [ComfyUI]   Node 32: SAM3Propagate
+  [ComfyUI]     Inputs: {"start_frame": 0, "end_frame": -1, "direction": "forward", "sam3_model": ["30", 0], "video_state": ["27", 0]}
+  [ComfyUI] Generated prompt_id: 50206a41-7fc4-4093-8763-02701e505678
+  [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  [ComfyUI] got prompt
+  [ComfyUI] WARNING: 'NoneType' object has no attribute 'session_uuid'
+  [ComfyUI] IS_CHANGED SAM3Propagate: video_state id=96667792430048, session=None
+  [ComfyUI] IS_CHANGED SAM3Propagate: returning (96667792430048, 0, -1, 'forward')
+  [ComfyUI] IS_CHANGED SAM3VideoSegmentation: video_hash=9356dabdc8862dff08a9ab9d174121c1, prompt_mode=point
+  [ComfyUI] IS_CHANGED SAM3VideoSegmentation: positive_points=None
+  [ComfyUI] IS_CHANGED SAM3VideoSegmentation: negative_points=None
+  [ComfyUI] IS_CHANGED SAM3VideoSegmentation: returning hash=4255372223738472285
+  [ComfyUI] WARNING: 'NoneType' object has no attribute 'shape'
+  [ComfyUI] CACHE MISS - computing new result for key=d7f60d60
+  [ComfyUI] Collected 3 positive, 0 negative points
+  [ComfyUI] Image dimensions: 960x544
+  [ComfyUI]   Positive point: (365.8, 82.1) -> (0.381, 0.151)
+  [ComfyUI]   Positive point: (389.5, 180.0) -> (0.406, 0.331)
+  [ComfyUI]   Positive point: (413.3, 52.5) -> (0.430, 0.096)
+  [ComfyUI] Output: 3 positive, 0 negative
+  [ComfyUI] CACHE MISS - computing new video_state for key=911ad089
+  [ComfyUI] [MEM] Before video segmentation: VRAM 0.28GB alloc / 0.53GB reserved | RAM: 6.16GB (process), 22.2/47.1GB (system)
+  [ComfyUI] Saving 30 frames to /tmp/sam3_e347f3b6_8uc25nxo
+  Node executed (1 total), capturing...
+  [ComfyUI] Frames saved successfully
+  [ComfyUI] Initialized session e347f3b6
+  [ComfyUI] Frames: 30, Size: 960x544
+  [ComfyUI] Prompt mode: point
+  [ComfyUI] Added point prompt: obj=1, positive=3, negative=0
+  [ComfyUI] Total prompts: 1
+  [ComfyUI] [MEM] After video segmentation: VRAM 0.28GB alloc / 0.53GB reserved | RAM: 6.16GB (process), 22.2/47.1GB (system)
+  [ComfyUI] Loading model from: /home/shadeform/workspaces/SAM3-0057/ComfyUI/models/sam3/sam3.safetensors
+  [ComfyUI] Sam3VideoPredictor using device: cuda:0
+  [ComfyUI] SageAttention is not compatible with SAM3 (relative position bias modifies Q/K dimensions). Using attention_flash instead.
+  Frame 2 saved (frame_001.jpg, t=2.4s)
+  [capture-node] freeze=4ms shot=228ms unfreeze=9ms saved=True
+  [ComfyUI] setting max_num_objects=10000 and num_obj_for_compile=16
+  [ComfyUI] Loading checkpoint: /home/shadeform/workspaces/SAM3-0057/ComfyUI/models/sam3/sam3.safetensors
+  [ComfyUI] Added 309 keys for detector.inst_interactive_predictor
+  [ComfyUI] Model ready (1756.7 MB)
+  [ComfyUI] Propagate CACHE MISS - running propagation for session=e347f3b6
+  Frame 3 saved (frame_002.jpg, t=4.8s)
+  [ComfyUI] Starting propagation: frames 0 to end
+  [capture-periodic] freeze=3ms shot=180ms unfreeze=6ms saved=True
+  [ComfyUI] Prompts: 1
+  [ComfyUI] [MEM] Before propagation start: VRAM 2.00GB alloc / 3.56GB reserved | RAM: 6.43GB (process), 22.3/47.1GB (system)
+  [ComfyUI] [MEM] Before reconstruction: VRAM 2.00GB alloc / 3.56GB reserved | RAM: 6.43GB (process), 22.3/47.1GB (system)
+  [ComfyUI] Reconstructing inference state for e347f3b6
+  [ComfyUI] [MEM] Before start_session: VRAM 2.00GB alloc / 3.56GB reserved | RAM: 6.43GB (process), 22.3/47.1GB (system)
+  [ComfyUI] [MEM] Before init_state: VRAM 2.00GB alloc / 3.56GB reserved | RAM: 6.43GB (process), 22.3/47.1GB (system)
+  [ComfyUI] LazyLoader initialized: 30 frames, max_cached=64, offload_to_cpu=True
+  [ComfyUI] [MEM] After init_state: VRAM 2.00GB alloc / 3.56GB reserved | RAM: 6.44GB (process), 22.3/47.1GB (system)
+  [ComfyUI] Active sessions in _ALL_INFERENCE_STATES: 1
+  [ComfyUI] [MEM] After start_session: VRAM 2.00GB alloc / 3.56GB reserved | RAM: 6.44GB (process), 22.3/47.1GB (system)
+  [ComfyUI] Applying point prompt: frame=0, obj=1
+  [ComfyUI] Points to model: [[0.38107258850429115, 0.15094459502434338], [0.405779333510521, 0.3307995326922488], [0.43048607851675086, 0.09644309876134173]], labels: [1, 1, 1]
+  [ComfyUI] Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] attention backend: attention_flash | dtype: torch.bfloat16
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.8435 max=5.0555   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3182 max=10.1958   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3182 max=10.1958   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3182 max=10.1958
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.5106 max=11.1368   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3182 max=10.1958
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.5106 max=11.1368   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5106 max=11.1368   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5106 max=11.1368   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3182 max=10.1958   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5106 max=11.1368   memory_text=torch.float32 [33, 1, 256] min=-6.3182 max=10.1958
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.8378 max=5.2344   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0097 max=0.9882   presence=torch.float32 [6, 1, 1] min=-11.0779 max=-10.7433
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.8378 max=5.2344   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0097 max=0.9882   dec_presence_out=torch.float32 [6, 1, 1] min=-11.0779 max=-10.7433
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.8378 max=5.2344   prompt=torch.float32 [33, 1, 256] min=-6.3182 max=10.1958   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.4571 max=0.9103
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.4571 max=0.9103   dec_presence_out=torch.float32 [6, 1, 1] min=-11.0779 max=-10.7433
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5106 max=11.1368   pred_boxes=torch.float32 [1, 200, 4] min=0.0152 max=0.9893
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.8378 max=5.2344   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5106 max=11.1368
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-72.6211 max=11.4404   semantic_seg=torch.float32 [1, 1, 288, 288] min=-19.0381 max=10.9215   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-72.6211 max=11.4404   pred_boxes=torch.float32 [1, 200, 4] min=0.0152 max=0.9893
+  [ComfyUI] Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.0789 max=5.6223   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3202 max=10.1952   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3202 max=10.1952   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3202 max=10.1952
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.7887 max=11.2994   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3202 max=10.1952
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.7887 max=11.2994   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.7887 max=11.2994   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.7887 max=11.2994   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3202 max=10.1952   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.7887 max=11.2994   memory_text=torch.float32 [33, 1, 256] min=-6.3202 max=10.1952
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.8766 max=5.2941   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0079 max=0.9884   presence=torch.float32 [6, 1, 1] min=-11.1032 max=-10.7606
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.8766 max=5.2941   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0079 max=0.9884   dec_presence_out=torch.float32 [6, 1, 1] min=-11.1032 max=-10.7606
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.8766 max=5.2941   prompt=torch.float32 [33, 1, 256] min=-6.3202 max=10.1952   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.4874 max=0.8455
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.4874 max=0.8455   dec_presence_out=torch.float32 [6, 1, 1] min=-11.1032 max=-10.7606
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.7887 max=11.2994   pred_boxes=torch.float32 [1, 200, 4] min=0.0141 max=0.9894
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.8766 max=5.2941   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.7887 max=11.2994
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-83.4553 max=12.7722   semantic_seg=torch.float32 [1, 1, 288, 288] min=-23.9339 max=10.6375   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-83.4553 max=12.7722   pred_boxes=torch.float32 [1, 200, 4] min=0.0141 max=0.9894
+  [ComfyUI] [MEM] After apply prompt obj=1: VRAM 2.55GB alloc / 3.56GB reserved | RAM: 6.46GB (process), 22.3/47.1GB (system)
+  [ComfyUI] ComfyUI-Multiband loaded: 15 nodes registered
+  [ComfyUI] Inference state for e347f3b6 garbage collected
+  [ComfyUI] BatchToMultiband: Processed 1 images with 3 channels each -> 3 channels
+  [ComfyUI] [MEM] After reconstruction: VRAM 2.55GB alloc / 3.56GB reserved | RAM: 6.46GB (process), 22.3/47.1GB (system)
+  [ComfyUI] BatchToMultiband: Processed 7 masks -> 7 channels
+  [ComfyUI] 
+  [ComfyUI] BatchToMultiband: Output shape torch.Size([1, 10, 4480, 6720]), channels: ['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI]   0%|                                                                                                                                          | 0/30 [00:00<?, ?it/s][MEM] Propagation frame 0/30: VRAM 2.55GB alloc / 3.56GB reserved | RAM: 6.46GB (process), 22.3/47.1GB (system)
+  [ComfyUI] ResizeMultiband: 4480x6720 -> 600x900
+  [ComfyUI] PreviewMultibandImage: Batch=1, Channels=10, Names=['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI] SaveMultibandImage: Saved to output/multiband.npz
+  [ComfyUI]   Shape: (1, 10, 600, 900)
+  [ComfyUI]   Format: npz
+  [capture-loop] iter=50 t=6.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=10
+  [ComfyUI] 
+  [ComfyUI]   3%|████▎                                                                                                                             | 1/30 [00:00<00:15,  1.84it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.8165 max=5.0384   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3064 max=10.2256   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3064 max=10.2256   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3064 max=10.2256
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.5523 max=11.4215   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3064 max=10.2256
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.5523 max=11.4215   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5523 max=11.4215   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5523 max=11.4215   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3064 max=10.2256   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5523 max=11.4215   memory_text=torch.float32 [33, 1, 256] min=-6.3064 max=10.2256
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.8095 max=5.1655   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0092 max=0.9864   presence=torch.float32 [6, 1, 1] min=-11.0936 max=-10.7374
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.8095 max=5.1655   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0092 max=0.9864   dec_presence_out=torch.float32 [6, 1, 1] min=-11.0936 max=-10.7374
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.8095 max=5.1655   prompt=torch.float32 [33, 1, 256] min=-6.3064 max=10.2256   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.7331 max=0.8784
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.7331 max=0.8784   dec_presence_out=torch.float32 [6, 1, 1] min=-11.0936 max=-10.7374
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5523 max=11.4215   pred_boxes=torch.float32 [1, 200, 4] min=0.0142 max=0.9876
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.8095 max=5.1655   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5523 max=11.4215
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-78.2418 max=10.4332   semantic_seg=torch.float32 [1, 1, 288, 288] min=-15.2232 max=10.7379   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-78.2418 max=10.4332   pred_boxes=torch.float32 [1, 200, 4] min=0.0142 max=0.9876
+  Frame 4 saved (frame_003.jpg, t=7.1s)
+  [capture-periodic] freeze=3ms shot=205ms unfreeze=7ms saved=True
+  [ComfyUI] 
+  [ComfyUI]   7%|████████▋                                                                                                                         | 2/30 [00:01<00:15,  1.78it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.7366 max=5.0431   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.2750 max=10.1271   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2750 max=10.1271   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2750 max=10.1271
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.8444 max=11.1726   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.2750 max=10.1271
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.8444 max=11.1726   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8444 max=11.1726   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.8444 max=11.1726   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.2750 max=10.1271   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.8444 max=11.1726   memory_text=torch.float32 [33, 1, 256] min=-6.2750 max=10.1271
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.7335 max=4.6877   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0087 max=0.9859   presence=torch.float32 [6, 1, 1] min=-11.6183 max=-11.2965
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.7335 max=4.6877   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0087 max=0.9859   dec_presence_out=torch.float32 [6, 1, 1] min=-11.6183 max=-11.2965
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.7335 max=4.6877   prompt=torch.float32 [33, 1, 256] min=-6.2750 max=10.1271   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.5828 max=0.7705
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.5828 max=0.7705   dec_presence_out=torch.float32 [6, 1, 1] min=-11.6183 max=-11.2965
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8444 max=11.1726   pred_boxes=torch.float32 [1, 200, 4] min=0.0142 max=0.9870
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.7335 max=4.6877   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8444 max=11.1726
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-79.6284 max=12.2672   semantic_seg=torch.float32 [1, 1, 288, 288] min=-15.0716 max=10.7615   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-79.6284 max=12.2672   pred_boxes=torch.float32 [1, 200, 4] min=0.0142 max=0.9870
+  [ComfyUI] 
+  [ComfyUI]  10%|█████████████                                                                                                                     | 3/30 [00:01<00:14,  1.83it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.9970 max=4.7377   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.2462 max=10.0408   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2462 max=10.0408   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2462 max=10.0408
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.5331 max=11.5657   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.2462 max=10.0408
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.5331 max=11.5657   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5331 max=11.5657   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5331 max=11.5657   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.2462 max=10.0408   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5331 max=11.5657   memory_text=torch.float32 [33, 1, 256] min=-6.2462 max=10.0408
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.7188 max=5.2596   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0093 max=0.9863   presence=torch.float32 [6, 1, 1] min=-11.3759 max=-11.0161
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.7188 max=5.2596   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0093 max=0.9863   dec_presence_out=torch.float32 [6, 1, 1] min=-11.3759 max=-11.0161
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.7188 max=5.2596   prompt=torch.float32 [33, 1, 256] min=-6.2462 max=10.0408   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.6055 max=0.8082
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.6055 max=0.8082   dec_presence_out=torch.float32 [6, 1, 1] min=-11.3759 max=-11.0161
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5331 max=11.5657   pred_boxes=torch.float32 [1, 200, 4] min=0.0103 max=0.9873
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.7188 max=5.2596   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5331 max=11.5657
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.0065 max=11.4545   semantic_seg=torch.float32 [1, 1, 288, 288] min=-13.7566 max=10.1368   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.0065 max=11.4545   pred_boxes=torch.float32 [1, 200, 4] min=0.0103 max=0.9873
+  [ComfyUI] 
+  [ComfyUI]  13%|█████████████████▎                                                                                                                | 4/30 [00:02<00:13,  1.86it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.9172 max=4.5249   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.2867 max=10.1261   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2867 max=10.1261   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2867 max=10.1261
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.6636 max=11.4208   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.2867 max=10.1261
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.6636 max=11.4208   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.6636 max=11.4208   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.6636 max=11.4208   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.2867 max=10.1261   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.6636 max=11.4208   memory_text=torch.float32 [33, 1, 256] min=-6.2867 max=10.1261
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.4737 max=4.6809   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0051 max=0.9856   presence=torch.float32 [6, 1, 1] min=-11.4885 max=-11.1339
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.4737 max=4.6809   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0051 max=0.9856   dec_presence_out=torch.float32 [6, 1, 1] min=-11.4885 max=-11.1339
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.4737 max=4.6809   prompt=torch.float32 [33, 1, 256] min=-6.2867 max=10.1261   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.6423 max=0.7933
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.6423 max=0.7933   dec_presence_out=torch.float32 [6, 1, 1] min=-11.4885 max=-11.1339
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.6636 max=11.4208   pred_boxes=torch.float32 [1, 200, 4] min=0.0053 max=0.9865
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.4737 max=4.6809   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.6636 max=11.4208
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-88.9952 max=13.6207   semantic_seg=torch.float32 [1, 1, 288, 288] min=-13.8258 max=10.6992   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-88.9952 max=13.6207   pred_boxes=torch.float32 [1, 200, 4] min=0.0053 max=0.9865
+  [ComfyUI] 
+  [ComfyUI]  17%|█████████████████████▋                                                                                                            | 5/30 [00:02<00:13,  1.90it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.9882 max=4.6801   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.2752 max=10.1498   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2752 max=10.1498   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2752 max=10.1498
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.7035 max=11.7657   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.2752 max=10.1498
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.7035 max=11.7657   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.7035 max=11.7657   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.7035 max=11.7657   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.2752 max=10.1498   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.7035 max=11.7657   memory_text=torch.float32 [33, 1, 256] min=-6.2752 max=10.1498
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.6865 max=4.8545   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0100 max=0.9871   presence=torch.float32 [6, 1, 1] min=-11.7257 max=-11.3733
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.6865 max=4.8545   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0100 max=0.9871   dec_presence_out=torch.float32 [6, 1, 1] min=-11.7257 max=-11.3733
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.6865 max=4.8545   prompt=torch.float32 [33, 1, 256] min=-6.2752 max=10.1498   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.6342 max=0.7346
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.6342 max=0.7346   dec_presence_out=torch.float32 [6, 1, 1] min=-11.7257 max=-11.3733
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.7035 max=11.7657   pred_boxes=torch.float32 [1, 200, 4] min=0.0160 max=0.9883
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.6865 max=4.8545   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.7035 max=11.7657
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-74.8641 max=11.6359   semantic_seg=torch.float32 [1, 1, 288, 288] min=-13.4226 max=10.4522   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-74.8641 max=11.6359   pred_boxes=torch.float32 [1, 200, 4] min=0.0160 max=0.9883
+  [ComfyUI] 
+  Frame 5 saved (frame_004.jpg, t=9.7s)
+  [capture-periodic] freeze=11ms shot=220ms unfreeze=4ms saved=True
+  [ComfyUI]  20%|██████████████████████████                                                                                                        | 6/30 [00:03<00:15,  1.55it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.8051 max=4.6992   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3044 max=10.1958   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3044 max=10.1958   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3044 max=10.1958
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.3077 max=11.0681   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3044 max=10.1958
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.3077 max=11.0681   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.3077 max=11.0681   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.3077 max=11.0681   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3044 max=10.1958   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.3077 max=11.0681   memory_text=torch.float32 [33, 1, 256] min=-6.3044 max=10.1958
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.7308 max=4.9474   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0115 max=0.9892   presence=torch.float32 [6, 1, 1] min=-11.2195 max=-10.8781
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.7308 max=4.9474   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0115 max=0.9892   dec_presence_out=torch.float32 [6, 1, 1] min=-11.2195 max=-10.8781
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.7308 max=4.9474   prompt=torch.float32 [33, 1, 256] min=-6.3044 max=10.1958   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.5997 max=0.8639
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.5997 max=0.8639   dec_presence_out=torch.float32 [6, 1, 1] min=-11.2195 max=-10.8781
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.3077 max=11.0681   pred_boxes=torch.float32 [1, 200, 4] min=0.0144 max=0.9901
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.7308 max=4.9474   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.3077 max=11.0681
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-79.2889 max=11.1597   semantic_seg=torch.float32 [1, 1, 288, 288] min=-19.0111 max=10.4409   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-79.2889 max=11.1597   pred_boxes=torch.float32 [1, 200, 4] min=0.0144 max=0.9901
+  [ComfyUI] 
+  [ComfyUI]  23%|██████████████████████████████▎                                                                                                   | 7/30 [00:04<00:14,  1.62it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.0940 max=4.6755   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3060 max=10.2202   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3060 max=10.2202   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3060 max=10.2202
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.2660 max=11.2370   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3060 max=10.2202
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.2660 max=11.2370   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2660 max=11.2370   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2660 max=11.2370   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3060 max=10.2202   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2660 max=11.2370   memory_text=torch.float32 [33, 1, 256] min=-6.3060 max=10.2202
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.7743 max=4.8814   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0038 max=0.9886   presence=torch.float32 [6, 1, 1] min=-10.5233 max=-10.1644
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.7743 max=4.8814   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0038 max=0.9886   dec_presence_out=torch.float32 [6, 1, 1] min=-10.5233 max=-10.1644
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.7743 max=4.8814   prompt=torch.float32 [33, 1, 256] min=-6.3060 max=10.2202   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.6576 max=0.9455
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.6576 max=0.9455   dec_presence_out=torch.float32 [6, 1, 1] min=-10.5233 max=-10.1644
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2660 max=11.2370   pred_boxes=torch.float32 [1, 200, 4] min=0.0055 max=0.9896
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.7743 max=4.8814   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2660 max=11.2370
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-88.6950 max=12.0901   semantic_seg=torch.float32 [1, 1, 288, 288] min=-15.0769 max=10.7035   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-88.6950 max=12.0901   pred_boxes=torch.float32 [1, 200, 4] min=0.0055 max=0.9896
+  [ComfyUI] 
+  [ComfyUI]  27%|██████████████████████████████████▋                                                                                               | 8/30 [00:04<00:13,  1.66it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.0808 max=5.0691   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3052 max=10.2230   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3052 max=10.2230   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3052 max=10.2230
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.2509 max=11.4695   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3052 max=10.2230
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.2509 max=11.4695   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2509 max=11.4695   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2509 max=11.4695   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3052 max=10.2230   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2509 max=11.4695   memory_text=torch.float32 [33, 1, 256] min=-6.3052 max=10.2230
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.8517 max=5.1232   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0119 max=0.9877   presence=torch.float32 [6, 1, 1] min=-10.8606 max=-10.5378
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.8517 max=5.1232   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0119 max=0.9877   dec_presence_out=torch.float32 [6, 1, 1] min=-10.8606 max=-10.5378
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.8517 max=5.1232   prompt=torch.float32 [33, 1, 256] min=-6.3052 max=10.2230   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.4261 max=0.8713
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.4261 max=0.8713   dec_presence_out=torch.float32 [6, 1, 1] min=-10.8606 max=-10.5378
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2509 max=11.4695   pred_boxes=torch.float32 [1, 200, 4] min=0.0157 max=0.9887
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.8517 max=5.1232   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2509 max=11.4695
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-87.4563 max=12.6591   semantic_seg=torch.float32 [1, 1, 288, 288] min=-14.0573 max=10.9168   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-87.4563 max=12.6591   pred_boxes=torch.float32 [1, 200, 4] min=0.0157 max=0.9887
+  [ComfyUI] 
+  [ComfyUI]  30%|███████████████████████████████████████                                                                                           | 9/30 [00:05<00:12,  1.70it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.1184 max=4.6493   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3071 max=10.1894   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3071 max=10.1894   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3071 max=10.1894
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.8616 max=11.3321   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3071 max=10.1894
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.8616 max=11.3321   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8616 max=11.3321   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.8616 max=11.3321   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3071 max=10.1894   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.8616 max=11.3321   memory_text=torch.float32 [33, 1, 256] min=-6.3071 max=10.1894
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.8417 max=4.7029   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0093 max=0.9862   presence=torch.float32 [6, 1, 1] min=-11.1931 max=-10.8720
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.8417 max=4.7029   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0093 max=0.9862   dec_presence_out=torch.float32 [6, 1, 1] min=-11.1931 max=-10.8720
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.8417 max=4.7029   prompt=torch.float32 [33, 1, 256] min=-6.3071 max=10.1894   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-4.9770 max=0.7332
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-4.9770 max=0.7332   dec_presence_out=torch.float32 [6, 1, 1] min=-11.1931 max=-10.8720
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8616 max=11.3321   pred_boxes=torch.float32 [1, 200, 4] min=0.0123 max=0.9873
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.8417 max=4.7029   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8616 max=11.3321
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-89.5923 max=13.7972   semantic_seg=torch.float32 [1, 1, 288, 288] min=-17.3237 max=11.7085   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-89.5923 max=13.7972   pred_boxes=torch.float32 [1, 200, 4] min=0.0123 max=0.9873
+  [ComfyUI] 
+  [ComfyUI]  33%|███████████████████████████████████████████                                                                                      | 10/30 [00:05<00:11,  1.75it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  Frame 6 saved (frame_005.jpg, t=12.0s)
+  [capture-periodic] freeze=3ms shot=158ms unfreeze=8ms saved=True
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.7034 max=5.0664   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3228 max=10.1975   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3228 max=10.1975   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3228 max=10.1975
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-21.1072 max=11.0827   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3228 max=10.1975
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-21.1072 max=11.0827   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-21.1072 max=11.0827   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-21.1072 max=11.0827   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3228 max=10.1975   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-21.1072 max=11.0827   memory_text=torch.float32 [33, 1, 256] min=-6.3228 max=10.1975
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.3662 max=4.9779   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0074 max=0.9868   presence=torch.float32 [6, 1, 1] min=-11.4326 max=-11.0884
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.3662 max=4.9779   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0074 max=0.9868   dec_presence_out=torch.float32 [6, 1, 1] min=-11.4326 max=-11.0884
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.3662 max=4.9779   prompt=torch.float32 [33, 1, 256] min=-6.3228 max=10.1975   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.1057 max=0.6785
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.1057 max=0.6785   dec_presence_out=torch.float32 [6, 1, 1] min=-11.4326 max=-11.0884
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-21.1072 max=11.0827   pred_boxes=torch.float32 [1, 200, 4] min=0.0088 max=0.9879
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.3662 max=4.9779   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-21.1072 max=11.0827
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-72.6417 max=10.2728   semantic_seg=torch.float32 [1, 1, 288, 288] min=-14.1813 max=10.7148   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-72.6417 max=10.2728   pred_boxes=torch.float32 [1, 200, 4] min=0.0088 max=0.9879
+  [ComfyUI] [MEM] Propagation frame 10/30: VRAM 2.60GB alloc / 3.59GB reserved | RAM: 6.52GB (process), 22.0/47.1GB (system)
+  [ComfyUI] 
+  [ComfyUI]  37%|███████████████████████████████████████████████▎                                                                                 | 11/30 [00:06<00:13,  1.41it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [capture-loop] iter=100 t=13.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.7469 max=5.4390   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3189 max=10.1312   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3189 max=10.1312   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3189 max=10.1312
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.2484 max=11.0916   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3189 max=10.1312
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.2484 max=11.0916   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2484 max=11.0916   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2484 max=11.0916   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3189 max=10.1312   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2484 max=11.0916   memory_text=torch.float32 [33, 1, 256] min=-6.3189 max=10.1312
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.7808 max=4.8949   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0064 max=0.9861   presence=torch.float32 [6, 1, 1] min=-11.1000 max=-10.7807
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.7808 max=4.8949   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0064 max=0.9861   dec_presence_out=torch.float32 [6, 1, 1] min=-11.1000 max=-10.7807
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.7808 max=4.8949   prompt=torch.float32 [33, 1, 256] min=-6.3189 max=10.1312   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.1589 max=0.6918
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.1589 max=0.6918   dec_presence_out=torch.float32 [6, 1, 1] min=-11.1000 max=-10.7807
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2484 max=11.0916   pred_boxes=torch.float32 [1, 200, 4] min=0.0117 max=0.9874
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.7808 max=4.8949   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2484 max=11.0916
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.5247 max=12.0786   semantic_seg=torch.float32 [1, 1, 288, 288] min=-25.2139 max=12.2748   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.5247 max=12.0786   pred_boxes=torch.float32 [1, 200, 4] min=0.0117 max=0.9874
+  [ComfyUI] 
+  [ComfyUI]  40%|███████████████████████████████████████████████████▌                                                                             | 12/30 [00:07<00:11,  1.52it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.8360 max=5.0745   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3222 max=10.1245   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3222 max=10.1245   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3222 max=10.1245
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.5540 max=11.1018   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3222 max=10.1245
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.5540 max=11.1018   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5540 max=11.1018   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5540 max=11.1018   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3222 max=10.1245   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5540 max=11.1018   memory_text=torch.float32 [33, 1, 256] min=-6.3222 max=10.1245
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.6294 max=4.9646   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0044 max=0.9856   presence=torch.float32 [6, 1, 1] min=-11.4464 max=-11.1571
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.6294 max=4.9646   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0044 max=0.9856   dec_presence_out=torch.float32 [6, 1, 1] min=-11.4464 max=-11.1571
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.6294 max=4.9646   prompt=torch.float32 [33, 1, 256] min=-6.3222 max=10.1245   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.2430 max=0.6042
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.2430 max=0.6042   dec_presence_out=torch.float32 [6, 1, 1] min=-11.4464 max=-11.1571
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5540 max=11.1018   pred_boxes=torch.float32 [1, 200, 4] min=0.0069 max=0.9869
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.6294 max=4.9646   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5540 max=11.1018
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.1083 max=12.0267   semantic_seg=torch.float32 [1, 1, 288, 288] min=-17.9154 max=10.2142   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.1083 max=12.0267   pred_boxes=torch.float32 [1, 200, 4] min=0.0069 max=0.9869
+  [ComfyUI] 
+  [ComfyUI]  43%|███████████████████████████████████████████████████████▉                                                                         | 13/30 [00:07<00:10,  1.61it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  Frame 7 saved (frame_006.jpg, t=14.3s)
+  [capture-periodic] freeze=5ms shot=206ms unfreeze=4ms saved=True
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.7564 max=4.8339   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3262 max=10.1889   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3262 max=10.1889   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3262 max=10.1889
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-21.1064 max=11.4282   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3262 max=10.1889
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-21.1064 max=11.4282   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-21.1064 max=11.4282   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-21.1064 max=11.4282   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3262 max=10.1889   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-21.1064 max=11.4282   memory_text=torch.float32 [33, 1, 256] min=-6.3262 max=10.1889
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.8459 max=4.9626   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0109 max=0.9865   presence=torch.float32 [6, 1, 1] min=-11.3617 max=-11.0798
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.8459 max=4.9626   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0109 max=0.9865   dec_presence_out=torch.float32 [6, 1, 1] min=-11.3617 max=-11.0798
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.8459 max=4.9626   prompt=torch.float32 [33, 1, 256] min=-6.3262 max=10.1889   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.0775 max=0.6233
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.0775 max=0.6233   dec_presence_out=torch.float32 [6, 1, 1] min=-11.3617 max=-11.0798
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-21.1064 max=11.4282   pred_boxes=torch.float32 [1, 200, 4] min=0.0160 max=0.9876
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.8459 max=4.9626   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-21.1064 max=11.4282
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-78.6531 max=14.0017   semantic_seg=torch.float32 [1, 1, 288, 288] min=-24.7936 max=10.9234   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-78.6531 max=14.0017   pred_boxes=torch.float32 [1, 200, 4] min=0.0160 max=0.9876
+  [ComfyUI] 
+  [ComfyUI]  47%|████████████████████████████████████████████████████████████▏                                                                    | 14/30 [00:08<00:09,  1.66it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.8223 max=4.5463   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3372 max=10.2740   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3372 max=10.2740   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3372 max=10.2740
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.8309 max=11.0972   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3372 max=10.2740
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.8309 max=11.0972   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8309 max=11.0972   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.8309 max=11.0972   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3372 max=10.2740   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.8309 max=11.0972   memory_text=torch.float32 [33, 1, 256] min=-6.3372 max=10.2740
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.1939 max=4.8268   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0055 max=0.9884   presence=torch.float32 [6, 1, 1] min=-11.2677 max=-11.0144
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.1939 max=4.8268   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0055 max=0.9884   dec_presence_out=torch.float32 [6, 1, 1] min=-11.2677 max=-11.0144
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.1939 max=4.8268   prompt=torch.float32 [33, 1, 256] min=-6.3372 max=10.2740   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.1844 max=0.6728
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.1844 max=0.6728   dec_presence_out=torch.float32 [6, 1, 1] min=-11.2677 max=-11.0144
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8309 max=11.0972   pred_boxes=torch.float32 [1, 200, 4] min=0.0063 max=0.9895
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.1939 max=4.8268   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8309 max=11.0972
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-86.0835 max=15.9998   semantic_seg=torch.float32 [1, 1, 288, 288] min=-25.5326 max=10.3234   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-86.0835 max=15.9998   pred_boxes=torch.float32 [1, 200, 4] min=0.0063 max=0.9895
+  [ComfyUI] 
+  [ComfyUI]  50%|████████████████████████████████████████████████████████████████▌                                                                | 15/30 [00:08<00:08,  1.73it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.3420 max=4.7108   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3289 max=10.1379   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3289 max=10.1379   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3289 max=10.1379
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.9614 max=11.4070   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3289 max=10.1379
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.9614 max=11.4070   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.9614 max=11.4070   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.9614 max=11.4070   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3289 max=10.1379   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.9614 max=11.4070   memory_text=torch.float32 [33, 1, 256] min=-6.3289 max=10.1379
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.4315 max=4.8171   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0060 max=0.9859   presence=torch.float32 [6, 1, 1] min=-11.8136 max=-11.5744
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.4315 max=4.8171   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0060 max=0.9859   dec_presence_out=torch.float32 [6, 1, 1] min=-11.8136 max=-11.5744
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.4315 max=4.8171   prompt=torch.float32 [33, 1, 256] min=-6.3289 max=10.1379   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.1249 max=0.5497
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.1249 max=0.5497   dec_presence_out=torch.float32 [6, 1, 1] min=-11.8136 max=-11.5744
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.9614 max=11.4070   pred_boxes=torch.float32 [1, 200, 4] min=0.0081 max=0.9871
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.4315 max=4.8171   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.9614 max=11.4070
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-78.8721 max=12.5701   semantic_seg=torch.float32 [1, 1, 288, 288] min=-17.7006 max=10.0699   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9078   pred_masks=torch.float32 [1, 200, 288, 288] min=-78.8721 max=12.5701   pred_boxes=torch.float32 [1, 200, 4] min=0.0081 max=0.9871
+  [ComfyUI] 
+  [ComfyUI]  53%|████████████████████████████████████████████████████████████████████▊                                                            | 16/30 [00:09<00:07,  1.77it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.3629 max=4.5068   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3194 max=10.1693   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3194 max=10.1693   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3194 max=10.1693
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-21.0183 max=10.9059   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3194 max=10.1693
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-21.0183 max=10.9059   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-21.0183 max=10.9059   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-21.0183 max=10.9059   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3194 max=10.1693   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-21.0183 max=10.9059   memory_text=torch.float32 [33, 1, 256] min=-6.3194 max=10.1693
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.0847 max=5.0309   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0061 max=0.9855   presence=torch.float32 [6, 1, 1] min=-11.6380 max=-11.3474
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.0847 max=5.0309   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0061 max=0.9855   dec_presence_out=torch.float32 [6, 1, 1] min=-11.6380 max=-11.3474
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.0847 max=5.0309   prompt=torch.float32 [33, 1, 256] min=-6.3194 max=10.1693   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.0591 max=0.5069
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.0591 max=0.5069   dec_presence_out=torch.float32 [6, 1, 1] min=-11.6380 max=-11.3474
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-21.0183 max=10.9059   pred_boxes=torch.float32 [1, 200, 4] min=0.0101 max=0.9866
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.0847 max=5.0309   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-21.0183 max=10.9059
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.1579 max=12.6812   semantic_seg=torch.float32 [1, 1, 288, 288] min=-13.4517 max=10.0732   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.1579 max=12.6812   pred_boxes=torch.float32 [1, 200, 4] min=0.0101 max=0.9866
+  [ComfyUI] 
+  [ComfyUI]  57%|█████████████████████████████████████████████████████████████████████████                                                        | 17/30 [00:10<00:07,  1.80it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.2898 max=4.5872   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.2453 max=9.9202   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2453 max=9.9202   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2453 max=9.9202
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.8858 max=10.7356   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.2453 max=9.9202
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.8858 max=10.7356   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8858 max=10.7356   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.8858 max=10.7356   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.2453 max=9.9202   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.8858 max=10.7356   memory_text=torch.float32 [33, 1, 256] min=-6.2453 max=9.9202
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.8708 max=4.9522   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0070 max=0.9833   presence=torch.float32 [6, 1, 1] min=-12.7014 max=-12.1447
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.8708 max=4.9522   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0070 max=0.9833   dec_presence_out=torch.float32 [6, 1, 1] min=-12.7014 max=-12.1447
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.8708 max=4.9522   prompt=torch.float32 [33, 1, 256] min=-6.2453 max=9.9202   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.2448 max=0.4044
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.2448 max=0.4044   dec_presence_out=torch.float32 [6, 1, 1] min=-12.7014 max=-12.1447
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9078
+  Frame 8 saved (frame_007.jpg, t=16.6s)
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8858 max=10.7356   pred_boxes=torch.float32 [1, 200, 4] min=0.0094 max=0.9847
+  [capture-periodic] freeze=3ms shot=162ms unfreeze=7ms saved=True
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.8708 max=4.9522   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.8858 max=10.7356
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-75.7799 max=14.0727   semantic_seg=torch.float32 [1, 1, 288, 288] min=-12.4679 max=9.3085   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9078   pred_masks=torch.float32 [1, 200, 288, 288] min=-75.7799 max=14.0727   pred_boxes=torch.float32 [1, 200, 4] min=0.0094 max=0.9847
+  [ComfyUI] 
+  [ComfyUI]  60%|█████████████████████████████████████████████████████████████████████████████▍                                                   | 18/30 [00:10<00:06,  1.81it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.4744 max=5.0840   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3293 max=10.1742   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3293 max=10.1742   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3293 max=10.1742
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.6426 max=11.8421   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3293 max=10.1742
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.6426 max=11.8421   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.6426 max=11.8421   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.6426 max=11.8421   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3293 max=10.1742   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.6426 max=11.8421   memory_text=torch.float32 [33, 1, 256] min=-6.3293 max=10.1742
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.1408 max=5.0447   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0056 max=0.9865   presence=torch.float32 [6, 1, 1] min=-11.7655 max=-11.4925
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.1408 max=5.0447   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0056 max=0.9865   dec_presence_out=torch.float32 [6, 1, 1] min=-11.7655 max=-11.4925
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.1408 max=5.0447   prompt=torch.float32 [33, 1, 256] min=-6.3293 max=10.1742   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.4118 max=0.6149
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.4118 max=0.6149   dec_presence_out=torch.float32 [6, 1, 1] min=-11.7655 max=-11.4925
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.6426 max=11.8421   pred_boxes=torch.float32 [1, 200, 4] min=0.0067 max=0.9876
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.1408 max=5.0447   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.6426 max=11.8421
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.7311 max=12.2612   semantic_seg=torch.float32 [1, 1, 288, 288] min=-15.5293 max=10.4309   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.7311 max=12.2612   pred_boxes=torch.float32 [1, 200, 4] min=0.0067 max=0.9876
+  [ComfyUI] 
+  [ComfyUI]  63%|█████████████████████████████████████████████████████████████████████████████████▋                                               | 19/30 [00:11<00:05,  1.83it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.9539 max=4.8733   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.2979 max=10.1269   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2979 max=10.1269   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2979 max=10.1269
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.6926 max=11.4938   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.2979 max=10.1269
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.6926 max=11.4938   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.6926 max=11.4938   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.6926 max=11.4938   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.2979 max=10.1269   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.6926 max=11.4938   memory_text=torch.float32 [33, 1, 256] min=-6.2979 max=10.1269
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.7461 max=5.0539   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0045 max=0.9866   presence=torch.float32 [6, 1, 1] min=-11.8651 max=-11.5809
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.7461 max=5.0539   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0045 max=0.9866   dec_presence_out=torch.float32 [6, 1, 1] min=-11.8651 max=-11.5809
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.7461 max=5.0539   prompt=torch.float32 [33, 1, 256] min=-6.2979 max=10.1269   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.1513 max=0.5531
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.1513 max=0.5531   dec_presence_out=torch.float32 [6, 1, 1] min=-11.8651 max=-11.5809
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.6926 max=11.4938   pred_boxes=torch.float32 [1, 200, 4] min=0.0074 max=0.9878
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.7461 max=5.0539   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.6926 max=11.4938
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-83.3065 max=11.6271   semantic_seg=torch.float32 [1, 1, 288, 288] min=-13.1786 max=9.2699   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9078   pred_masks=torch.float32 [1, 200, 288, 288] min=-83.3065 max=11.6271   pred_boxes=torch.float32 [1, 200, 4] min=0.0074 max=0.9878
+  [ComfyUI] 
+  [ComfyUI]  67%|██████████████████████████████████████████████████████████████████████████████████████                                           | 20/30 [00:11<00:05,  1.85it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.1614 max=4.8866   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3048 max=10.1877   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3048 max=10.1877   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3048 max=10.1877
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.4347 max=11.4510   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3048 max=10.1877
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.4347 max=11.4510   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.4347 max=11.4510   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.4347 max=11.4510   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3048 max=10.1877   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.4347 max=11.4510   memory_text=torch.float32 [33, 1, 256] min=-6.3048 max=10.1877
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.1415 max=5.0314   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0082 max=0.9861   presence=torch.float32 [6, 1, 1] min=-11.8786 max=-11.6115
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.1415 max=5.0314   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0082 max=0.9861   dec_presence_out=torch.float32 [6, 1, 1] min=-11.8786 max=-11.6115
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.1415 max=5.0314   prompt=torch.float32 [33, 1, 256] min=-6.3048 max=10.1877   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.2072 max=0.5965
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.2072 max=0.5965   dec_presence_out=torch.float32 [6, 1, 1] min=-11.8786 max=-11.6115
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.4347 max=11.4510   pred_boxes=torch.float32 [1, 200, 4] min=0.0114 max=0.9872
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.1415 max=5.0314   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.4347 max=11.4510
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-84.5353 max=10.7031   semantic_seg=torch.float32 [1, 1, 288, 288] min=-11.6523 max=8.9172   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9078   pred_masks=torch.float32 [1, 200, 288, 288] min=-84.5353 max=10.7031   pred_boxes=torch.float32 [1, 200, 4] min=0.0114 max=0.9872
+  [ComfyUI] [MEM] Propagation frame 20/30: VRAM 2.61GB alloc / 3.66GB reserved | RAM: 6.58GB (process), 22.1/47.1GB (system)
+  [ComfyUI] 
+  [ComfyUI]  70%|██████████████████████████████████████████████████████████████████████████████████████████▎                                      | 21/30 [00:12<00:06,  1.44it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  Frame 9 saved (frame_008.jpg, t=19.0s)
+  [capture-periodic] freeze=7ms shot=177ms unfreeze=7ms saved=True
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.9470 max=4.9073   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.2980 max=10.1224   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2980 max=10.1224   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2980 max=10.1224
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.5168 max=11.3998   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.2980 max=10.1224
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.5168 max=11.3998   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5168 max=11.3998   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5168 max=11.3998   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.2980 max=10.1224   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.5168 max=11.3998   memory_text=torch.float32 [33, 1, 256] min=-6.2980 max=10.1224
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.1429 max=5.2999   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0084 max=0.9851   presence=torch.float32 [6, 1, 1] min=-11.9478 max=-11.6508
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.1429 max=5.2999   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0084 max=0.9851   dec_presence_out=torch.float32 [6, 1, 1] min=-11.9478 max=-11.6508
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.1429 max=5.2999   prompt=torch.float32 [33, 1, 256] min=-6.2980 max=10.1224   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.2841 max=0.6597
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.2841 max=0.6597   dec_presence_out=torch.float32 [6, 1, 1] min=-11.9478 max=-11.6508
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5168 max=11.3998   pred_boxes=torch.float32 [1, 200, 4] min=0.0147 max=0.9864
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.1429 max=5.2999   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.5168 max=11.3998
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.7838 max=11.3079   semantic_seg=torch.float32 [1, 1, 288, 288] min=-12.4222 max=9.8810   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9078   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.7838 max=11.3079   pred_boxes=torch.float32 [1, 200, 4] min=0.0147 max=0.9864
+  [capture-loop] iter=150 t=19.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=6
+  [ComfyUI] 
+  [ComfyUI]  73%|██████████████████████████████████████████████████████████████████████████████████████████████▌                                  | 22/30 [00:13<00:05,  1.55it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.8092 max=4.9807   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3047 max=10.1805   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3047 max=10.1805   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3047 max=10.1805
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.1158 max=11.4602   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3047 max=10.1805
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.1158 max=11.4602   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.1158 max=11.4602   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.1158 max=11.4602   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3047 max=10.1805   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.1158 max=11.4602   memory_text=torch.float32 [33, 1, 256] min=-6.3047 max=10.1805
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.9503 max=5.3718   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0102 max=0.9874   presence=torch.float32 [6, 1, 1] min=-10.9512 max=-10.6013
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.9503 max=5.3718   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0102 max=0.9874   dec_presence_out=torch.float32 [6, 1, 1] min=-10.9512 max=-10.6013
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.9503 max=5.3718   prompt=torch.float32 [33, 1, 256] min=-6.3047 max=10.1805   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.8375 max=0.8242
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.8375 max=0.8242   dec_presence_out=torch.float32 [6, 1, 1] min=-10.9512 max=-10.6013
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.1158 max=11.4602   pred_boxes=torch.float32 [1, 200, 4] min=0.0152 max=0.9883
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.9503 max=5.3718   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.1158 max=11.4602
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-85.9474 max=11.1399   semantic_seg=torch.float32 [1, 1, 288, 288] min=-14.0793 max=10.7325   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-85.9474 max=11.1399   pred_boxes=torch.float32 [1, 200, 4] min=0.0152 max=0.9883
+  [ComfyUI] 
+  [ComfyUI]  77%|██████████████████████████████████████████████████████████████████████████████████████████████████▉                              | 23/30 [00:13<00:04,  1.63it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.8678 max=5.1199   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3105 max=10.2276   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3105 max=10.2276   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3105 max=10.2276
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.3093 max=11.5599   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3105 max=10.2276
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.3093 max=11.5599   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.3093 max=11.5599   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.3093 max=11.5599   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3105 max=10.2276   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.3093 max=11.5599   memory_text=torch.float32 [33, 1, 256] min=-6.3105 max=10.2276
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.7413 max=5.3447   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0104 max=0.9876   presence=torch.float32 [6, 1, 1] min=-11.3652 max=-11.0320
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.7413 max=5.3447   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0104 max=0.9876   dec_presence_out=torch.float32 [6, 1, 1] min=-11.3652 max=-11.0320
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.7413 max=5.3447   prompt=torch.float32 [33, 1, 256] min=-6.3105 max=10.2276   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.8222 max=0.7779
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.8222 max=0.7779   dec_presence_out=torch.float32 [6, 1, 1] min=-11.3652 max=-11.0320
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.3093 max=11.5599   pred_boxes=torch.float32 [1, 200, 4] min=0.0142 max=0.9886
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.7413 max=5.3447   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.3093 max=11.5599
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.8619 max=11.3417   semantic_seg=torch.float32 [1, 1, 288, 288] min=-14.4459 max=10.5971   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.8619 max=11.3417   pred_boxes=torch.float32 [1, 200, 4] min=0.0142 max=0.9886
+  [ComfyUI] 
+  [ComfyUI]  80%|███████████████████████████████████████████████████████████████████████████████████████████████████████▏                         | 24/30 [00:14<00:03,  1.63it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.7979 max=4.8057   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3077 max=10.1576   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3077 max=10.1576   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3077 max=10.1576
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.2131 max=10.6234   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3077 max=10.1576
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.2131 max=10.6234   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2131 max=10.6234   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2131 max=10.6234   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3077 max=10.1576   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2131 max=10.6234   memory_text=torch.float32 [33, 1, 256] min=-6.3077 max=10.1576
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.8950 max=5.2919   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0079 max=0.9870   presence=torch.float32 [6, 1, 1] min=-11.5801 max=-11.2253
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.8950 max=5.2919   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0079 max=0.9870   dec_presence_out=torch.float32 [6, 1, 1] min=-11.5801 max=-11.2253
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.8950 max=5.2919   prompt=torch.float32 [33, 1, 256] min=-6.3077 max=10.1576   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.7611 max=0.7782
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.7611 max=0.7782   dec_presence_out=torch.float32 [6, 1, 1] min=-11.5801 max=-11.2253
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2131 max=10.6234   pred_boxes=torch.float32 [1, 200, 4] min=0.0132 max=0.9882
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.8950 max=5.2919   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2131 max=10.6234
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-76.0209 max=11.8179   semantic_seg=torch.float32 [1, 1, 288, 288] min=-15.1415 max=10.6327   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-76.0209 max=11.8179   pred_boxes=torch.float32 [1, 200, 4] min=0.0132 max=0.9882
+  [ComfyUI] 
+  [ComfyUI]  83%|███████████████████████████████████████████████████████████████████████████████████████████████████████████▌                     | 25/30 [00:14<00:03,  1.62it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  Frame 10 saved (frame_009.jpg, t=21.3s)
+  [capture-periodic] freeze=48ms shot=212ms unfreeze=9ms saved=True
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.9362 max=5.0820   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.2942 max=10.1803   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2942 max=10.1803   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.2942 max=10.1803
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.4865 max=11.0800   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.2942 max=10.1803
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.4865 max=11.0800   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.4865 max=11.0800   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.4865 max=11.0800   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.2942 max=10.1803   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.4865 max=11.0800   memory_text=torch.float32 [33, 1, 256] min=-6.2942 max=10.1803
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.0783 max=4.8924   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0073 max=0.9870   presence=torch.float32 [6, 1, 1] min=-11.5976 max=-11.2759
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.0783 max=4.8924   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0073 max=0.9870   dec_presence_out=torch.float32 [6, 1, 1] min=-11.5976 max=-11.2759
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.0783 max=4.8924   prompt=torch.float32 [33, 1, 256] min=-6.2942 max=10.1803   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.6338 max=0.6885
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.6338 max=0.6885   dec_presence_out=torch.float32 [6, 1, 1] min=-11.5976 max=-11.2759
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.4865 max=11.0800   pred_boxes=torch.float32 [1, 200, 4] min=0.0111 max=0.9882
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.0783 max=4.8924   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.4865 max=11.0800
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-72.6743 max=10.3929   semantic_seg=torch.float32 [1, 1, 288, 288] min=-16.1185 max=12.2840   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-72.6743 max=10.3929   pred_boxes=torch.float32 [1, 200, 4] min=0.0111 max=0.9882
+  [ComfyUI] 
+  [ComfyUI]  87%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                 | 26/30 [00:15<00:02,  1.64it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-5.0467 max=4.8336   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3082 max=10.1874   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3082 max=10.1874   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3082 max=10.1874
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.4057 max=10.5591   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3082 max=10.1874
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.4057 max=10.5591   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.4057 max=10.5591   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.4057 max=10.5591   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3082 max=10.1874   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.4057 max=10.5591   memory_text=torch.float32 [33, 1, 256] min=-6.3082 max=10.1874
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.0275 max=4.8319   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0109 max=0.9867   presence=torch.float32 [6, 1, 1] min=-11.0971 max=-10.8131
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.0275 max=4.8319   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0109 max=0.9867   dec_presence_out=torch.float32 [6, 1, 1] min=-11.0971 max=-10.8131
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.0275 max=4.8319   prompt=torch.float32 [33, 1, 256] min=-6.3082 max=10.1874   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.7818 max=0.7042
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.7818 max=0.7042   dec_presence_out=torch.float32 [6, 1, 1] min=-11.0971 max=-10.8131
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.4057 max=10.5591   pred_boxes=torch.float32 [1, 200, 4] min=0.0156 max=0.9879
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.0275 max=4.8319   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.4057 max=10.5591
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.1951 max=10.7547   semantic_seg=torch.float32 [1, 1, 288, 288] min=-12.8003 max=9.9163   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.1951 max=10.7547   pred_boxes=torch.float32 [1, 200, 4] min=0.0156 max=0.9879
+  [ComfyUI] 
+  [ComfyUI]  90%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████             | 27/30 [00:16<00:01,  1.69it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.9010 max=4.8039   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3278 max=10.2521   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3278 max=10.2521   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3278 max=10.2521
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.1360 max=11.1395   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3278 max=10.2521
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.1360 max=11.1395   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.1360 max=11.1395   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.1360 max=11.1395   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3278 max=10.2521   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.1360 max=11.1395   memory_text=torch.float32 [33, 1, 256] min=-6.3278 max=10.2521
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-4.7048 max=4.7738   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0101 max=0.9867   presence=torch.float32 [6, 1, 1] min=-10.9615 max=-10.5829
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-4.7048 max=4.7738   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0101 max=0.9867   dec_presence_out=torch.float32 [6, 1, 1] min=-10.9615 max=-10.5829
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-4.7048 max=4.7738   prompt=torch.float32 [33, 1, 256] min=-6.3278 max=10.2521   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-6.0003 max=0.8005
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-6.0003 max=0.8005   dec_presence_out=torch.float32 [6, 1, 1] min=-10.9615 max=-10.5829
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.1360 max=11.1395   pred_boxes=torch.float32 [1, 200, 4] min=0.0129 max=0.9879
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-4.7048 max=4.7738   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.1360 max=11.1395
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.0464 max=11.3714   semantic_seg=torch.float32 [1, 1, 288, 288] min=-15.1473 max=10.9938   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-82.0464 max=11.3714   pred_boxes=torch.float32 [1, 200, 4] min=0.0129 max=0.9879
+  [ComfyUI] 
+  [ComfyUI]  93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍        | 28/30 [00:16<00:01,  1.73it/s]Backbone.forward_image IN:   samples=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] FPN_Neck.forward IN:   input=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward IN:   x=torch.float32 [1, 3, 1008, 1008] min=-1.0000 max=1.0000
+  [ComfyUI] ViT.forward OUT:   features=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward after trunk:   trunk_out=[torch.float32 [1, 1024, 72, 72]]
+  [ComfyUI] FPN_Neck.forward OUT:   sam3_out=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]   sam3_pos=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72], torch.float32 [1, 256, 36, 36]]
+  [ComfyUI] Backbone.forward_image OUT:   vision_features=torch.float32 [1, 256, 72, 72] min=-4.9888 max=4.9197   backbone_fpn=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]
+  [ComfyUI] forward_grounding: after _encode_prompt:   prompt=torch.float32 [33, 1, 256] min=-6.3281 max=10.1994   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _run_encoder inputs:   img_feats=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3281 max=10.1994   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Encoder.forward IN:   src=[torch.float32 [5184, 1, 256]]   prompt=torch.float32 [33, 1, 256] min=-6.3281 max=10.1994
+  [ComfyUI] Encoder.forward OUT:   memory=torch.float32 [5184, 1, 256] min=-20.2774 max=10.7190   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   memory_text=torch.float32 [33, 1, 256] min=-6.3281 max=10.1994
+  [ComfyUI] _run_encoder output:   memory=torch.float32 [5184, 1, 256] min=-20.2774 max=10.7190   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] forward_grounding: after _run_encoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2774 max=10.7190   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000
+  [ComfyUI] _run_decoder inputs:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2774 max=10.7190   pos_embed=torch.float32 [5184, 1, 256] min=-1.0000 max=1.0000   prompt=torch.float32 [33, 1, 256] min=-6.3281 max=10.1994   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] Decoder.forward IN:   tgt=torch.float32 [200, 1, 256] min=-0.6744 max=0.5923   memory=torch.float32 [5184, 1, 256] min=-20.2774 max=10.7190   memory_text=torch.float32 [33, 1, 256] min=-6.3281 max=10.1994
+  [ComfyUI] Decoder.forward OUT:   output=torch.float32 [6, 200, 1, 256] min=-5.6428 max=4.8676   ref_boxes=torch.float32 [6, 200, 1, 4] min=0.0062 max=0.9863   presence=torch.float32 [6, 1, 1] min=-11.3351 max=-11.0020
+  [ComfyUI] _run_decoder output:   hs=torch.float32 [6, 200, 1, 256] min=-5.6428 max=4.8676   reference_boxes=torch.float32 [6, 200, 1, 4] min=0.0062 max=0.9863   dec_presence_out=torch.float32 [6, 1, 1] min=-11.3351 max=-11.0020
+  [ComfyUI] _update_scores_and_boxes:   hs=torch.float32 [6, 1, 200, 256] min=-5.6428 max=4.8676   prompt=torch.float32 [33, 1, 256] min=-6.3281 max=10.1994   prompt_mask=torch.bool [1, 33] min=0.0000 max=1.0000
+  [ComfyUI] _update_scores: outputs_class:   outputs_class=torch.float32 [6, 1, 200, 1] min=-5.8563 max=0.8284
+  [ComfyUI] _update_scores: before joint_box_scores:   outputs_class_pre=torch.float32 [6, 1, 200, 1] min=-5.8563 max=0.8284   dec_presence_out=torch.float32 [6, 1, 1] min=-11.3351 max=-11.0020
+  [ComfyUI] _update_scores: after joint_box_scores:   outputs_class_post=torch.float32 [6, 1, 200, 1] min=-6.9078 max=-6.9077
+  [ComfyUI] forward_grounding: after _run_decoder:   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2774 max=10.7190   pred_boxes=torch.float32 [1, 200, 4] min=0.0061 max=0.9875
+  [ComfyUI] SegHead.forward IN:   backbone_feats=[torch.float32 [1, 256, 288, 288], torch.float32 [1, 256, 144, 144], torch.float32 [1, 256, 72, 72]]   obj_queries=torch.float32 [6, 1, 200, 256] min=-5.6428 max=4.8676   encoder_hidden_states=torch.float32 [5184, 1, 256] min=-20.2774 max=10.7190
+  [ComfyUI] SegHead.forward OUT:   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.7246 max=12.8041   semantic_seg=torch.float32 [1, 1, 288, 288] min=-13.7399 max=10.5600   presence_logit=None
+  [ComfyUI] forward_grounding: after _run_segmentation_heads:   pred_logits=torch.float32 [1, 200, 1] min=-6.9078 max=-6.9077   pred_masks=torch.float32 [1, 200, 288, 288] min=-77.7246 max=12.8041   pred_boxes=torch.float32 [1, 200, 4] min=0.0061 max=0.9875
+  [ComfyUI] 
+  [ComfyUI]  97%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋    | 29/30 [00:17<00:00,  1.72it/s]
+  [ComfyUI] 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 30/30 [00:17<00:00,  1.73it/s]
+  [ComfyUI] [MEM] After propagation loop: VRAM 2.41GB alloc / 3.66GB reserved | RAM: 6.66GB (process), 22.4/47.1GB (system)
+  [ComfyUI] Propagation complete: 30 frames processed
+  [ComfyUI] Frames with scores: 30
+  Frame 11 saved (frame_010.jpg, t=23.7s)
+  [capture-periodic] freeze=3ms shot=141ms unfreeze=4ms saved=True
+  [ComfyUI] Video Output CACHE MISS - streaming extraction for session=e347f3b6
+  [ComfyUI] [MEM] Before extract: VRAM 2.41GB alloc / 2.88GB reserved | RAM: 6.66GB (process), 22.3/47.1GB (system)
+  [ComfyUI] Streaming 30 frames to disk: /tmp/sam3_e347f3b6_8uc25nxo/mmap_output
+  [capture-loop] iter=200 t=25.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=10
+  Frame 12 saved (frame_011.jpg, t=26.0s)
+  [capture-periodic] freeze=3ms shot=146ms unfreeze=6ms saved=True
+  Frame 13 saved (frame_012.jpg, t=28.2s)
+  [capture-periodic] freeze=3ms shot=161ms unfreeze=7ms saved=True
+  Frame 14 saved (frame_013.jpg, t=30.5s)
+  [capture-periodic] freeze=6ms shot=158ms unfreeze=6ms saved=True
+  [capture-loop] iter=250 t=31.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
+  Frame 15 saved (frame_014.jpg, t=32.8s)
+  [capture-periodic] freeze=3ms shot=189ms unfreeze=5ms saved=True
+  Frame 16 saved (frame_015.jpg, t=35.2s)
+  [capture-periodic] freeze=3ms shot=162ms unfreeze=4ms saved=True
+  Frame 17 saved (frame_016.jpg, t=37.6s)
+  [capture-periodic] freeze=4ms shot=198ms unfreeze=5ms saved=True
+  [capture-loop] iter=300 t=38.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
+  [ComfyUI] Output: 30 masks, shape torch.Size([30, 544, 960])
+  [ComfyUI] Objects tracked: 1, plot_all_masks: True
+  [ComfyUI] [MEM] After extract: VRAM 2.41GB alloc / 2.88GB reserved | RAM: 7.12GB (process), 22.4/47.1GB (system)
+  Node executed (2 total), capturing...
+  [ComfyUI] Prompt executed in 39.94 seconds
+  Frame 18 saved (frame_017.jpg, t=39.9s)
+  [capture-node] freeze=5ms shot=253ms unfreeze=14ms saved=True
+  Node executed (3 total), capturing...
+  Frame 19 saved (frame_018.jpg, t=40.5s)
+  [capture-node] freeze=4ms shot=319ms unfreeze=0ms saved=True
+  Execution complete (t=40.5s)
+  Captured 19 unique frames over 40.89s
+  [debug] iframes: 0
+  [timing] trigger_3d_previews: 0.0s
+  Saved high-quality screenshot: video_point_prompt_executed.png
+  [timing] final_screenshot: 1.6s
+    Captured 20 video frames
+    VRAM log: /home/shadeform/vramlogs/SAM3_video_point_prompt_20260226_010136.csv

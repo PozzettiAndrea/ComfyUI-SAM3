@@ -1,0 +1,171 @@
+Capturing execution frames: scene_seg.json
+  Validating workflow...
+  [ComfyUI] === /validate endpoint called ===
+  [ComfyUI] Received JSON with keys: ['prompt']
+  [ComfyUI] Prompt has 9 nodes
+  [ComfyUI]   Node 1: LoadImage
+  [ComfyUI]     Inputs: {"image": "image.png"}
+  [ComfyUI]   Node 3: PreviewImage
+  [ComfyUI]     Inputs: {"images": ["21", 1]}
+  [ComfyUI]   Node 4: MaskPreview
+  [ComfyUI]     Inputs: {"mask": ["21", 0]}
+  [ComfyUI]   Node 12: LoadSAM3Model
+  [ComfyUI]     Inputs: {"model_path": "models/sam3/sam3.pt"}
+  [ComfyUI]   Node 20: SAM3MultiRegionCollector
+  [ComfyUI]     Inputs: {"multi_prompts_store": "[{\"positive_points\":[{\"x\":5052.74953932266,\"y\":2847.0600693869637},{\"x\":4932.510591392486,\"y\":2953.9413227753366},{\"x\":4718.752461738845,\"y\":2967.301479448883},{
+  [ComfyUI]   Node 21: SAM3MultipromptSegmentation
+  [ComfyUI]     Inputs: {"refinement_iterations": 2, "use_multimask": false, "offload_model": false, "sam3_model": ["12", 0], "image": ["1", 0], "multi_prompts": ["20", 0]}
+  [ComfyUI]   Node 22: MultibandFromBatch
+  [ComfyUI]     Inputs: {"images": ["1", 0], "masks": ["21", 0]}
+  [ComfyUI]   Node 23: MultibandSave
+  [ComfyUI]     Inputs: {"file_path": "output/multiband", "format": "npz", "multiband": ["22", 0]}
+  [ComfyUI]   Node 24: MultibandPreview
+  [ComfyUI]     Inputs: {"channel_index": 0, "multiband": ["22", 0]}
+  [ComfyUI] Generated prompt_id: ff770ed8-cb4d-43c8-adb3-d5db0f9db961
+  [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  Queuing workflow for execution...
+  [ComfyUI] got prompt
+  [ComfyUI] WARNING: 'NoneType' object has no attribute 'shape'
+  [ComfyUI] [SAM3] ComfyUI-SAM3 prestartup script running...
+  [ComfyUI] [SAM3] Script directory: /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3
+  [ComfyUI] [SAM3] ComfyUI root: /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI
+  [ComfyUI] [SAM3] Copying image assets to /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/input...
+  [ComfyUI] [SAM3] Image assets: 0 copied, 4 skipped
+  [ComfyUI] [SAM3] Prestartup script completed
+  [ComfyUI] [SAM3] ComfyUI-SAM3 v3.0.0 initializing...
+  [ComfyUI] [SAM3] [OK] Registered model folder: /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/models/sam3
+  [ComfyUI] [SAM3] [OK] Node classes imported successfully
+  [ComfyUI] [SAM3 Server] Registered routes: /sam3/prepare, /sam3/detect
+  [ComfyUI] [SAM3] [OK] API endpoints registered
+  [ComfyUI] [SAM3] [OK] Loaded successfully!
+  [ComfyUI] [SAM3] Available nodes: LoadSAM3Model, SAM3Grounding, SAM3Segmentation, SAM3MultipromptSegmentation, SAM3CreateBox, SAM3CreatePoint, SAM3CombineBoxes, SAM3CombinePoints, SAM3VideoSegmentation, SAM3Propagate, SAM3VideoOutput, SAM3PointCollector, SAM3BBoxCollector, SAM3MultiRegionCollector
+  [ComfyUI] [SAM3] Interactive SAM3 Detector: Right-click any IMAGE/MASK node -> 'Open in SAM3 Detector'
+  [ComfyUI] ComfyUI-Multiband loaded: 13 nodes registered
+  [ComfyUI] [SAM3 Multi-Region] CACHE MISS - computing new result for key=35316a77
+  [ComfyUI] [SAM3 Multi-Region] Image dimensions: 6720x4480
+  [ComfyUI] [SAM3 Multi-Region] Processing 7 prompt regions
+  [ComfyUI] [SAM3 Multi-Region]   Prompt 0: 10 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
+  [ComfyUI] [SAM3 Multi-Region]   Prompt 1: 7 pos pts, 16 neg pts, 1 pos boxes, 0 neg boxes
+  [ComfyUI] [SAM3 Multi-Region]   Prompt 2: 7 pos pts, 14 neg pts, 1 pos boxes, 0 neg boxes
+  [ComfyUI] [SAM3 Multi-Region]   Prompt 3: 1 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
+  [ComfyUI] [SAM3 Multi-Region]   Prompt 4: 1 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
+  [ComfyUI] [SAM3 Multi-Region]   Prompt 5: 13 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
+  [ComfyUI] [SAM3 Multi-Region]   Prompt 6: 6 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
+  [ComfyUI] [SAM3 Multi-Region] Output: 7 non-empty prompts
+  [ComfyUI] [SAM3] Load device: cpu, Offload device: cpu
+  [ComfyUI] [SAM3] Model not found at /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/models/sam3/sam3.pt, downloading from HuggingFace...
+  [ComfyUI] [SAM3] Downloading from 1038lab/sam3...
+  [ComfyUI] [SAM3] Target: /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/models/sam3/sam3.pt
+  [ComfyUI] [SAM3] Model downloaded successfully to: /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/models/sam3/sam3.pt
+  [ComfyUI] [SAM3] Loading unified model from: /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/models/sam3/sam3.pt
+  [ComfyUI] [SAM3] Using BPE tokenizer: /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3_lib/bpe_simple_vocab_16e6.txt.gz
+  [ComfyUI] [SAM3] Building SAM3 unified model...
+  [ComfyUI] [SAM3] Loading PyTorch checkpoint: /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/models/sam3/sam3.pt
+  [ComfyUI] [SAM3] Added 309 keys for detector.inst_interactive_predictor
+  [ComfyUI] [SAM3] Video predictor loaded successfully
+  [ComfyUI] [SAM3] Creating SAM3 processor...
+  [ComfyUI] [SAM3] Processor created successfully
+  [ComfyUI] [SAM3] Unified model ready (size: 3289.9 MB)
+  [ComfyUI] [SAM3 Multiprompt] Image size: (6720, 4480)
+  [ComfyUI] [SAM3 Multiprompt] Processing 7 prompt regions
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 1/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 10, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9808
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 2/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 23, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9411
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 3/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 21, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.8921
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 4/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 1, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9751
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 5/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 1, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9855
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 6/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 13, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9895
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 7/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 6, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9695
+  [ComfyUI] [SAM3 Multiprompt] Generated 7 masks
+  [ComfyUI] BatchToMultiband: Processed 1 images with 3 channels each -> 3 channels
+  [ComfyUI] BatchToMultiband: Processed 7 masks -> 7 channels
+  [ComfyUI] BatchToMultiband: Output shape torch.Size([1, 10, 4480, 6720]), channels: ['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI] SaveMultibandImage: Saved to output/multiband.npz
+  [ComfyUI]   Shape: (1, 10, 4480, 6720)
+  [ComfyUI]   Format: npz
+  [ComfyUI] PreviewMultibandImage: Batch=1, Channels=10, Names=['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI] [SAM3 Point Collector] CACHE MISS - computing new result for key=d9204c29
+  [ComfyUI] [SAM3 Point Collector] Collected 3 positive, 0 negative points
+  [ComfyUI] [SAM3 Point Collector] Image dimensions: 1280x720
+  [ComfyUI] [SAM3 Point Collector]   Positive point: (426.3, 321.4) -> (0.333, 0.446)
+  [ComfyUI] [SAM3 Point Collector]   Positive point: (417.1, 407.3) -> (0.326, 0.566)
+  [ComfyUI] [SAM3 Point Collector]   Positive point: (431.8, 549.9) -> (0.337, 0.764)
+  [ComfyUI] [SAM3 Point Collector] Output: 3 positive, 0 negative
+  [ComfyUI] [SAM3 Segmentation] Using click-based interactive segmentation
+  [ComfyUI] [SAM3 Segmentation] Image size: (1280, 720)
+  [ComfyUI] [SAM3 Segmentation] sam2_backbone_out is available
+  [ComfyUI] [SAM3 Segmentation] Added 3 positive points
+  [ComfyUI] [SAM3 Segmentation] Points: 3
+  [ComfyUI] [SAM3 Segmentation]   Coords: [[426.27735719657574, 321.42611685978835], [417.13743597288953, 407.3413796907987], [431.76130993078743, 549.9241563039649]]
+  [ComfyUI] [SAM3 Segmentation]   Labels: [1, 1, 1]
+  [ComfyUI] [SAM3 Segmentation] Prediction returned 1 masks
+  [ComfyUI] [SAM3 Segmentation]   Mask shape: (1, 720, 1280)
+  [ComfyUI] [SAM3 Segmentation]   Low-res shape: (1, 288, 288)
+  [ComfyUI] [SAM3 Segmentation]   Scores: [0.9594941735267639]
+  [ComfyUI] [SAM3 Segmentation] Outputting all 1 mask candidates
+  [ComfyUI] [SAM3 Segmentation] Segmentation complete
+  [ComfyUI] [SAM3 Segmentation] Using click-based interactive segmentation
+  [ComfyUI] [SAM3 Segmentation] Image size: (1280, 720)
+  [ComfyUI] [SAM3 Segmentation] sam2_backbone_out is available
+  [ComfyUI] [SAM3 Segmentation] Added 3 positive points
+  [ComfyUI] [SAM3 Segmentation] Points: 3
+  [ComfyUI] [SAM3 Segmentation]   Coords: [[426.27735719657574, 321.42611685978835], [417.13743597288953, 407.3413796907987], [431.76130993078743, 549.9241563039649]]
+  [ComfyUI] [SAM3 Segmentation]   Labels: [1, 1, 1]
+  [ComfyUI] [SAM3 Segmentation] Refinement 1/4, best score: 0.9636
+  [ComfyUI] [SAM3 Segmentation] Refinement 2/4, best score: 0.9690
+  [ComfyUI] [SAM3 Segmentation] Refinement 3/4, best score: 0.9691
+  [ComfyUI] [SAM3 Segmentation] Refinement 4/4, best score: 0.9697
+  [ComfyUI] [SAM3 Segmentation] Prediction returned 1 masks
+  [ComfyUI] [SAM3 Segmentation]   Mask shape: (1, 720, 1280)
+  [ComfyUI] [SAM3 Segmentation]   Low-res shape: (1, 288, 288)
+  [ComfyUI] [SAM3 Segmentation]   Scores: [0.9696518182754517]
+  [ComfyUI] [SAM3 Segmentation] Outputting all 1 mask candidates
+  [ComfyUI] [SAM3 Segmentation] Segmentation complete
+  [ComfyUI] [SAM3 Grounding] Running text-based detection
+  [ComfyUI] [SAM3 Grounding]   Text prompt: 'person'
+  [ComfyUI] [SAM3 Grounding] Confidence threshold: 0.2
+  [ComfyUI] [SAM3 Grounding] Image size: (1280, 720)
+  [ComfyUI] [SAM3 Grounding] Adding text prompt...
+  [ComfyUI] [SAM3 Grounding] No detections found for prompt: 'person' at threshold 0.2
+  [ComfyUI] [SAM3 Grounding] TIP: Try lowering the confidence_threshold or check if the object is in the image
+  [ComfyUI] [SAM3 Multi-Region] CACHE HIT - returning cached result for key=35316a77
+  [ComfyUI] [SAM3 Multiprompt] Image size: (6720, 4480)
+  [ComfyUI] [SAM3 Multiprompt] Processing 7 prompt regions
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 1/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 10, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9808
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 2/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 23, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9411
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 3/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 21, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.8921
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 4/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 1, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9751
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 5/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 1, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9855
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 6/7
+  [ComfyUI] [SAM3 Multiprompt]   Points: 13, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9895
+  Captured 532 frames over 112.64s
+  10 unique frames saved as WebP
+  Waiting 5000ms for previews to render...
+  Saved high-quality screenshot: scene_seg_executed.png
+    Captured 11 video frames

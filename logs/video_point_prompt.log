@@ -1,0 +1,116 @@
+Capturing execution frames: video_point_prompt.json
+  Validating workflow...
+  Queuing workflow for execution...
+  [ComfyUI] [SAM3 Multiprompt] Processing prompt region 7/7
+  [ComfyUI] Prompt executed in 107.47 seconds
+  [ComfyUI] === /validate endpoint called ===
+  [ComfyUI] Received JSON with keys: ['prompt']
+  [ComfyUI] Prompt has 11 nodes
+  [ComfyUI]   Node 9: VHS_LoadVideo
+  [ComfyUI]     Inputs: {"video": "bedroom.mp4", "force_rate": 0, "custom_width": 0, "custom_height": 0, "frame_load_cap": 30, "skip_first_frames": 0, "select_every_nth": 1, "format": "AnimateDiff"}
+  [ComfyUI]   Node 13: CreateVideo
+  [ComfyUI]     Inputs: {"fps": 30, "images": ["14", 0]}
+  [ComfyUI]   Node 14: MaskToImage
+  [ComfyUI]     Inputs: {"mask": ["21", 0]}
+  [ComfyUI]   Node 15: SaveVideo
+  [ComfyUI]     Inputs: {"filename_prefix": "video/ComfyUI", "format": "auto", "codec": "auto", "video": ["13", 0]}
+  [ComfyUI]   Node 21: SAM3VideoOutput
+  [ComfyUI]     Inputs: {"obj_id": 0, "plot_all_masks": true, "masks": ["32", 0], "video_state": ["32", 2], "scores": ["32", 1]}
+  [ComfyUI]   Node 24: CreateVideo
+  [ComfyUI]     Inputs: {"fps": 30, "images": ["21", 2]}
+  [ComfyUI]   Node 25: SaveVideo
+  [ComfyUI]     Inputs: {"filename_prefix": "video/ComfyUI", "format": "auto", "codec": "auto", "video": ["24", 0]}
+  [ComfyUI]   Node 27: SAM3VideoSegmentation
+  [ComfyUI]     Inputs: {"prompt_mode": "point", "frame_idx": 0.3, "score_threshold": 0.3, "video_frames": ["9", 0], "positive_points": ["28", 0]}
+  [ComfyUI]   Node 28: SAM3PointCollector
+  [ComfyUI]     Inputs: {"points_store": "{\"positive\":[{\"x\":365.8296849641195,\"y\":82.1138596932428},{\"x\":389.5481601701001,\"y\":179.95494578458334},{\"x\":413.26663537608084,\"y\":52.465045726169905}],\"negative\":[
+  [ComfyUI]   Node 30: LoadSAM3Model
+  [ComfyUI]     Inputs: {"model_path": "models/sam3/sam3.pt"}
+  [ComfyUI]   Node 32: SAM3Propagate
+  [ComfyUI]     Inputs: {"start_frame": 0, "end_frame": -1, "direction": "forward", "offload_model": false, "sam3_model": ["30", 0], "video_state": ["27", 0]}
+  [ComfyUI] Generated prompt_id: ff9c008b-c16a-4418-a797-c94b28a51da2
+  [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  [ComfyUI] got prompt
+  [ComfyUI] WARNING: 'NoneType' object has no attribute 'session_uuid'
+  [ComfyUI] WARNING: 'NoneType' object has no attribute 'shape'
+  [ComfyUI] WARNING: 'NoneType' object has no attribute 'shape'
+  [ComfyUI] 
+  [ComfyUI] frame loading (image folder) [rank=0]:   0%|          | 0/30 [00:00<?, ?it/s]
+  [ComfyUI] frame loading (image folder) [rank=0]:  20%|██        | 6/30 [00:00<00:00, 53.28it/s]
+  [ComfyUI] frame loading (image folder) [rank=0]:  40%|████      | 12/30 [00:00<00:00, 51.75it/s]
+  [ComfyUI] frame loading (image folder) [rank=0]:  63%|██████▎   | 19/30 [00:00<00:00, 57.90it/s]
+  [ComfyUI] frame loading (image folder) [rank=0]:  83%|████████▎ | 25/30 [00:00<00:00, 57.33it/s]
+  [ComfyUI] [SAM3 Multiprompt]   Points: 6, Box: Yes
+  [ComfyUI] [SAM3 Multiprompt]   Mask score: 0.9695
+  [ComfyUI] [SAM3 Multiprompt] Generated 7 masks
+  [ComfyUI] BatchToMultiband: Processed 1 images with 3 channels each -> 3 channels
+  [ComfyUI] BatchToMultiband: Processed 7 masks -> 7 channels
+  [ComfyUI] BatchToMultiband: Output shape torch.Size([1, 10, 4480, 6720]), channels: ['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI] SaveMultibandImage: Saved to output/multiband.npz
+  [ComfyUI]   Shape: (1, 10, 4480, 6720)
+  [ComfyUI]   Format: npz
+  [ComfyUI] PreviewMultibandImage: Batch=1, Channels=10, Names=['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI] [IS_CHANGED DEBUG] SAM3Propagate: video_state id=140099696486592, session=None
+  [ComfyUI] [IS_CHANGED DEBUG] SAM3Propagate: returning (140099696486592, 0, -1, 'forward')
+  [ComfyUI] [SAM3 Point Collector] CACHE MISS - computing new result for key=d7f60d60
+  [ComfyUI] [SAM3 Point Collector] Collected 3 positive, 0 negative points
+  [ComfyUI] [SAM3 Point Collector] Image dimensions: 960x544
+  [ComfyUI] [SAM3 Point Collector]   Positive point: (365.8, 82.1) -> (0.381, 0.151)
+  [ComfyUI] [SAM3 Point Collector]   Positive point: (389.5, 180.0) -> (0.406, 0.331)
+  [ComfyUI] [SAM3 Point Collector]   Positive point: (413.3, 52.5) -> (0.430, 0.096)
+  [ComfyUI] [SAM3 Point Collector] Output: 3 positive, 0 negative
+  [ComfyUI] [SAM3 Video] CACHE MISS - computing new video_state for key=9f327361
+  [ComfyUI] [SAM3 Video] Saving 30 frames to /tmp/sam3_8cb82cae_idsvzyx1
+  [ComfyUI] [SAM3 Video] Frames saved successfully
+  [ComfyUI] [SAM3 Video] Initialized session 8cb82cae
+  [ComfyUI] [SAM3 Video] Frames: 30, Size: 960x544
+  [ComfyUI] [SAM3 Video] Prompt mode: point
+  [ComfyUI] [SAM3 Video] Added point prompt: obj=1, positive=3, negative=0
+  [ComfyUI] [SAM3 Video] Total prompts: 1
+  [ComfyUI] [SAM3 Propagate] CACHE MISS - running propagation for session=8cb82cae
+  [ComfyUI] [SAM3 Video] Starting propagation: frames 0 to end
+  [ComfyUI] [SAM3 Video] Prompts: 1
+  [ComfyUI] [SAM3 Video] Reconstructing inference state for 8cb82cae
+  [ComfyUI] [SAM3 Video] Active sessions in _ALL_INFERENCE_STATES: 1
+  [ComfyUI] frame loading (image folder) [rank=0]: 100%|██████████| 30/30 [00:00<00:00, 57.31it/s]
+  [ComfyUI] 
+  [ComfyUI]   0%|          | 0/30 [00:00<?, ?it/s]
+  [ComfyUI]   3%|▎         | 1/30 [00:00<00:07,  3.72it/s]
+  [ComfyUI]   7%|▋         | 2/30 [01:00<16:26, 35.25s/it]
+  [ComfyUI]  10%|█         | 3/30 [01:58<20:36, 45.79s/it]
+  [ComfyUI]  13%|█▎        | 4/30 [02:56<21:56, 50.63s/it]
+  [ComfyUI]  17%|█▋        | 5/30 [03:51<21:50, 52.42s/it]
+  [ComfyUI]  20%|██        | 6/30 [04:48<21:33, 53.91s/it]
+  [ComfyUI]  23%|██▎       | 7/30 [05:49<21:32, 56.19s/it]
+  [ComfyUI]  27%|██▋       | 8/30 [06:53<21:32, 58.77s/it]
+  [ComfyUI]  30%|███       | 9/30 [07:56<20:57, 59.88s/it]
+  [ComfyUI]  33%|███▎      | 10/30 [09:02<20:34, 61.70s/it]
+  [ComfyUI]  37%|███▋      | 11/30 [09:58<18:59, 59.96s/it]
+  [ComfyUI]  40%|████      | 12/30 [11:00<18:14, 60.80s/it]
+  [ComfyUI]  43%|████▎     | 13/30 [12:04<17:27, 61.64s/it]
+  [ComfyUI]  47%|████▋     | 14/30 [13:01<16:05, 60.33s/it]
+  [ComfyUI]  50%|█████     | 15/30 [14:02<15:08, 60.57s/it]
+  [ComfyUI]  53%|█████▎    | 16/30 [14:59<13:52, 59.44s/it]
+  [ComfyUI]  57%|█████▋    | 17/30 [15:59<12:55, 59.62s/it]
+  [ComfyUI]  60%|██████    | 18/30 [17:01<12:02, 60.18s/it]
+  [ComfyUI]  63%|██████▎   | 19/30 [17:57<10:49, 59.07s/it]
+  [ComfyUI]  67%|██████▋   | 20/30 [19:00<10:02, 60.20s/it]
+  [ComfyUI]  70%|███████   | 21/30 [20:05<09:15, 61.69s/it]
+  [ComfyUI]  73%|███████▎  | 22/30 [21:04<08:07, 60.97s/it]
+  [ComfyUI]  77%|███████▋  | 23/30 [22:04<07:03, 60.51s/it]
+  [ComfyUI]  80%|████████  | 24/30 [23:07<06:06, 61.16s/it]
+  [ComfyUI]  83%|████████▎ | 25/30 [24:07<05:04, 60.87s/it]
+  [ComfyUI]  87%|████████▋ | 26/30 [25:10<04:06, 61.51s/it]
+  [ComfyUI]  90%|█████████ | 27/30 [26:18<03:10, 63.60s/it]
+  [ComfyUI]  93%|█████████▎| 28/30 [27:22<02:07, 63.71s/it]
+  [ComfyUI]  97%|█████████▋| 29/30 [28:22<01:02, 62.54s/it]
+  [ComfyUI] 100%|██████████| 30/30 [28:31<00:00, 46.42s/it]
+  [ComfyUI] 100%|██████████| 30/30 [28:31<00:00, 57.04s/it]
+  [ComfyUI] Prompt executed in 00:30:36
+  Captured 11857 frames over 1837.94s
+  11857 unique frames saved as WebP
+  Waiting 5000ms for previews to render...
+  Saved high-quality screenshot: video_point_prompt_executed.png
+    Captured 11858 video frames

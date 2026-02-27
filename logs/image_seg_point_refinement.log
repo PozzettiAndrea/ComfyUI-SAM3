@@ -1,0 +1,38 @@
+Capturing execution frames: image_seg_point_refinement.json
+  Validating workflow...
+  [ComfyUI] === /validate endpoint called ===
+  [ComfyUI] Received JSON with keys: ['prompt']
+  [ComfyUI] Prompt has 10 nodes
+  [ComfyUI]   Node 1: LoadImage
+  [ComfyUI]     Inputs: {"image": "example_image.jpg"}
+  [ComfyUI]   Node 3: PreviewImage
+  [ComfyUI]     Inputs: {"images": ["23", 2]}
+  [ComfyUI]   Node 12: LoadSAM3Model
+  [ComfyUI]     Inputs: {"model_path": "models/sam3/sam3.pt"}
+  [ComfyUI]   Node 15: SAM3PointCollector
+  [ComfyUI]     Inputs: {"points_store": "{\"positive\":[{\"x\":426.27735719657574,\"y\":321.42611685978835},{\"x\":417.13743597288953,\"y\":407.3413796907987},{\"x\":431.76130993078743,\"y\":549.9241563039649}],\"negative\"
+  [ComfyUI]   Node 23: SAM3Segmentation
+  [ComfyUI]     Inputs: {"refinement_iterations": 0, "use_multimask": false, "output_best_mask": false, "offload_model": false, "sam3_model": ["12", 0], "image": ["1", 0], "positive_points": ["15", 0]}
+  [ComfyUI]   Node 24: SAM3Segmentation
+  [ComfyUI]     Inputs: {"refinement_iterations": 4, "use_multimask": false, "output_best_mask": false, "offload_model": false, "sam3_model": ["12", 0], "image": ["1", 0], "positive_points": ["15", 0]}
+  [ComfyUI]   Node 25: PreviewImage
+  [ComfyUI]     Inputs: {"images": ["27", 0]}
+  [ComfyUI]   Node 26: ImageCrop
+  [ComfyUI]     Inputs: {"width": 128, "height": 128, "x": 350, "y": 384, "image": ["23", 2]}
+  [ComfyUI]   Node 27: ImageCrop
+  [ComfyUI]     Inputs: {"width": 128, "height": 128, "x": 350, "y": 384, "image": ["24", 2]}
+  [ComfyUI]   Node 28: PreviewImage
+  [ComfyUI]     Inputs: {"images": ["26", 0]}
+  [ComfyUI] Generated prompt_id: e600ac4d-570a-47da-91ba-6b5d8234e5a1
+  [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  Queuing workflow for execution...
+  [ComfyUI] got prompt
+  [ComfyUI] WARNING: 'NoneType' object has no attribute 'shape'
+  [ComfyUI] Prompt executed in 103.68 seconds
+  Captured 578 frames over 105.5s
+  7 unique frames saved as WebP
+  Waiting 5000ms for previews to render...
+  Saved high-quality screenshot: image_seg_point_refinement_executed.png
+    Captured 8 video frames
