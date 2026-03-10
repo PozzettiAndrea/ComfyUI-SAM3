@@ -42,7 +42,7 @@ def _dtype_debug(label, **tensors):
             parts.append(f"  {name}=[{', '.join(info)}]")
         elif hasattr(t, 'dtype'):
             parts.append(f"  {name}={t.dtype} {list(t.shape)} min={t.min():.4f} max={t.max():.4f}")
-    _sam3_log.info(" ".join(parts))
+    _sam3_log.debug(" ".join(parts))
 
 
 def is_image_type(resource_path):
@@ -1711,7 +1711,7 @@ class TransformerDecoder(nn.Module):
         presence_feats = None
         if self.box_refine:
             if reference_boxes is None:
-                reference_boxes = self.reference_points.weight.unsqueeze(1).to(tgt.dtype)
+                reference_boxes = self.reference_points.weight.unsqueeze(1).to(device=tgt.device, dtype=tgt.dtype)
                 reference_boxes = (
                     reference_boxes.repeat(2, bs, 1) if apply_dac
                     else reference_boxes.repeat(1, bs, 1)
@@ -1724,7 +1724,7 @@ class TransformerDecoder(nn.Module):
         output = tgt
         presence_out = None
         if self.presence_token is not None and is_instance_prompt is False:
-            presence_out = self.presence_token.weight[None].expand(1, bs, -1).to(tgt.dtype)
+            presence_out = self.presence_token.weight[None].expand(1, bs, -1).to(device=tgt.device, dtype=tgt.dtype)
         box_head = self.bbox_embed
         if is_instance_prompt and self.instance_bbox_embed is not None:
             box_head = self.instance_bbox_embed
@@ -2322,6 +2322,11 @@ class SequenceGeometryEncoder(nn.Module):
         self.mask_encoder = mask_encoder
 
     def _encode_points(self, points, points_mask, points_labels, img_feats):
+        # Ensure all inputs are on the same device as img_feats (offload mode)
+        _dev = img_feats.device if isinstance(img_feats, torch.Tensor) else img_feats[-1].device
+        points = points.to(_dev)
+        points_mask = points_mask.to(_dev)
+        points_labels = points_labels.to(_dev)
         points_embed = None
         n_points, bs = points.shape[:2]
         if self.points_direct_project is not None:
@@ -2350,11 +2355,19 @@ class SequenceGeometryEncoder(nn.Module):
                 points_embed = proj
             else:
                 points_embed = points_embed + proj
-        type_embed = self.label_embed(points_labels.long())
+        type_embed = self.label_embed(points_labels.long()).to(points_embed.device)
         return type_embed + points_embed, points_mask
 
     def _encode_boxes(self, boxes, boxes_mask, boxes_labels, img_feats):
         import torchvision
+        # Ensure boxes are on the same device as img_feats (needed for roi_align on CUDA)
+        _dev = img_feats.device if isinstance(img_feats, torch.Tensor) else img_feats[-1].device
+        if boxes.device != _dev:
+            boxes = boxes.to(_dev)
+        if boxes_mask.device != _dev:
+            boxes_mask = boxes_mask.to(_dev)
+        if boxes_labels.device != _dev:
+            boxes_labels = boxes_labels.to(_dev)
         boxes_embed = None
         n_boxes, bs = boxes.shape[:2]
         if self.boxes_direct_project is not None:
@@ -2392,10 +2405,16 @@ class SequenceGeometryEncoder(nn.Module):
                 boxes_embed = proj
             else:
                 boxes_embed = boxes_embed + proj
-        type_embed = self.label_embed(boxes_labels.long())
+        type_embed = self.label_embed(boxes_labels.long()).to(boxes_embed.device)
         return type_embed + boxes_embed, boxes_mask
 
     def _encode_masks(self, masks, attn_mask, mask_labels, img_feats=None):
+        # Ensure mask inputs on same device as img_feats (offload mode)
+        if img_feats is not None:
+            _dev = img_feats.device if isinstance(img_feats, torch.Tensor) else img_feats[-1].device
+            masks = masks.to(_dev)
+            attn_mask = attn_mask.to(_dev)
+            mask_labels = mask_labels.to(_dev)
         n_masks, bs = masks.shape[:2]
         assert n_masks == 1
         assert list(attn_mask.shape) == [bs, n_masks]
@@ -2407,7 +2426,7 @@ class SequenceGeometryEncoder(nn.Module):
         masks = masks.permute(0, 3, 1, 2).flatten(0, 1)
         attn_mask = attn_mask.repeat_interleave(n_tokens_per_mask, dim=1)
         if self.add_mask_label:
-            masks = masks + self.mask_label_embed(mask_labels.long())
+            masks = masks + self.mask_label_embed(mask_labels.long()).to(masks.device)
         return masks, attn_mask
 
     def forward(self, geo_prompt: Prompt, img_feats, img_sizes, img_pos_embeds=None):
@@ -2478,7 +2497,7 @@ class SequenceGeometryEncoder(nn.Module):
         bs = final_embeds.shape[1]
         assert final_mask.shape[0] == bs
         if self.cls_embed is not None:
-            cls = self.cls_embed.weight.view(1, 1, self.d_model).repeat(1, bs, 1).to(final_embeds.dtype)
+            cls = self.cls_embed.weight.view(1, 1, self.d_model).repeat(1, bs, 1).to(device=final_embeds.device, dtype=final_embeds.dtype)
             cls_mask = torch.zeros(bs, 1, dtype=final_mask.dtype, device=final_mask.device)
             final_embeds, final_mask = concat_padded_sequences(
                 final_embeds, final_mask, cls, cls_mask
@@ -2825,7 +2844,7 @@ class MaskDecoder(nn.Module):
             )
         output_tokens = output_tokens.unsqueeze(0).expand(
             sparse_prompt_embeddings.size(0), -1, -1
-        )
+        ).to(sparse_prompt_embeddings.device)
         tokens = torch.cat((output_tokens, sparse_prompt_embeddings), dim=1)
 
         # Expand per-image data in batch direction to be per-mask
@@ -2834,7 +2853,7 @@ class MaskDecoder(nn.Module):
         else:
             assert image_embeddings.shape[0] == tokens.shape[0]
             src = image_embeddings
-        src = src + dense_prompt_embeddings.to(src.dtype)
+        src = src + dense_prompt_embeddings.to(device=src.device, dtype=src.dtype)
         import os as _os
         if _os.environ.get("DEBUG_COMFYUI_SAM3", "").lower() in ("1", "true", "yes"):
             import logging as _logging
@@ -2846,7 +2865,7 @@ class MaskDecoder(nn.Module):
         assert (
             image_pe.size(0) == 1
         ), "image_pe should have size 1 in batch dim (from `get_dense_pe()`)"
-        pos_src = torch.repeat_interleave(image_pe, tokens.shape[0], dim=0)
+        pos_src = torch.repeat_interleave(image_pe, tokens.shape[0], dim=0).to(src.device)
         b, c, h, w = src.shape
 
         # Run the transformer
@@ -3462,7 +3481,7 @@ class Sam3Image(torch.nn.Module):
         """Retrieve correct image features from backbone output."""
         if "backbone_fpn" in backbone_out:
             if "id_mapping" in backbone_out and backbone_out["id_mapping"] is not None:
-                img_ids = backbone_out["id_mapping"][img_ids]
+                img_ids = backbone_out["id_mapping"][img_ids.to(backbone_out["id_mapping"].device)]
                 torch._assert_async((img_ids >= 0).all())
 
             vis_feats = backbone_out["backbone_fpn"][-self.num_feature_levels :]
@@ -3485,11 +3504,12 @@ class Sam3Image(torch.nn.Module):
             image = img_batch[unique_ids.item()].unsqueeze(0)
         else:
             image = torch.stack([img_batch[i] for i in unique_ids.tolist()])
-        image = image.to(dtype=torch.float32, device=self.device)
+        _dev = image.device if image.is_cuda else self.device
+        image = image.to(dtype=torch.float32, device=_dev)
         id_mapping = torch.full(
-            (len(img_batch),), -1, dtype=torch.long, device=self.device
+            (len(img_batch),), -1, dtype=torch.long, device=_dev
         )
-        id_mapping[unique_ids] = torch.arange(len(unique_ids), device=self.device)
+        id_mapping[unique_ids] = torch.arange(len(unique_ids), device=_dev)
         backbone_out = {
             **backbone_out,
             **self.backbone.forward_image(image),
@@ -3516,10 +3536,11 @@ class Sam3Image(torch.nn.Module):
         feat_tuple = self._get_img_feats(backbone_out, find_input.img_ids)
         backbone_out, img_feats, img_pos_embeds, vis_feat_sizes = feat_tuple
 
-        # Cast text features to match visual features dtype (text encoder
+        # Cast text features to match visual features dtype and device (text encoder
         # outputs fp32 because Embedding receives integer indices; manual_cast
-        # can't infer target dtype from integers).
-        txt_feats = txt_feats.to(img_feats[-1].dtype)
+        # can't infer target dtype from integers. In offload mode text may be on CPU).
+        txt_feats = txt_feats.to(device=img_feats[-1].device, dtype=img_feats[-1].dtype)
+        txt_masks = txt_masks.to(img_feats[-1].device)
 
         if prev_mask_pred is not None:
             img_feats = [img_feats[-1] + prev_mask_pred]
@@ -3597,7 +3618,7 @@ class Sam3Image(torch.nn.Module):
     ):
         bs = memory.shape[1]
         query_embed = self.transformer.decoder.query_embed.weight
-        tgt = query_embed.unsqueeze(1).repeat(1, bs, 1).to(memory.dtype)
+        tgt = query_embed.unsqueeze(1).repeat(1, bs, 1).to(device=memory.device, dtype=memory.dtype)
 
         apply_dac = self.transformer.decoder.dac and self.training
         _dtype_debug("_run_decoder inputs", tgt=tgt, memory=memory, pos_embed=pos_embed,
@@ -3928,7 +3949,7 @@ class Sam3Image(torch.nn.Module):
         )
 
         vision_feats[-1] = (
-            vision_feats[-1] + self.inst_interactive_predictor.model.no_mem_embed
+            vision_feats[-1] + self.inst_interactive_predictor.model.no_mem_embed.to(vision_feats[-1].device)
         )
         import os as _os
         if _os.environ.get("DEBUG_COMFYUI_SAM3", "").lower() in ("1", "true", "yes"):
@@ -3972,7 +3993,7 @@ class Sam3Image(torch.nn.Module):
             backbone_out
         )
         vision_feats[-1] = (
-            vision_feats[-1] + self.inst_interactive_predictor.model.no_mem_embed
+            vision_feats[-1] + self.inst_interactive_predictor.model.no_mem_embed.to(vision_feats[-1].device)
         )
         batch_size = vision_feats[-1].shape[1]
         orig_heights, orig_widths = (
@@ -9333,7 +9354,7 @@ class SAM3InteractiveImagePredictor(nn.Module):
             _,
             _,
         ) = self.model._prepare_backbone_features(backbone_out)
-        vision_feats[-1] = vision_feats[-1] + self.model.no_mem_embed
+        vision_feats[-1] = vision_feats[-1] + self.model.no_mem_embed.to(vision_feats[-1].device)
 
         feats = [
             feat.permute(1, 2, 0).view(1, -1, *feat_size)
@@ -9371,7 +9392,7 @@ class SAM3InteractiveImagePredictor(nn.Module):
             _,
             _,
         ) = self.model._prepare_backbone_features(backbone_out)
-        vision_feats[-1] = vision_feats[-1] + self.model.no_mem_embed
+        vision_feats[-1] = vision_feats[-1] + self.model.no_mem_embed.to(vision_feats[-1].device)
 
         feats = [
             feat.permute(1, 2, 0).view(batch_size, -1, *feat_size)
@@ -9478,21 +9499,24 @@ class SAM3InteractiveImagePredictor(nn.Module):
         self, point_coords, point_labels, box, mask_logits, normalize_coords, img_idx=-1
     ):
         unnorm_coords, labels, unnorm_box, mask_input = None, None, None, None
+        # Use image features device as compute device — in offload mode
+        # self.device returns CPU (parameter device) but computation runs on CUDA.
+        _dev = self._features["image_embed"][-1].device if self._features is not None else self.device
         if point_coords is not None:
             assert (
                 point_labels is not None
             ), "point_labels must be supplied if point_coords is supplied."
             point_coords = torch.as_tensor(
-                point_coords, dtype=torch.float, device=self.device
+                point_coords, dtype=torch.float, device=_dev
             )
             unnorm_coords = self._transforms.transform_coords(
                 point_coords, normalize=normalize_coords, orig_hw=self._orig_hw[img_idx]
             )
-            labels = torch.as_tensor(point_labels, dtype=torch.int, device=self.device)
+            labels = torch.as_tensor(point_labels, dtype=torch.int, device=_dev)
             if len(unnorm_coords.shape) == 2:
                 unnorm_coords, labels = unnorm_coords[None, ...], labels[None, ...]
         if box is not None:
-            box = torch.as_tensor(box, dtype=torch.float, device=self.device)
+            box = torch.as_tensor(box, dtype=torch.float, device=_dev)
             unnorm_box = self._transforms.transform_boxes(
                 box, normalize=normalize_coords, orig_hw=self._orig_hw[img_idx]
             )  # Bx2x2
@@ -9503,10 +9527,10 @@ class SAM3InteractiveImagePredictor(nn.Module):
             # which promotes src to fp32 and crashes the matmul against bf16
             # hyper_in in predict_masks.
             if isinstance(mask_logits, torch.Tensor):
-                mask_input = mask_logits.to(device=self.device)
+                mask_input = mask_logits.to(device=_dev)
             else:
                 mask_input = torch.as_tensor(
-                    mask_logits, dtype=torch.float, device=self.device
+                    mask_logits, dtype=torch.float, device=_dev
                 )
             if len(mask_input.shape) == 3:
                 mask_input = mask_input[None, :, :, :]

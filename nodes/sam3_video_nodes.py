@@ -434,6 +434,20 @@ class SAM3Propagate(io.ComfyNode):
         # Ensure model is on GPU before inference (may have been offloaded)
         comfy.model_management.load_models_gpu([sam3_model])
 
+        # In --novram mode, all weights are offloaded to CPU and each layer
+        # round-trips weights CPU<->GPU per forward pass.  For video (30+ frames
+        # x hundreds of layers) this is unusably slow.  Instead, bulk-move the
+        # entire model to GPU once, process all frames at full speed, then move
+        # back.  The existing comfy_cast_weights hooks become no-ops when
+        # weights are already on the target device.
+        _pinned_to_gpu = False
+        if sam3_model.loaded_size() == 0:
+            _gpu = sam3_model.load_device
+            log.info("Video: pinning model to GPU for duration of propagation (--novram bulk transfer)")
+            sam3_model.model.to(_gpu)
+            sam3_model._sync_model_device(_gpu)
+            _pinned_to_gpu = True
+
         log.info(f"Starting propagation: frames {start_frame} to {end_frame if end_frame >= 0 else 'end'}")
         log.info(f"Prompts: {len(video_state.prompts)}")
         print_mem("Before propagation start")
@@ -455,15 +469,15 @@ class SAM3Propagate(io.ComfyNode):
         masks_dict = {}
         scores_dict = {}
 
-        print_mem("Before reconstruction")
-        # Reconstruct inference state from immutable state
-        inference_state = get_inference_state(sam3_model, video_state)
-        print_mem("After reconstruction")
-
-        # Run propagation (dtype handled by operations= / manual_cast)
-        num_propagation_frames = end_frame - start_frame + 1
-        pbar = comfy.utils.ProgressBar(num_propagation_frames)
         try:
+            print_mem("Before reconstruction")
+            # Reconstruct inference state from immutable state
+            inference_state = get_inference_state(sam3_model, video_state)
+            print_mem("After reconstruction")
+
+            # Run propagation (dtype handled by operations= / manual_cast)
+            num_propagation_frames = end_frame - start_frame + 1
+            pbar = comfy.utils.ProgressBar(num_propagation_frames)
             for response in sam3_model.handle_stream_request(request):
                 comfy.model_management.throw_exception_if_processing_interrupted()
 
@@ -510,6 +524,12 @@ class SAM3Propagate(io.ComfyNode):
         except Exception as e:
             log.error(f"Propagation error: {e}", exc_info=True)
             raise
+        finally:
+            if _pinned_to_gpu:
+                # Don't explicitly move back to CPU -- raw .to() conflicts with
+                # ComfyUI's pinned tensor tracking.  ComfyUI will offload the
+                # model naturally when VRAM is needed for the next node.
+                log.info("Video: propagation complete, model stays on GPU until ComfyUI offloads it")
 
         print_mem("After propagation loop")
         log.info(f"Propagation complete: {len(masks_dict)} frames processed")
@@ -847,7 +867,7 @@ class SAM3VideoOutput(io.ComfyNode):
                 score_str = f"{oid}:{score:.2f}"
             else:
                 score_str = f"{oid}"
-            cls._draw_text(vis_frame, score_str, text_x, item_y, box_size)
+            SAM3VideoOutput._draw_text(vis_frame, score_str, text_x, item_y, box_size)
 
         return vis_frame
 

@@ -93,7 +93,7 @@ def sam3_attention(q, k, v, num_heads):
         log.debug("sam3_attention: cast Q/K/V %s -> %s", orig_dtype, q.dtype)
 
     if not _sam3_attn_printed:
-        log.info("attention backend: %s | dtype: %s", fn.__name__, q.dtype)
+        log.debug("attention backend: %s | dtype: %s", fn.__name__, q.dtype)
         _sam3_attn_printed = True
     log.debug("[sam3_attention] q=%s k=%s v=%s heads=%d", list(q.shape), list(k.shape), list(v.shape), num_heads)
     result = fn(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
@@ -284,6 +284,7 @@ def apply_rotary_enc(
         else None
     )
     freqs_cis = reshape_for_broadcast(freqs_cis, xq_)
+    freqs_cis = freqs_cis.to(xq_.device)
     xq_out = torch.view_as_real(xq_ * freqs_cis).flatten(3)
     if xk_ is None:
         return xq_out.type_as(xq).to(xq.device), xk
@@ -555,6 +556,8 @@ class TwoWayAttentionBlock(nn.Module):
     def forward(
         self, queries: Tensor, keys: Tensor, query_pe: Tensor, key_pe: Tensor
     ) -> Tuple[Tensor, Tensor]:
+        query_pe = query_pe.to(queries.device)
+        key_pe = key_pe.to(keys.device)
         # Self attention block
         if self.skip_first_layer_pe:
             queries = self.self_attn(q=queries, k=queries, v=queries)
@@ -640,6 +643,8 @@ class TwoWayTransformer(nn.Module):
 
         queries = point_embedding
         keys = image_embedding
+        point_embedding = point_embedding.to(keys.device)
+        image_pe = image_pe.to(keys.device)
 
         for layer in self.layers:
             queries, keys = layer(

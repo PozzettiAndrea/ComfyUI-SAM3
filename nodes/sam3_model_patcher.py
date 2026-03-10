@@ -88,6 +88,7 @@ class SAM3UnifiedModel(ModelPatcher):
         if device_to is None:
             device_to = self._load_device
         self._sync_processor_device(device_to)
+        self._sync_model_device(device_to)
         return result
 
     def unpatch_model(self, device_to=None, unpatch_weights=True):
@@ -95,6 +96,7 @@ class SAM3UnifiedModel(ModelPatcher):
         if device_to is None:
             device_to = self._offload_device
         self._sync_processor_device(device_to)
+        self._sync_model_device(device_to)
 
     def clone(self):
         n = SAM3UnifiedModel(
@@ -122,6 +124,16 @@ class SAM3UnifiedModel(ModelPatcher):
             pass
 
     # -- Internal helpers -----------------------------------------------------
+
+    def _sync_model_device(self, device):
+        """Set compute device on model objects so .device returns the correct
+        device in offload mode (where parameters stay on CPU but computation
+        happens on CUDA).  All SAM3 model classes check _device first."""
+        self.model.device = device
+        if hasattr(self.model, 'inst_interactive_predictor'):
+            pred = self.model.inst_interactive_predictor
+            if hasattr(pred, 'model'):
+                pred.model.device = device
 
     def _sync_processor_device(self, device):
         """Sync processor's device and dtype after model movement.
