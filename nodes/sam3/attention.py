@@ -105,9 +105,6 @@ def sam3_attention(q, k, v, num_heads):
 # SplitMultiheadAttention — drop-in replacement for nn.MultiheadAttention
 # ---------------------------------------------------------------------------
 
-_split_mha_dbg_count = 0
-
-
 class SplitMultiheadAttention(nn.Module):
     """Drop-in replacement for nn.MultiheadAttention using separate Linear projections.
 
@@ -180,23 +177,6 @@ class SplitMultiheadAttention(nn.Module):
         # Prepare mask for attention
         sdpa_mask = self._prepare_mask(attn_mask, key_padding_mask, B, L_q, L_k, q.dtype, q.device)
 
-        import sys
-        global _split_mha_dbg_count
-        _split_mha_dbg_count += 1
-        _do_dbg = _split_mha_dbg_count <= 5 or (_split_mha_dbg_count > 24 and _split_mha_dbg_count <= 30)
-        if _do_dbg:
-            _path = "masked" if sdpa_mask is not None else "unmasked"
-            print(f"[DBG] MHA#{_split_mha_dbg_count} batch_first={self.batch_first} "
-                  f"q={list(q.shape)} k={list(k.shape)} dtype={q.dtype} "
-                  f"path={_path} has_attn_mask={attn_mask is not None} "
-                  f"has_kpm={key_padding_mask is not None}", file=sys.stderr)
-            if sdpa_mask is not None:
-                print(f"[DBG] MHA#{_split_mha_dbg_count} sdpa_mask: shape={list(sdpa_mask.shape)}, "
-                      f"dtype={sdpa_mask.dtype}, "
-                      f"min={sdpa_mask.min():.4f}, max={sdpa_mask.max():.4f}, "
-                      f"has_neginf={(sdpa_mask == float('-inf')).sum().item()}, "
-                      f"num_zero={(sdpa_mask == 0).sum().item()}", file=sys.stderr)
-
         # When mask is needed, use SDPA (pytorch) which supports masks natively.
         # Flash/sage/xformers don't support arbitrary attention masks.
         if sdpa_mask is not None:
@@ -206,10 +186,6 @@ class SplitMultiheadAttention(nn.Module):
             out = sam3_attention(q, k, v, self.num_heads)
             # sam3_attention returns [B, H, L, D] — transpose to [B, L, H, D]
             out = out.transpose(1, 2)
-
-        if _do_dbg:
-            print(f"[DBG] MHA#{_split_mha_dbg_count} out: shape={list(out.shape)}, "
-                  f"norm={out.float().norm():.4f}", file=sys.stderr)
 
         out = out.reshape(B, L_q, self.embed_dim)
         log.debug("[SplitMHA] after reshape -> out=%s", list(out.shape))

@@ -1439,18 +1439,6 @@ class TransformerDecoderLayer(nn.Module):
         dac=False, dac_use_selfatt_ln=True, presence_token=None,
         identity=0.0, **kwargs,
     ):
-        import sys
-        _li = getattr(self, 'layer_idx', '?')
-        _p = presence_token is not None
-        if _p and _li == 0:
-            print(f"[DBG] DecoderLayer-{_li}: tgt={list(tgt.shape)} dtype={tgt.dtype}, "
-                  f"memory_text={list(memory_text.shape) if memory_text is not None else None} "
-                  f"dtype={memory_text.dtype if memory_text is not None else None}, "
-                  f"text_mask={list(text_attention_mask.shape) if text_attention_mask is not None else None} "
-                  f"sum_True={text_attention_mask.sum().item() if text_attention_mask is not None else 'N/A'}, "
-                  f"cross_attn_mask={list(cross_attn_mask.shape) if cross_attn_mask is not None else None}", file=sys.stderr)
-            print(f"[DBG] DecoderLayer-{_li}: use_text_cross_attention={self.use_text_cross_attention}", file=sys.stderr)
-
         if self.self_attn is not None:
             if dac:
                 assert tgt.shape[0] % 2 == 0
@@ -1733,15 +1721,10 @@ class TransformerDecoder(nn.Module):
         else:
             reference_boxes = None
             intermediate_ref_boxes = None
-        import sys
         output = tgt
         presence_out = None
         if self.presence_token is not None and is_instance_prompt is False:
             presence_out = self.presence_token.weight[None].expand(1, bs, -1).to(device=tgt.device, dtype=tgt.dtype)
-            print(f"[DBG] Decoder: presence_token embed: shape={presence_out.shape}, dtype={presence_out.dtype}, "
-                  f"norm={presence_out.float().norm():.6f}", file=sys.stderr)
-            print(f"[DBG] Decoder: tgt dtype={tgt.dtype}, memory dtype={memory.dtype}, "
-                  f"memory_text dtype={memory_text.dtype if memory_text is not None else 'None'}", file=sys.stderr)
         box_head = self.bbox_embed
         if is_instance_prompt and self.instance_bbox_embed is not None:
             box_head = self.instance_bbox_embed
@@ -1806,7 +1789,6 @@ class TransformerDecoder(nn.Module):
                 intermediate_layer_presence_logits = self.presence_token_head(
                     normed_presence
                 ).squeeze(-1)
-                print(f"[DBG] Decoder layer {layer_idx}: presence_logit={intermediate_layer_presence_logits.item():.6f}", file=sys.stderr)
                 if self.clamp_presence_logits:
                     intermediate_layer_presence_logits = intermediate_layer_presence_logits.clamp(
                         min=-self.clamp_presence_logit_max_val,
@@ -3578,19 +3560,12 @@ class Sam3Image(torch.nn.Module):
                 device=geo_masks.device,
                 dtype=geo_masks.dtype,
             )
-        import sys
-        print(f"[DBG] _encode_prompt:", file=sys.stderr)
-        print(f"[DBG]   txt_feats: shape={txt_feats.shape}, dtype={txt_feats.dtype}, norm={txt_feats.float().norm():.4f}", file=sys.stderr)
-        print(f"[DBG]   geo_feats: shape={geo_feats.shape}, dtype={geo_feats.dtype}, norm={geo_feats.float().norm():.4f}", file=sys.stderr)
-        print(f"[DBG]   img_feats[-1]: shape={img_feats[-1].shape}, dtype={img_feats[-1].dtype}, norm={img_feats[-1].float().norm():.4f}", file=sys.stderr)
         if encode_text:
             prompt = torch.cat([txt_feats, geo_feats, visual_prompt_embed], dim=0)
             prompt_mask = torch.cat([txt_masks, geo_masks, visual_prompt_mask], dim=1)
         else:
             prompt = torch.cat([geo_feats, visual_prompt_embed], dim=0)
             prompt_mask = torch.cat([geo_masks, visual_prompt_mask], dim=1)
-        print(f"[DBG]   prompt: shape={prompt.shape}, dtype={prompt.dtype}, norm={prompt.float().norm():.4f}", file=sys.stderr)
-        print(f"[DBG]   prompt_mask: shape={prompt_mask.shape}, sum_True={prompt_mask.sum().item()}", file=sys.stderr)
         return prompt, prompt_mask, backbone_out
 
     def _run_encoder(
@@ -3721,15 +3696,6 @@ class Sam3Image(torch.nn.Module):
         reference_boxes_inv_sig = inverse_sigmoid(reference_boxes)
         outputs_coord = (reference_boxes_inv_sig + anchor_box_offsets).sigmoid()
         outputs_boxes_xyxy = box_cxcywh_to_xyxy(outputs_coord)
-
-        import sys
-        print(f"[DBG] _update_scores_and_boxes:", file=sys.stderr)
-        print(f"[DBG]   outputs_class: shape={outputs_class.shape}, dtype={outputs_class.dtype}, "
-              f"min={outputs_class.float().min():.4f}, max={outputs_class.float().max():.4f}", file=sys.stderr)
-        if dec_presence_out is not None:
-            print(f"[DBG]   dec_presence_out: shape={dec_presence_out.shape}, dtype={dec_presence_out.dtype}, "
-                  f"min={dec_presence_out.float().min():.4f}, max={dec_presence_out.float().max():.4f}, "
-                  f"last_layer_sigmoid={dec_presence_out[-1].float().sigmoid().squeeze().tolist()}", file=sys.stderr)
 
         if dec_presence_out is not None:
             _update_out(

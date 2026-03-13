@@ -7,7 +7,6 @@ Author: kijai
 License: Apache 2.0
 """
 
-import asyncio
 import gc
 import hashlib
 import logging
@@ -25,13 +24,6 @@ import comfy.utils
 
 from comfy_api.latest import io
 
-try:
-    import server
-    from aiohttp import web
-    _SERVER_AVAILABLE = True
-except Exception:
-    server = None
-    _SERVER_AVAILABLE = False
 from .utils import comfy_image_to_pil, visualize_masks_on_image, masks_to_comfy_mask, pil_to_comfy_image
 
 log = logging.getLogger("sam3")
@@ -825,59 +817,48 @@ def _run_segment_sync_one(cached, raw_prompt, prompt_name):
     return {"num_masks": len(all_masks)}
 
 
-if _SERVER_AVAILABLE:
-    @server.PromptServer.instance.routes.post("/sam3/interactive_segment_one")
-    async def _interactive_segment_one_handler(request):
-        try:
-            body = await request.json()
-        except Exception:
-            return web.json_response({"error": "Invalid JSON"}, status=400)
+# ---------------------------------------------------------------------------
+# API route handlers (called via comfy-env IPC proxy from main process)
+# ---------------------------------------------------------------------------
 
-        node_id = str(body.get("node_id", ""))
-        raw_prompt = body.get("prompt", {})
-        prompt_name = str(body.get("prompt_name", "Prompt"))
+def _api_segment_one(body: dict) -> dict:
+    """Handle single-prompt interactive segmentation (called via IPC)."""
+    node_id = str(body.get("node_id", ""))
+    raw_prompt = body.get("prompt", {})
+    prompt_name = str(body.get("prompt_name", "Prompt"))
 
-        cached = _INTERACTIVE_CACHE.get(node_id)
-        if not cached:
-            return web.json_response(
-                {"error": "Model not loaded. Queue the workflow first (Ctrl+Enter)."},
-                status=400,
-            )
+    cached = _INTERACTIVE_CACHE.get(node_id)
+    if not cached:
+        return {"error": "Model not loaded. Queue the workflow first (Ctrl+Enter).", "_status": 400}
 
-        try:
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None, _run_segment_sync_one, cached, raw_prompt, prompt_name
-            )
-            return web.json_response(result)
-        except Exception as exc:
-            log.exception("Interactive segmentation (single prompt '%s') failed", prompt_name)
-            return web.json_response({"error": str(exc)}, status=500)
+    try:
+        return _run_segment_sync_one(cached, raw_prompt, prompt_name)
+    except Exception as exc:
+        log.exception("Interactive segmentation (single prompt '%s') failed", prompt_name)
+        return {"error": str(exc), "_status": 500}
 
-    @server.PromptServer.instance.routes.post("/sam3/interactive_segment")
-    async def _interactive_segment_handler(request):
-        try:
-            body = await request.json()
-        except Exception:
-            return web.json_response({"error": "Invalid JSON"}, status=400)
 
-        node_id = str(body.get("node_id", ""))
-        raw_prompts = body.get("prompts", [])
+def _api_segment(body: dict) -> dict:
+    """Handle multi-prompt interactive segmentation (called via IPC)."""
+    node_id = str(body.get("node_id", ""))
+    raw_prompts = body.get("prompts", [])
 
-        cached = _INTERACTIVE_CACHE.get(node_id)
-        if not cached:
-            return web.json_response(
-                {"error": "Model not loaded. Queue the workflow first (Ctrl+Enter)."},
-                status=400,
-            )
+    cached = _INTERACTIVE_CACHE.get(node_id)
+    if not cached:
+        return {"error": "Model not loaded. Queue the workflow first (Ctrl+Enter).", "_status": 400}
 
-        try:
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(None, _run_segment_sync, cached, raw_prompts)
-            return web.json_response(result)
-        except Exception as exc:
-            log.exception("Interactive segmentation failed")
-            return web.json_response({"error": str(exc)}, status=500)
+    try:
+        return _run_segment_sync(cached, raw_prompts)
+    except Exception as exc:
+        log.exception("Interactive segmentation failed")
+        return {"error": str(exc), "_status": 500}
+
+
+# Declare routes for comfy-env proxy registration
+ROUTES = [
+    {"method": "POST", "path": "/sam3/interactive_segment_one", "handler": "_api_segment_one"},
+    {"method": "POST", "path": "/sam3/interactive_segment",     "handler": "_api_segment"},
+]
 
 
 # Node mappings for ComfyUI registration

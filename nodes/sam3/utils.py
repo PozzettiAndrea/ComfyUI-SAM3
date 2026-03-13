@@ -1491,18 +1491,6 @@ class Sam3Processor:
         presence_score = outputs["presence_logit_dec"].float().sigmoid().unsqueeze(1)
         out_probs = (out_probs * presence_score).squeeze(-1)
 
-        import sys
-        print(f"[DBG] _forward_grounding:", file=sys.stderr)
-        print(f"[DBG]   out_logits: shape={out_logits.shape}, dtype={out_logits.dtype}, "
-              f"min={out_logits.float().min():.4f}, max={out_logits.float().max():.4f}", file=sys.stderr)
-        pld = outputs["presence_logit_dec"]
-        print(f"[DBG]   presence_logit_dec: shape={pld.shape}, dtype={pld.dtype}, "
-              f"min={pld.float().min():.4f}, max={pld.float().max():.4f}, "
-              f"sigmoid_max={pld.float().sigmoid().max():.6f}", file=sys.stderr)
-        print(f"[DBG]   out_probs: max={out_probs.max():.6f}, "
-              f"above_thresh={( out_probs > self.confidence_threshold).sum().item()}/{out_probs.numel()}, "
-              f"threshold={self.confidence_threshold}", file=sys.stderr)
-
         keep = out_probs > self.confidence_threshold
         out_probs = out_probs[keep]
         out_masks = out_masks[keep]
