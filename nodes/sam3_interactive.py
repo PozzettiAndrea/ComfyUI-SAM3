@@ -665,7 +665,9 @@ class SAM3InteractiveCollector(io.ComfyNode):
         unique_id = kwargs.get("unique_id") or (cls.hidden.unique_id if cls.hidden else None)
 
         sam3_model = get_or_build_model(sam3_model_config)
+
         comfy.model_management.load_models_gpu([sam3_model])
+
         pil_image = comfy_image_to_pil(image)
         img_w, img_h = pil_image.size
 
@@ -674,6 +676,16 @@ class SAM3InteractiveCollector(io.ComfyNode):
 
         if hasattr(processor, 'sync_device_with_model'):
             processor.sync_device_with_model()
+
+        # Smoke-test CUDA before set_image
+        _dev = getattr(processor, 'device', 'cpu')
+        try:
+            _probe = torch.zeros(1, device=_dev)
+            del _probe
+            log.warning("[DBG] CUDA probe OK on %s, image=%dx%d, lowvram=%s",
+                         _dev, img_w, img_h, getattr(sam3_model.model, 'model_lowvram', 'N/A'))
+        except Exception as _e:
+            log.error("[DBG] CUDA probe FAILED on %s: %s", _dev, _e)
 
         state = processor.set_image(pil_image)
 

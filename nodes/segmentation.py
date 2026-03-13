@@ -694,6 +694,7 @@ class SAM3MultipromptSegmentation(io.ComfyNode):
         import comfy.model_management
 
         sam3_model = get_or_build_model(sam3_model_config)
+
         comfy.model_management.load_models_gpu([sam3_model])
 
         processor = sam3_model.processor
@@ -723,6 +724,16 @@ class SAM3MultipromptSegmentation(io.ComfyNode):
             return io.NodeOutput(empty_mask, pil_to_comfy_image(pil_image))
 
         # Set image once (feature extraction)
+        # Smoke-test CUDA before set_image
+        _dev = getattr(processor, 'device', 'cpu')
+        try:
+            _probe = torch.zeros(1, device=_dev)
+            del _probe
+            log.warning("[DBG] CUDA probe OK on %s, image=%dx%d, lowvram=%s",
+                         _dev, img_w, img_h, getattr(sam3_model.model, 'model_lowvram', 'N/A'))
+        except Exception as _e:
+            log.error("[DBG] CUDA probe FAILED on %s: %s", _dev, _e)
+
         state = processor.set_image(pil_image)
 
         all_masks = []

@@ -8,9 +8,12 @@ Provides a single ModelPatcher subclass that integrates with:
 """
 
 import gc
+import logging
 import torch
 import comfy.model_management
 from comfy.model_patcher import ModelPatcher
+
+log = logging.getLogger("sam3")
 
 
 class SAM3UnifiedModel(ModelPatcher):
