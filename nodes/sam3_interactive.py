@@ -685,7 +685,7 @@ class SAM3InteractiveCollector(io.ComfyNode):
             "state": state,
             "pil_image": pil_image,
             "img_size": (img_w, img_h),
-            "prompt_masks": {},  # keyed by prompt_index → (masks, scores)
+            "prompt_masks": {},  # keyed by prompt_index -> (masks, scores)
         }
         log.info("execute() cached node_id=%r", str(unique_id))
 
