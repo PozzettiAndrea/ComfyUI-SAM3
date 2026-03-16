@@ -1577,8 +1577,11 @@ class TransformerDecoder(nn.Module):
             self.instance_query_embed = operations.Embedding(num_instances, d_model, dtype=dtype, device=device)
         self.box_refine = box_refine
         if box_refine:
-            nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
-            nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
+            last_bbox_layer = self.bbox_embed.layers[-1]
+            if getattr(last_bbox_layer, "weight", None) is not None:
+                nn.init.constant_(last_bbox_layer.weight, 0)
+            if getattr(last_bbox_layer, "bias", None) is not None:
+                nn.init.constant_(last_bbox_layer.bias, 0)
             self.reference_points = operations.Embedding(num_queries, 4, dtype=dtype, device=device)
             if instance_query:
                 self.instance_reference_points = operations.Embedding(num_instances, 4, dtype=dtype, device=device)
@@ -1619,9 +1622,10 @@ class TransformerDecoder(nn.Module):
         self.ref_point_head = MLP(2 * d_model, d_model, d_model, 2, dtype=dtype, device=device, operations=operations)
         self.dac_use_selfatt_ln = dac_use_selfatt_ln
 
-        nn.init.normal_(self.query_embed.weight.data)
-        if self.instance_query_embed is not None:
-            nn.init.normal_(self.instance_query_embed.weight.data)
+        if getattr(self.query_embed, "weight", None) is not None:
+            nn.init.normal_(self.query_embed.weight)
+        if self.instance_query_embed is not None and getattr(self.instance_query_embed, "weight", None) is not None:
+            nn.init.normal_(self.instance_query_embed.weight)
 
         assert self.roi_pooler is None
         assert self.return_intermediate, "support return_intermediate only"
