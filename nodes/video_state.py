@@ -22,9 +22,6 @@ from dataclasses import dataclass, field
 from typing import Tuple, Optional, Dict, Any, List
 from pathlib import Path
 
-import comfy.model_management
-import comfy.utils
-
 log = logging.getLogger("sam3")
 
 
@@ -338,6 +335,8 @@ def create_video_state(
     """
     import numpy as np
     from PIL import Image
+    import comfy.model_management
+    import comfy.utils
 
     session_uuid = session_id if session_id else str(uuid.uuid4())
     temp_dir = create_temp_dir(session_uuid)
@@ -393,6 +392,8 @@ def create_video_state_from_file(
     """
     import cv2
     from PIL import Image as PILImage
+    import comfy.model_management
+    import comfy.utils
 
     session_uuid = session_id if session_id else str(uuid.uuid4())
     temp_dir = create_temp_dir(session_uuid)
