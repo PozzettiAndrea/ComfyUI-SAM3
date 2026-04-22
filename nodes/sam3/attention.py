@@ -92,11 +92,39 @@ def sam3_attention(q, k, v, num_heads):
     if q.dtype != orig_dtype:
         log.debug("sam3_attention: cast Q/K/V %s -> %s", orig_dtype, q.dtype)
 
+    # Flash attention only supports fp16/bf16. When Q/K/V are fp32, bypass
+    # ComfyUI's attention_flash dispatch AND guard SDPA so its registered
+    # flash-attn backend (from the PyPI flash-attn wheel) can't be picked up
+    # either — both paths would otherwise raise a native C++ exception from
+    # flash_attn_2_cuda.pyd::mha_fwd that Python's try/except can't fully absorb.
+    if q.dtype == torch.float32 and fn.__name__ == "attention_flash":
+        if not _sam3_attn_printed:
+            log.warning(
+                "attention_flash cannot run on fp32 Q/K/V. "
+                "Falling back to attention_pytorch with flash-SDPA disabled."
+            )
+        fn = attention_pytorch
+
     if not _sam3_attn_printed:
         log.debug("attention backend: %s | dtype: %s", fn.__name__, q.dtype)
         _sam3_attn_printed = True
     log.debug("[sam3_attention] q=%s k=%s v=%s heads=%d", list(q.shape), list(k.shape), list(v.shape), num_heads)
-    result = fn(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
+
+    if q.dtype == torch.float32:
+        # torch.nn.attention.sdpa_kernel is the supported API for forcing a
+        # specific SDPA backend. We exclude FLASH_ATTENTION (the one that
+        # raises on fp32) and let MATH + EFFICIENT_ATTENTION handle it.
+        try:
+            from torch.nn.attention import sdpa_kernel, SDPBackend
+            with sdpa_kernel([SDPBackend.MATH, SDPBackend.EFFICIENT_ATTENTION]):
+                result = fn(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
+        except ImportError:
+            # torch < 2.3: sdpa_kernel isn't available; fall through to the
+            # old behavior. Rare in practice since SAM3 targets torch >= 2.8.
+            result = fn(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
+    else:
+        result = fn(q, k, v, heads=num_heads, skip_reshape=True, skip_output_reshape=True)
+
     log.debug("[sam3_attention] result=%s", list(result.shape))
     return result
 
