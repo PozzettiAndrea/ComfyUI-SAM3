@@ -8,9 +8,22 @@ on:
       - 'LICENSE'
       - '.github/workflows/publish.yml'
       - '.github/workflows/pr-gate.yml'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to test (empty = all)'
+        type: choice
+        options:
+          - ''
+          - linux-cpu
+          - macos-cpu
+          - windows-cpu
+          - windows-portable-cpu
+        default: ''
 
 jobs:
   test:
-    uses: PozzettiAndrea/comfy-test/.github/workflows/test-matrix.yml@v0.2.21
+    uses: PozzettiAndrea/comfy-test/.github/workflows/test-matrix.yml@v0.2.39
     with:
       config-file: "comfy-test.toml"
+      platform: ${{ inputs.platform || '' }}
