@@ -15,6 +15,9 @@ Three options, in order of speed → reliability:
    python install.py
    ```
 
+---
+
+
 
 <div align="center">
 <a href="https://pozzettiandrea.github.io/ComfyUI-SAM3/">
@@ -28,7 +31,6 @@ ComfyUI integration for Meta's SAM3 (Segment Anything Model 3). Open-vocabulary 
 
 https://github.com/user-attachments/assets/323df482-1f05-4c69-8681-9bfb4073f766
 
----
 
 
 ## Credits
