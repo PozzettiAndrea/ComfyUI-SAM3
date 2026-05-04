@@ -77,22 +77,14 @@ def mask_iou(pred_masks: torch.Tensor, gt_masks: torch.Tensor) -> torch.Tensor:
 # NMS (from perflib/nms.py) — depends on mask_iou above
 # ---------------------------------------------------------------------------
 
-GENERIC_NMS_AVAILABLE = False
-generic_nms_cuda = None
 try:
-    from torch_generic_nms import generic_nms as _generic_nms_cuda_imp
-    if torch.cuda.is_available():
-        # Smoke test: a CPU-stub package can install a real-looking module that
-        # crashes on first GPU call. Probe with a tiny allocation so we discover
-        # that here, not mid-pipeline.
-        _probe_iou = torch.zeros((2, 2), device="cuda")
-        _probe_scores = torch.zeros((2,), device="cuda")
-        _generic_nms_cuda_imp(_probe_iou, _probe_scores, 0.5, use_iou_matrix=True)
-        del _probe_iou, _probe_scores
-    generic_nms_cuda = _generic_nms_cuda_imp
+    from torch_generic_nms import generic_nms as generic_nms_cuda
     GENERIC_NMS_AVAILABLE = True
-except (ImportError, ModuleNotFoundError, AttributeError, OSError, RuntimeError) as _e:
-    logging.debug("torch_generic_nms unavailable (%s); using CPU NMS fallback", _e)
+except ImportError:
+    logging.debug(
+        "torch_generic_nms not available, falling back to CPU mask NMS implementation."
+    )
+    GENERIC_NMS_AVAILABLE = False
 
 _SHOWN_NMS_WARNING = False
 
@@ -162,21 +154,12 @@ def generic_nms_cpu(
 # Connected components (from perflib/connected_components.py)
 # ---------------------------------------------------------------------------
 
-HAS_CC_TORCH = False
-get_connected_components = None
 try:
-    from cc_torch import get_connected_components as _get_connected_components_imp
-    if torch.cuda.is_available():
-        # Smoke test: a CPU-stub package can install a real-looking module that
-        # crashes on first GPU call. Probe with a tiny allocation so we discover
-        # that here, not mid-pipeline.
-        _probe = torch.zeros((1, 1, 4, 4), dtype=torch.uint8, device="cuda")
-        _get_connected_components_imp(_probe)
-        del _probe
-    get_connected_components = _get_connected_components_imp
+    from cc_torch import get_connected_components
     HAS_CC_TORCH = True
-except (ImportError, ModuleNotFoundError, AttributeError, OSError, RuntimeError) as _e:
-    logging.debug("cc_torch unavailable (%s); using CPU connected-components fallback", _e)
+except ImportError:
+    logging.debug("cc_torch not found. Consider installing for better performance.")
+    HAS_CC_TORCH = False
 
 
 def connected_components_cpu_single(values: torch.Tensor):
