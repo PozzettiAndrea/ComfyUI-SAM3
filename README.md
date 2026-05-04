@@ -28,6 +28,9 @@ ComfyUI integration for Meta's SAM3 (Segment Anything Model 3). Open-vocabulary 
 
 https://github.com/user-attachments/assets/323df482-1f05-4c69-8681-9bfb4073f766
 
+---
+
+
 ## Credits
 
 - **SAM3**: Meta AI Research (https://github.com/facebookresearch/sam3)
