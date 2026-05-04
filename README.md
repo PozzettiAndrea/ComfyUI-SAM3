@@ -4,7 +4,7 @@
 
 Three options, in order of speed → reliability:
 
-1. **ComfyUI Manager (nightly)** — search for `ComfyUI-SAM3` in the Manager and click Install. Fastest, but the Manager's nightly index can lag.
+1. **ComfyUI Manager (nightly, recommended)** — search for `ComfyUI-SAM3` in the Manager and click Install **from the nightly version**. Do **NOT** use any numbered version like `0.2.4` — they are outdated.
 2. **Manager via Git URL** — in ComfyUI Manager: "Install via Git URL" with `https://github.com/PozzettiAndrea/ComfyUI-SAM3.git`.
 3. **Manual (most reliable)**:
    ```bash
@@ -15,8 +15,9 @@ Three options, in order of speed → reliability:
    python install.py
    ```
 
----
+> **Please report any problems** you hit during installation or use of my nodes — open a [Discussion](https://github.com/PozzettiAndrea/ComfyUI-SAM3/discussions) or [Issue](https://github.com/PozzettiAndrea/ComfyUI-SAM3/issues). Very grateful for your help! 🙏
 
+---
 
 
 <div align="center">
