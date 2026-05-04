@@ -7,6 +7,10 @@ Version 3.0.0 refactoring:
 - Automatic cleanup (no manual SAM3CloseVideoSession needed)
 """
 
+from ._comfyui_bootstrap import ensure_comfyui_base
+
+ensure_comfyui_base()
+
 from .load_model import NODE_CLASS_MAPPINGS as LOAD_MODEL_MAPPINGS
 from .load_model import NODE_DISPLAY_NAME_MAPPINGS as LOAD_MODEL_DISPLAY_MAPPINGS
 from .segmentation import NODE_CLASS_MAPPINGS as SEGMENTATION_MAPPINGS
