@@ -1,0 +1,46 @@
+Capturing execution frames: image_seg_point.json
+  [ComfyUI] [DEPRECATION WARNING] Detected import of deprecated legacy API: /scripts/ui.js. This is likely caused by a custom node extension using outdated APIs. Please update your extensions or contact the extension author for an updated version.
+  [ComfyUI] [DEPRECATION WARNING] Detected import of deprecated legacy API: /extensions/core/clipspace.js. This is likely caused by a custom node extension using outdated APIs. Please update your extensions or contact the extension author for an updated version.
+  [ComfyUI] [DEPRECATION WARNING] Detected import of deprecated legacy API: /extensions/core/widgetInputs.js. This is likely caused by a custom node extension using outdated APIs. Please update your extensions or contact the extension author for an updated version.
+  Validating workflow...
+  [ComfyUI] === /validate endpoint called ===
+  [ComfyUI] Received JSON with keys: ['prompt']
+  [ComfyUI] Prompt has 9 nodes
+  [ComfyUI]   Node 1: LoadImage
+  [ComfyUI]     Inputs: {"image": "image.png"}
+  [ComfyUI]   Node 3: PreviewImage
+  [ComfyUI]     Inputs: {"images": ["21", 1]}
+  [ComfyUI]   Node 4: MaskPreview
+  [ComfyUI]     Inputs: {"mask": ["21", 0]}
+  [ComfyUI]   Node 12: LoadSAM3Model
+  [ComfyUI]     Inputs: {"model_path": "models/sam3/sam3.pt"}
+  [ComfyUI]   Node 20: SAM3MultiRegionCollector
+  [ComfyUI]     Inputs: {"multi_prompts_store": "[{\"positive_points\":[{\"x\":5052.74953932266,\"y\":2847.0600693869637},{\"x\":4932.510591392486,\"y\":2953.9413227753366},{\"x\":4718.752461738845,\"y\":2967.301479448883},{
+  [ComfyUI]   Node 21: SAM3MultipromptSegmentation
+  [ComfyUI]     Inputs: {"refinement_iterations": 2, "use_multimask": false, "offload_model": false, "sam3_model": ["12", 0], "image": ["1", 0], "multi_prompts": ["20", 0]}
+  [ComfyUI]   Node 22: MultibandFromBatch
+  [ComfyUI]     Inputs: {"images": ["1", 0], "masks": ["21", 0]}
+  [ComfyUI]   Node 23: MultibandSave
+  [ComfyUI]     Inputs: {"file_path": "output/multiband", "format": "npz", "multiband": ["22", 0]}
+  [ComfyUI]   Node 24: MultibandPreview
+  [ComfyUI]     Inputs: {"channel_index": 0, "multiband": ["22", 0]}
+  [ComfyUI] Generated prompt_id: c08892a7-f081-4581-a8db-aa4905921324
+  [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  Queuing workflow for execution...
+  [ComfyUI] got prompt
+  [ComfyUI] WARNING: 'NoneType' object has no attribute 'shape'
+  [ComfyUI] Sam3VideoPredictor using device: cpu
+  [ComfyUI] [0m[32mINFO 2026-01-24 13:08:46,002 3481 sam3_video_base.py: 124:[0m setting max_num_objects=10000 and num_obj_for_compile=16
+  [ComfyUI] Requested to load Sam3VideoInferenceWithInstanceInteractivity
+  [ComfyUI] /home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3_lib/model/sam1_task_predictor.py:423: UserWarning: No module named '/home/runner/work/ComfyUI-SAM3/ComfyUI-SAM3/_x_comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3.nodes.sam3_lib.model.perflib'
+  [ComfyUI] 
+  [ComfyUI] Skipping the post-processing step due to the error above. You can still use SAM 3 and it's OK to ignore the error above, although some post-processing functionality may be limited (which doesn't affect the results in most cases; see https://github.com/facebookresearch/sam3/blob/main/INSTALL.md).
+  [ComfyUI]   masks = self._transforms.postprocess_masks(
+  [ComfyUI] Prompt executed in 144.30 seconds
+  Captured 713 frames over 149.66s
+  12 unique frames saved as WebP
+  Waiting 5000ms for previews to render...
+  Saved high-quality screenshot: image_seg_point_executed.png
+    Captured 13 video frames

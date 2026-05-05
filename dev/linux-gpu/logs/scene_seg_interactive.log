@@ -1,0 +1,121 @@
+Capturing execution frames: scene_seg_interactive.json
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB) -> cpu: 3896 / 7703 MB
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=13 sending model_to_device
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -338MB (now 3113MB) reserved=3520MB peak=3833MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -1627MB (now 1487MB) reserved=3520MB peak=3833MB
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB): 568 / 7703 MB
+  Frame 1 saved (frame_000.jpg, t=0.0s)
+  Validating workflow...
+  [ComfyUI] === /validate endpoint called ===
+  Queuing workflow for execution...
+  [ComfyUI] Received JSON with keys: ['prompt']
+  [ComfyUI] Prompt has 4 nodes
+  [ComfyUI]   Node 1: LoadImage
+  [ComfyUI]     Inputs: {"image": "image.png"}
+  [ComfyUI]   Node 4: MaskPreview
+  [ComfyUI]     Inputs: {"mask": ["26", 0]}
+  [ComfyUI]   Node 12: LoadSAM3Model
+  [ComfyUI]     Inputs: {"precision": "auto", "compile": false}
+  [ComfyUI]   Node 26: SAM3InteractiveCollector
+  [ComfyUI]     Inputs: {"multi_prompts_store": "[{\"positive_points\":[{\"x\":3348.288109906738,\"y\":2452.2208696844737}],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 1\"},{\"positiv
+  [ComfyUI] Generated prompt_id: 63f80b79-1e3b-423d-95b4-6d76578aca4c
+  [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  [ComfyUI] got prompt
+  [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'auto', compile: False
+  [ComfyUI] BatchToMultiband: Processed 1 images with 3 channels each -> 3 channels
+  [ComfyUI] [VRAM] Before LoadSAM3Model: 568 / 7703 MB
+  [ComfyUI] BatchToMultiband: Processed 7 masks -> 7 channels
+  [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
+  [ComfyUI] BatchToMultiband: Output shape torch.Size([1, 10, 4480, 6720]), channels: ['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] ResizeMultiband: 4480x6720 -> 600x900
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] SaveMultibandImage: Saved to output/multiband.npz
+  [ComfyUI] [ComfyUI-SAM3] Health check: failed
+  [ComfyUI]   Shape: (1, 10, 600, 900)
+  [ComfyUI] [ComfyUI-SAM3] Socket unhealthy, restarting worker...
+  [ComfyUI]   Format: npz
+  [ComfyUI] [comfy-env] Invalidated 1 stale model patchers (will be cleaned up during next unload)
+  [ComfyUI] PreviewMultibandImage: Batch=1, Channels=10, Names=['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI] [ComfyUI-SAM3] python: /workspaces/SAM3-2047/ComfyUI/.ce/.pixi/envs/sam3-nodes/bin/python
+  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['/workspaces/SAM3-2047/ComfyUI', '/workspaces/SAM3-2047/ComfyUI/custom_nodes/ComfyUI-SAM3', '/workspaces/SAM3-2047/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages', '/workspaces/SAM3-2047/ComfyUI/custom_nodes/ComfyUI-SAM3']
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/workspaces/SAM3-2047/ComfyUI/.ce/.pixi/envs/sam3-nodes/bin/python
+  [ComfyUI] [SubprocessWorker] launching cmd=['/root/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/workspaces/SAM3-2047/ComfyUI/.ce/pixi.toml', '-e', 'sam3-nodes', 'python', '/tmp/comfyui_pvenv__h3nk_ib/persistent_worker.py', 'abstract://comfy_worker_29de69e4c808']...
+  [ComfyUI] [SubprocessWorker] socket_addr=abstract://comfy_worker_29de69e4c808 (abstract, no filesystem path)
+  Frame 2 saved (frame_001.jpg, t=2.3s)
+  [capture-periodic] freeze=1ms shot=165ms unfreeze=8ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=14 sending call_method
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB) -> cpu: 270 / 7703 MB
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=15 sending model_to_device
+  [ComfyUI] Model 'Sam3VideoInferenceWithInstanceInteractivity_1' gone from worker (restarted?), treating as offloaded
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB): 270 / 7703 MB
+  [ComfyUI] [comfy-env] LoadSAM3Model done (2.62s): result: NodeOutput
+  [ComfyUI] [VRAM] After LoadSAM3Model: 270 / 7703 MB
+  [ComfyUI] [comfy-env] Running SAM3InteractiveCollector: multi_prompts_store: '[{"positive_points":[{"x":3348.288109906738,"y":2452.220..., sam3_model_config: dict, image: torch.float32 [1,4480,6720,3] cpu, unique_id: '26'
+  [ComfyUI] [VRAM] Before SAM3InteractiveCollector: 270 / 7703 MB
+  [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_interactive.SAM3InteractiveCollector.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 4480, 6720, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=16 sending call_method
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 4480, 6720, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 4480, 6720, 3])
+  Frame 3 saved (frame_002.jpg, t=4.7s)
+  [capture-periodic] freeze=1ms shot=157ms unfreeze=7ms saved=True
+  [capture-loop] iter=50 t=6.0s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=16
+  [ComfyUI] [comfy-env] VRAM request: 1.84GB, free before eviction: 7.69GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.69GB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +534MB (now 534MB) reserved=544MB peak=534MB
+  Frame 4 saved (frame_003.jpg, t=6.9s)
+  [capture-periodic] freeze=2ms shot=178ms unfreeze=7ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1243MB (now 1778MB) reserved=1792MB peak=1778MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=16
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +264MB (now 2042MB) reserved=2528MB peak=2476MB
+  Frame 5 saved (frame_004.jpg, t=9.2s)
+  [capture-periodic] freeze=2ms shot=166ms unfreeze=8ms saved=True
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] Created 1 model patchers: ['Sam3VideoInferenceWithInstanceInteractivity_1']
+  [ComfyUI] [comfy-env] SAM3InteractiveCollector done (8.00s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3InteractiveCollector: 2904 / 7703 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (1756 MB)
+  Frame 6 saved (frame_005.jpg, t=11.5s)
+  [capture-periodic] freeze=2ms shot=166ms unfreeze=5ms saved=True
+  [capture-loop] iter=100 t=11.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3
+  [ComfyUI] Prompt executed in 11.90 seconds
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB) -> cpu: 2904 / 7703 MB
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=17 sending model_to_device
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -355MB (now 1688MB) reserved=2528MB peak=2476MB
+  Node executed (1 total), capturing...
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB): 760 / 7703 MB
+  Frame 7 saved (frame_006.jpg, t=12.6s)
+  [capture-node] freeze=574ms shot=1497ms unfreeze=2ms saved=True
+  Node executed (2 total), capturing...
+  [capture-node] freeze=2ms shot=216ms unfreeze=0ms saved=False
+  Execution complete (t=15.0s)
+  Captured 7 unique frames over 15.25s
+  [debug] iframes: 0
+  [timing] trigger_3d_previews: 0.0s
+  Saved high-quality screenshot: scene_seg_interactive_executed.png
+  [timing] final_screenshot: 1.4s
+    Captured 8 video frames

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PozzettiAndrea/ComfyUI-SAM3 Test Results</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1923; color: #e6edf3; display: flex; flex-direction: column; }
+    .tab-bar { display: flex; gap: 4px; padding: 12px 20px; flex-wrap: wrap; align-items: center; background: #162033; border-bottom: 1px solid #243656; }
+    .tab-bar-label { font-size: 0.7rem; color: #4a6282; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-right: 8px; }
+    .tab { padding: 6px 14px; background: #1c2d44; border: 1px solid #243656; color: #8ba3c1; cursor: pointer; border-radius: 6px; font-size: 12px; font-weight: 500; transition: all 0.15s; }
+    .tab:hover { background: #243656; color: #e6edf3; border-color: #4a6282; }
+    .tab.active { background: #58a6ff; color: #fff; border-color: #58a6ff; }
+    .tab.available { color: #3fb950; }
+    .tab.passed { color: #3fb950; border-color: rgba(63, 185, 80, 0.4); }
+    .tab.failed { color: #f85149; border-color: rgba(248, 81, 73, 0.5); background: #2a1416; }
+    .tab.failed.active { background: #f85149; color: #fff; border-color: #f85149; }
+    .tab.passed.active { background: #3fb950; color: #fff; border-color: #3fb950; }
+    .tab .status-mark { margin-left: 6px; font-weight: 700; }
+    .tab.unavailable { color: #4a6282; cursor: not-allowed; border-color: #1c2d44; background: #0f1923; }
+    iframe { flex: 1; width: 100%; border: none; background: #0f1923; }
+  </style>
+</head>
+<body>
+  <div class="tab-bar">
+    <span class="tab-bar-label">Platform</span>
+    <div id="tabs" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+  </div>
+  <iframe id="frame" src="about:blank"></iframe>
+  <script>
+    const platforms = [{"id": "linux-cpu", "label": "Linux CPU"}, {"id": "linux-gpu", "label": "Linux GPU"}, {"id": "windows-cpu", "label": "Windows CPU"}, {"id": "windows-gpu", "label": "Windows GPU"}, {"id": "windows-portable-cpu", "label": "Win Portable CPU"}, {"id": "windows-portable-gpu", "label": "Win Portable GPU"}, {"id": "macos-cpu", "label": "macOS CPU"}];
+    const tabs = document.getElementById('tabs');
+    const frame = document.getElementById('frame');
+    let activeTab = null;
+
+    async function fetchStatus(id) {
+      // Returns 'passed' | 'failed' | 'available' | 'unavailable'.
+      try {
+        const r = await fetch(id + '/results.json', { cache: 'no-cache' });
+        if (r.ok) {
+          const data = await r.json();
+          if (typeof data.success === 'boolean') return data.success ? 'passed' : 'failed';
+        }
+      } catch {}
+      try {
+        const head = await fetch(id + '/index.html', { method: 'HEAD' });
+        return head.ok ? 'available' : 'unavailable';
+      } catch { return 'unavailable'; }
+    }
+
+    async function init() {
+      for (const p of platforms) {
+        const status = await fetchStatus(p.id);
+        const interactive = status !== 'unavailable';
+        const btn = document.createElement('button');
+        btn.className = 'tab ' + status;
+        btn.textContent = p.label;
+        if (status === 'passed') {
+          const mark = document.createElement('span');
+          mark.className = 'status-mark';
+          mark.textContent = '✓';
+          btn.appendChild(mark);
+        } else if (status === 'failed') {
+          const mark = document.createElement('span');
+          mark.className = 'status-mark';
+          mark.textContent = '✗';
+          btn.appendChild(mark);
+        }
+        btn.onclick = () => {
+          if (!interactive) return;
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          btn.classList.add('active');
+          frame.src = p.id + '/index.html';
+          activeTab = p.id;
+          history.replaceState(null, '', '#' + p.id);
+        };
+        tabs.appendChild(btn);
+
+        const hash = location.hash.slice(1);
+        if ((hash === p.id || (!activeTab && interactive)) && interactive) {
+          btn.click();
+        }
+      }
+    }
+
+    // Forward keyboard events to report iframe
+    document.onkeydown = function(e) {
+      if (['Escape', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        if (frameReady) frame.contentWindow.postMessage({ type: 'comfytest-key', key: e.key }, '*');
+      }
+    };
+
+    let pendingMessage = null;
+    let frameReady = false;
+
+    frame.addEventListener('load', function() {
+      if (frame.src !== 'about:blank') {
+        frameReady = true;
+        if (pendingMessage) {
+          // Small delay to let report.html initialize
+          setTimeout(function() {
+            frame.contentWindow.postMessage(pendingMessage, '*');
+            pendingMessage = null;
+          }, 200);
+        }
+      }
+    });
+
+    // Forward messages between report iframe and parent (branch_index)
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type && e.data.type.startsWith('comfytest-')) {
+        if (e.source === frame.contentWindow) {
+          // From report iframe -> forward to parent
+          if (window !== window.top) window.parent.postMessage(e.data, '*');
+        } else {
+          // From parent -> forward to report iframe
+          if (frameReady) {
+            frame.contentWindow.postMessage(e.data, '*');
+          } else {
+            pendingMessage = e.data;
+          }
+        }
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
