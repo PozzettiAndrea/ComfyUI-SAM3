@@ -58,6 +58,7 @@ class LoadSAM3Model(io.ComfyNode):
 
     @classmethod
     def execute(cls, precision="auto", compile=False):
+        import comfy.utils
         import comfy.model_management
 
         load_device = comfy.model_management.get_torch_device()
@@ -67,8 +68,10 @@ class LoadSAM3Model(io.ComfyNode):
 
         # Auto-download if needed
         if not checkpoint_path.exists():
-            log.info(f"Model not found at {checkpoint_path}, downloading from HuggingFace...")
-            cls._download_from_huggingface()
+            print(f"[SAM3] Model not found at {checkpoint_path}, downloading from HuggingFace...", flush=True)
+            pbar = comfy.utils.ProgressBar(100)
+            cls._download_from_huggingface(pbar)
+            print("[SAM3] Model downloaded successfully", flush=True)
 
         # BPE path for tokenizer
         bpe_path = str(Path(__file__).parent / "sam3" / "bpe_simple_vocab_16e6.txt.gz")
@@ -98,22 +101,45 @@ class LoadSAM3Model(io.ComfyNode):
         return io.NodeOutput(config)
 
     @staticmethod
-    def _download_from_huggingface():
+    def _download_from_huggingface(pbar=None):
         if not HF_HUB_AVAILABLE:
             raise ImportError(
                 "[SAM3] huggingface_hub is required to download models.\n"
                 "Please install it with: pip install huggingface_hub"
             )
+        import requests
+        from huggingface_hub import hf_hub_url
 
         model_dir = Path(comfy_base_path) / LoadSAM3Model.MODEL_DIR
         model_dir.mkdir(parents=True, exist_ok=True)
 
-        hf_hub_download(
-            repo_id="apozz/sam3-safetensors",
-            filename=LoadSAM3Model.MODEL_FILENAME,
-            local_dir=str(model_dir),
-        )
-        log.info(f"Model downloaded to: {model_dir / LoadSAM3Model.MODEL_FILENAME}")
+        url = hf_hub_url("apozz/sam3-safetensors", LoadSAM3Model.MODEL_FILENAME)
+        dest = model_dir / LoadSAM3Model.MODEL_FILENAME
+        tmp = dest.with_suffix(".tmp")
+
+        print(f"[SAM3] Downloading {LoadSAM3Model.MODEL_FILENAME} from apozz/sam3-safetensors...", flush=True)
+        resp = requests.get(url, stream=True, timeout=60)
+        resp.raise_for_status()
+        total = int(resp.headers.get("content-length", 0))
+        downloaded = 0
+        last_pct = 0
+
+        with open(tmp, "wb") as f:
+            for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                f.write(chunk)
+                downloaded += len(chunk)
+                if total > 0:
+                    pct = int(downloaded * 100 / total)
+                    if pbar and pct > last_pct:
+                        pbar.update_absolute(pct, 100)
+                    if pct >= last_pct + 10:
+                        print(f"[SAM3] Download progress: {pct}%", flush=True)
+                        last_pct = pct
+
+        tmp.rename(dest)
+        if pbar:
+            pbar.update_absolute(100, 100)
+        print(f"[SAM3] Downloaded {LoadSAM3Model.MODEL_FILENAME}", flush=True)
 
 
 NODE_CLASS_MAPPINGS = {
