@@ -4,7 +4,7 @@
 
 Three options, in order of speed → reliability:
 
-1. **ComfyUI Manager (nightly, recommended)** — search for `ComfyUI-SAM3` in the Manager and click Install **from the nightly version**. Do **NOT** use any numbered version like `0.2.4` — they are outdated.
+1. **ComfyUI Manager (recommended)** — search for `SAM3` in the Manager and click Install from the highest version displayed. If that doesn't work, try nightly.
 2. **Manager via Git URL** — in ComfyUI Manager: "Install via Git URL" with `https://github.com/PozzettiAndrea/ComfyUI-SAM3.git`.
 3. **Manual (most reliable)**:
    ```bash
