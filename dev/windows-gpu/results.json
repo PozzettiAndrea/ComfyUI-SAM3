@@ -1,107 +1,107 @@
 {
-  "timestamp": "2026-05-10T15:59:44.459372+00:00",
+  "timestamp": "2026-05-10T20:04:38.484246+00:00",
   "platform": "windows",
   "hardware": {
     "os": "Windows-11-10.0.26200-SP0",
     "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
   },
-  "commit_hash": "aa6a1cee3f7c0796d428b18a29a74416617f2ad1",
-  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/25632565223",
-  "success": true,
+  "commit_hash": "70f6d67a41ded1564f2abbe9210fd581ad82bef4",
+  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/25638285580",
+  "success": false,
   "summary": {
     "total": 5,
-    "passed": 5,
-    "failed": 0
+    "passed": 0,
+    "failed": 5
   },
   "workflows": [
     {
       "name": "image_seg_point",
-      "status": "pass",
-      "duration_seconds": 82.42,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 32.66,
+      "error": "Workflow execution failed: {'prompt_id': 'ed4832f1-0773-4f09-abb6-908f87d3ad9b', 'node_id': '30', 'node_type': 'LoadSAM3Model', 'executed': ['15', '1'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"C:\\\\Users\\\\ContainerAdministrator\\\\AppData\\\\Local\\\\Temp\\\\comfyui_pvenv_mp36cpvl\\\\persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['auto'], 'compile': [False]}, 'current_outputs': ['31', '29', '28', '15', '1', '30'], 'timestamp': 1778443444509}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\image_seg_point.json\nNode error: LoadSAM3Model",
       "hardware": {
         "os": "Windows-11-10.0.26200-SP0",
         "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 6.38,
-          "avg": 1.63
+          "peak": 1.61,
+          "avg": 1.29
         },
         "total_ram_gb": 31.9,
-        "samples": 78
+        "samples": 33
       }
     },
     {
       "name": "image_seg_text",
-      "status": "pass",
-      "duration_seconds": 18.55,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 6.06,
+      "error": "Workflow execution failed: {'prompt_id': '3c43a825-3885-43b4-8fdc-41bb293838c9', 'node_id': '12', 'node_type': 'LoadSAM3Model', 'executed': ['1'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"C:\\\\Users\\\\ContainerAdministrator\\\\AppData\\\\Local\\\\Temp\\\\comfyui_pvenv_mp36cpvl\\\\persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['fp32'], 'compile': [False]}, 'current_outputs': ['15', '1', '12', '4', '3'], 'timestamp': 1778443451090}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\image_seg_text.json\nNode error: LoadSAM3Model",
       "hardware": {
         "os": "Windows-11-10.0.26200-SP0",
         "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 4.84,
-          "avg": 1.9
+          "peak": 1.62,
+          "avg": 1.62
         },
         "total_ram_gb": 31.9,
-        "samples": 19
+        "samples": 6
       }
     },
     {
       "name": "scene_seg",
-      "status": "pass",
-      "duration_seconds": 41.4,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 9.02,
+      "error": "Workflow execution failed: {'prompt_id': 'f98601e5-6af4-4c0f-96f6-2355cd03f15b', 'node_id': '12', 'node_type': 'LoadSAM3Model', 'executed': ['1', '20'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"C:\\\\Users\\\\ContainerAdministrator\\\\AppData\\\\Local\\\\Temp\\\\comfyui_pvenv_mp36cpvl\\\\persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['fp32'], 'compile': [False]}, 'current_outputs': ['27', '22', '1', '26', '20', '12', '4', '23', '24', '3'], 'timestamp': 1778443459490}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\scene_seg.json\nNode error: LoadSAM3Model",
       "hardware": {
         "os": "Windows-11-10.0.26200-SP0",
         "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 8.98,
-          "avg": 4.24
+          "peak": 2.3,
+          "avg": 1.77
         },
         "total_ram_gb": 31.9,
-        "samples": 41
+        "samples": 9
       }
     },
     {
       "name": "scene_seg_interactive",
-      "status": "pass",
-      "duration_seconds": 28.22,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 7.87,
+      "error": "Workflow execution failed: {'prompt_id': '3581b1c3-e5dc-4544-95d2-7ca923b31824', 'node_id': '12', 'node_type': 'LoadSAM3Model', 'executed': ['1'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"C:\\\\Users\\\\ContainerAdministrator\\\\AppData\\\\Local\\\\Temp\\\\comfyui_pvenv_mp36cpvl\\\\persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['auto'], 'compile': [False]}, 'current_outputs': ['26', '1', '12', '4'], 'timestamp': 1778443468632}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\scene_seg_interactive.json\nNode error: LoadSAM3Model",
       "hardware": {
         "os": "Windows-11-10.0.26200-SP0",
         "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 7.57,
-          "avg": 4.61
+          "peak": 2.42,
+          "avg": 2.31
         },
         "total_ram_gb": 31.9,
-        "samples": 28
+        "samples": 8
       }
     },
     {
       "name": "video_point_prompt",
-      "status": "pass",
-      "duration_seconds": 79.28,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 9.12,
+      "error": "Workflow execution failed: {'prompt_id': 'f568460e-9b25-4543-a4d4-a3a0fc56e836', 'node_id': '30', 'node_type': 'LoadSAM3Model', 'executed': ['27', '9', '28'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"C:\\\\Users\\\\ContainerAdministrator\\\\AppData\\\\Local\\\\Temp\\\\comfyui_pvenv_mp36cpvl\\\\persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n', '  File \"C:\\\\workspaces\\\\SAM3-2157\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['auto'], 'compile': [False]}, 'current_outputs': ['27', '30', '35', '28', '15', '25', '13', '9', '14', '21', '24'], 'timestamp': 1778443477938}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\video_point_prompt.json\nNode error: LoadSAM3Model",
       "hardware": {
         "os": "Windows-11-10.0.26200-SP0",
         "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 6.66,
-          "avg": 3.93
+          "peak": 2.93,
+          "avg": 2.41
         },
         "total_ram_gb": 31.9,
-        "samples": 79
+        "samples": 10
       }
     }
   ]
