@@ -4,7 +4,6 @@ Capturing execution frames: image_seg_text.json
   [ComfyUI] === /validate endpoint called ===
   [ComfyUI] Received JSON with keys: ['prompt']
   [ComfyUI] Prompt has 5 nodes
-  Queuing workflow for execution...
   [ComfyUI]   Node 1: LoadImage
   [ComfyUI]     Inputs: {"image": "example_image.jpg"}
   [ComfyUI]   Node 3: PreviewImage
@@ -12,10 +11,11 @@ Capturing execution frames: image_seg_text.json
   [ComfyUI]   Node 4: MaskPreview
   [ComfyUI]     Inputs: {"mask": ["15", 0]}
   [ComfyUI]   Node 12: LoadSAM3Model
+  Queuing workflow for execution...
   [ComfyUI]     Inputs: {"precision": "fp32", "compile": false}
   [ComfyUI]   Node 15: SAM3Grounding
   [ComfyUI]     Inputs: {"confidence_threshold": 0.2, "text_prompt": "child", "max_detections": -1, "sam3_model_config": ["12", 0], "image": ["1", 0]}
-  [ComfyUI] Generated prompt_id: 10797ef8-b644-4c26-8823-cef0f948467a
+  [ComfyUI] Generated prompt_id: 7478139a-4cc1-457f-a60c-f520f2f24d60
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
@@ -31,7 +31,7 @@ Capturing execution frames: image_seg_text.json
   [ComfyUI] [SubprocessWorker] sending request via socket...
   [ComfyUI] [SubprocessWorker] call_id=4 sending call_method
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] LoadSAM3Model done (0.28s): result: NodeOutput
+  [ComfyUI] [comfy-env] LoadSAM3Model done (0.01s): result: NodeOutput
   [ComfyUI] [comfy-env] Running SAM3Grounding: confidence_threshold: 0.2, text_prompt: 'child', max_detections: -1, sam3_model_config: dict, image: torch.float32 [1,720,1280,3] cpu
   [ComfyUI] [SubprocessWorker] call_method: nodes.segmentation.SAM3Grounding.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
@@ -46,178 +46,93 @@ Capturing execution frames: image_seg_text.json
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 720, 1280, 3]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 720, 1280, 3])
-  Frame 2 saved (frame_001.jpg, t=2.9s)
-  [capture-periodic] freeze=6ms shot=193ms unfreeze=5ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=5
-  [ComfyUI] [comfy-env] VRAM request: 3.50GB, free before eviction: 1.52GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 1.52GB
-  Frame 3 saved (frame_002.jpg, t=5.2s)
-  [capture-periodic] freeze=3ms shot=236ms unfreeze=3ms saved=True
-  [capture-loop] iter=50 t=7.3s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=4 ram=4.1/7.0GB (70%) swap=0.0/0.0GB (0%) cpu=88% browser_rss=0.53GB
-  Frame 4 saved (frame_003.jpg, t=7.5s)
-  [capture-periodic] freeze=4ms shot=2564ms unfreeze=11ms saved=True
-  Frame 5 saved (frame_004.jpg, t=14.1s)
-  [capture-periodic] freeze=320ms shot=2068ms unfreeze=15ms saved=True
-  Frame 6 saved (frame_005.jpg, t=18.6s)
-  [capture-periodic] freeze=5ms shot=987ms unfreeze=17ms saved=True
-  [capture-loop] iter=100 t=36.4s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=60 ram=2.9/7.0GB (86%) swap=1.6/2.0GB (80%) cpu=73% browser_rss=0.26GB
+  [ComfyUI] [comfy-env] VRAM request: 3.50GB, free before eviction: 1.59GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 1.59GB
+  Frame 2 saved (frame_001.jpg, t=2.2s)
+  [capture-periodic] freeze=3ms shot=169ms unfreeze=5ms saved=True
+  Frame 3 saved (frame_002.jpg, t=4.4s)
+  [capture-periodic] freeze=15ms shot=2210ms unfreeze=9ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3]
+  [ComfyUI] === WATCHDOG TICK 2 ===
+  [ComfyUI] [worker:ComfyUI-SAM3] Current thread 0x000000016dec7000 (most recent call first):
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_3xapbmqh/persistent_worker.py", line 52 in _watchdog
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/threading.py", line 982 in run
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/threading.py", line 1045 in _bootstrap_inner
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/threading.py", line 1002 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x00000001f1622240 (most recent call first):
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1370 in convert
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 965 in _apply
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1384 in to
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_3xapbmqh/persistent_worker.py", line 1341 in _hooked_to
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/comfy/model_patcher.py", line 885 in load
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/comfy/model_patcher.py", line 1079 in partially_load
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/comfy/model_management.py", line 607 in model_use_more_vram
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/comfy/model_management.py", line 579 in model_load
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/comfy/model_management.py", line 817 in load_models_gpu
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_3xapbmqh/persistent_worker.py", line 1539 in _shimmed_load_models_gpu
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 87 in execute
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_3xapbmqh/persistent_worker.py", line 1762 in main
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_3xapbmqh/persistent_worker.py", line 1807 in <module>
+  [ComfyUI] 
+  [ComfyUI] [worker:ComfyUI-SAM3] === END ===
+  [ComfyUI] 
+  [capture-loop] iter=50 t=8.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=493 ram=3.7/7.0GB (90%) swap=0.1/1.0GB (14%) cpu=42% browser_rss=0.31GB
+  Frame 4 saved (frame_003.jpg, t=8.8s)
+  [capture-periodic] freeze=3ms shot=253ms unfreeze=5ms saved=True
+  Frame 5 saved (frame_004.jpg, t=11.3s)
+  [capture-periodic] freeze=29ms shot=2762ms unfreeze=4ms saved=True
+  [capture-loop] iter=100 t=19.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=2.6/7.0GB (92%) swap=2.6/3.0GB (88%) cpu=52% browser_rss=0.20GB
+  [capture-loop] iter=150 t=32.2s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=33 ram=3.4/7.0GB (90%) swap=1.7/2.0GB (83%) cpu=35% browser_rss=0.30GB
+  Frame 6 saved (frame_005.jpg, t=41.3s)
+  [capture-periodic] freeze=17ms shot=5132ms unfreeze=112ms saved=True
+  [capture-loop] iter=200 t=48.4s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=5 ram=3.7/7.0GB (77%) swap=1.9/3.0GB (62%) cpu=36% browser_rss=0.22GB
+  Frame 7 saved (frame_006.jpg, t=56.5s)
+  [capture-periodic] freeze=7ms shot=844ms unfreeze=14ms saved=True
+  [ComfyUI] /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py:1824: UserWarning: The operator 'aten::_assert_async' is not currently supported on the MPS backend and will fall back to run on the CPU. This may have performance implications. (Triggered internally at /Users/runner/work/pytorch/pytorch/pytorch/aten/src/ATen/mps/MPSFallback.mm:34.)
+  [ComfyUI]   torch._assert_async(is_right_padded(mask1))
+  [capture-loop] iter=250 t=62.7s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=2.6/7.0GB (86%) swap=1.7/2.0GB (86%) cpu=47% browser_rss=0.18GB
   [ComfyUI] [worker:ComfyUI-SAM3]
   [ComfyUI] === WATCHDOG TICK 3 ===
-  [ComfyUI] [worker:ComfyUI-SAM3] Current thread 0x0000000170d83000 (most recent call first):
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 52 in _watchdog
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 953 in run
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 1016 in _bootstrap_inner
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 973 in _bootstrap
+  [ComfyUI] [worker:ComfyUI-SAM3] Current thread 0x000000016dec7000 (most recent call first):
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_3xapbmqh/persistent_worker.py", line 52 in _watchdog
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/threading.py", line 982 in run
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/threading.py", line 1045 in _bootstrap_inner
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/threading.py", line 1002 in _bootstrap
   [ComfyUI] 
-  [ComfyUI] Thread 0x00000002054da240 (most recent call first):
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1370 in convert
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 965 in _apply
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1384 in to
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1341 in _hooked_to
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy/model_patcher.py", line 885 in load
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy/model_patcher.py", line 1079 in partially_load
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy/model_management.py", line 607 in model_use_more_vram
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy/model_management.py", line 579 in model_load
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy/model_management.py", line 817 in load_models_gpu
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1539 in _shimmed_load_models_gpu
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 87 in execute
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1762 in main
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1807 in <module>
+  [ComfyUI] Thread 0x00000001f1622240 (most recent call first):
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3578 in _encode_prompt
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3819 in forward_grounding
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1477 in _forward_grounding
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1393 in set_text_prompt
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 138 in _segment_grounding
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111 in execute
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2242/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_3xapbmqh/persistent_worker.py", line 1762 in main
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_3xapbmqh/persistent_worker.py", line 1807 in <module>
   [ComfyUI] 
   [ComfyUI] [worker:ComfyUI-SAM3] === END ===
   [ComfyUI] 
-  [capture-loop] iter=150 t=48.2s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=10 ram=1.7/7.0GB (82%) swap=3.3/4.0GB (82%) cpu=66% browser_rss=0.25GB
-  [capture-loop] iter=200 t=56.5s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=2.7/7.0GB (57%) swap=3.3/4.0GB (82%) cpu=70% browser_rss=0.27GB
-  Frame 7 saved (frame_006.jpg, t=62.2s)
-  [capture-periodic] freeze=4ms shot=13216ms unfreeze=993ms saved=True
-  [capture-loop] iter=250 t=87.2s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=5 ram=5.7/7.0GB (87%) swap=1.2/2.0GB (62%) cpu=60% browser_rss=0.18GB
-  Frame 8 saved (frame_007.jpg, t=88.6s)
-  [capture-periodic] freeze=7ms shot=3410ms unfreeze=77ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3]
-  [ComfyUI] === WATCHDOG TICK 4 ===
-  [ComfyUI] [worker:ComfyUI-SAM3] Current thread 0x0000000170d83000 (most recent call first):
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 52 in _watchdog
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 953 in run
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 1016 in _bootstrap_inner
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 973 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x00000002054da240 (most recent call first):
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/conv.py", line 548 in _conv_forward
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy/ops.py", line 509 in forward_comfy_cast_weights
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy/ops.py", line 516 in forward
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/container.py", line 253 in forward
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 2049 in forward
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3321 in _forward_image_no_act_ckpt
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3314 in forward_image
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1324 in set_image
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 133 in _segment_grounding
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111 in execute
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1762 in main
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1807 in <module>
-  [ComfyUI] 
-  [ComfyUI] [worker:ComfyUI-SAM3] === END ===
-  [ComfyUI] 
-  Frame 9 saved (frame_008.jpg, t=96.9s)
-  [capture-periodic] freeze=322ms shot=6306ms unfreeze=26ms saved=True
-  [capture-loop] iter=300 t=104.5s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=4 ram=4.4/7.0GB (89%) swap=1.6/2.0GB (81%) cpu=72% browser_rss=0.15GB
-  Frame 10 saved (frame_009.jpg, t=105.6s)
-  [capture-periodic] freeze=6ms shot=4824ms unfreeze=7ms saved=True
-  [ComfyUI] /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py:1824: UserWarning: The operator 'aten::_assert_async' is not currently supported on the MPS backend and will fall back to run on the CPU. This may have performance implications. (Triggered internally at /Users/runner/work/pytorch/pytorch/pytorch/aten/src/ATen/mps/MPSFallback.mm:34.)
-  [ComfyUI]   torch._assert_async(is_right_padded(mask1))
-  Frame 11 saved (frame_010.jpg, t=115.0s)
-  [capture-periodic] freeze=4ms shot=7971ms unfreeze=29ms saved=True
-  [capture-loop] iter=350 t=123.7s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=4 ram=2.3/7.0GB (84%) swap=1.3/2.0GB (64%) cpu=70% browser_rss=0.18GB
-  Frame 12 saved (frame_011.jpg, t=125.2s)
-  [capture-periodic] freeze=7ms shot=498ms unfreeze=4ms saved=True
-  [capture-loop] iter=400 t=130.4s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=2.0/7.0GB (80%) swap=1.7/2.0GB (86%) cpu=71% browser_rss=0.19GB
-  Frame 13 saved (frame_012.jpg, t=132.3s)
-  [capture-periodic] freeze=6ms shot=6069ms unfreeze=10ms saved=True
-  Frame 14 saved (frame_013.jpg, t=140.5s)
-  [capture-periodic] freeze=4ms shot=183ms unfreeze=18ms saved=True
-  [capture-loop] iter=450 t=142.4s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=6 ram=3.8/7.0GB (88%) swap=1.9/3.0GB (64%) cpu=70% browser_rss=0.19GB
-  [capture-loop] iter=500 t=148.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=2.8/7.0GB (73%) swap=1.9/3.0GB (63%) cpu=64% browser_rss=0.19GB
-  [capture-loop] iter=550 t=155.7s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=3.8/7.0GB (88%) swap=2.0/3.0GB (67%) cpu=68% browser_rss=0.19GB
-  [capture-loop] iter=600 t=161.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=5 ram=3.2/7.0GB (82%) swap=2.0/3.0GB (66%) cpu=67% browser_rss=0.18GB
-  [ComfyUI] [worker:ComfyUI-SAM3]
-  [ComfyUI] === WATCHDOG TICK 5 ===
-  [ComfyUI] [worker:ComfyUI-SAM3] Current thread 0x0000000170d83000 (most recent call first):
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 52 in _watchdog
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 953 in run
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 1016 in _bootstrap_inner
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 973 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x00000002054da240 (most recent call first):
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/perflib.py", line 107 in nms_masks
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1502 in _forward_grounding
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1393 in set_text_prompt
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 138 in _segment_grounding
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111 in execute
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1762 in main
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1807 in <module>
-  [ComfyUI] 
-  [ComfyUI] [worker:ComfyUI-SAM3] === END ===
-  [ComfyUI] 
-  [ComfyUI] [SubprocessWorker] got response: error
-  [ComfyUI] !!! Exception during processing !!! Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!
-  [ComfyUI] 
-  [ComfyUI] Worker traceback:
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1762, in main
-  [ComfyUI]     result = method(**inputs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111, in execute
-  [ComfyUI]     result = cls._segment_grounding(
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 201, in _segment_grounding
-  [ComfyUI]     vis_image = visualize_masks_on_image(
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/utils.py", line 164, in visualize_masks_on_image
-  [ComfyUI]     overlay = torch.where(mask_3d, overlay * (1 - alpha) + color * alpha, overlay)
-  [ComfyUI] RuntimeError: Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!
-  [ComfyUI] 
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 535, in execute
-  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 335, in get_output_data
-  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 309, in _async_map_node_over_list
-  [ComfyUI]     await process_inputs(input_dict, i)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 297, in process_inputs
-  [ComfyUI]     result = f(**inputs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py", line 536, in proxy
-  [ComfyUI]     result = worker.call_method(
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method
-  [ComfyUI]     raise WorkerError(
-  [ComfyUI] comfy_env.isolation.workers.base.WorkerError: Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!
-  [ComfyUI] 
-  [ComfyUI] Worker traceback:
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1762, in main
-  [ComfyUI]     result = method(**inputs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111, in execute
-  [ComfyUI]     result = cls._segment_grounding(
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 201, in _segment_grounding
-  [ComfyUI]     vis_image = visualize_masks_on_image(
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/utils.py", line 164, in visualize_masks_on_image
-  [ComfyUI]     overlay = torch.where(mask_3d, overlay * (1 - alpha) + color * alpha, overlay)
-  [ComfyUI] RuntimeError: Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!
-  [ComfyUI] 
-  [ComfyUI] 
-  [ComfyUI] Prompt executed in 167.49 seconds
-  Execution complete (t=168.9s)
-  Execution error: {'prompt_id': 'd49ef70f-d2d0-4eaf-bcc9-9bb34ce2e60a', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['12', '1'], 'exception_message': 'Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!\n\nWorker traceback:\nTraceback (most recent call last):\n  File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111, in execute\n    result = cls._segment_grounding(\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 201, in _segment_grounding\n    vis_image = visualize_masks_on_image(\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/utils.py", line 164, in visualize_masks_on_image\n    overlay = torch.where(mask_3d, overlay * (1 - alpha) + color * alpha, overlay)\nRuntimeError: Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py", line 536, in proxy\n    result = worker.call_method(\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': ["{'checkpoint_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/models/sam3/sam3.safetensors', 'bpe_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3176, 0.5804, 0.7216],\n          [0.3333, 0.6039, 0.7451],\n          [0.3529, 0.6235, 0.7647]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3137, 0.5765, 0.7176],\n          [0.3137, 0.5843, 0.7255],\n          [0.3255, 0.5961, 0.7373]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3922, 0.5333, 0.6275],\n          [0.3922, 0.5294, 0.6235],\n          [0.3961, 0.5333, 0.6275]],\n\n         ...,\n\n         [[0.4941, 0.4863, 0.4157],\n          [0.4941, 0.4863, 0.4157],\n          [0.4980, 0.4902, 0.4196],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5098, 0.5020, 0.4314],\n          [0.5098, 0.5020, 0.4314],\n          [0.5137, 0.5059, 0.4353],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5176, 0.5098, 0.4392],\n          [0.5216, 0.5137, 0.4431],\n          [0.5255, 0.5176, 0.4471],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]]]])']}, 'current_outputs': ['12', '3', '15', '4', '1'], 'timestamp': 1778449493366}
-    Status: FAILED
-    Error: Workflow execution failed: {'prompt_id': 'd49ef70f-d2d0-4eaf-bcc9-9bb34ce2e60a', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['12', '1'], 'exception_message': 'Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!\n\nWorker traceback:\nTraceback (most recent call last):\n  File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111, in execute\n    result = cls._segment_grounding(\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 201, in _segment_grounding\n    vis_image = visualize_masks_on_image(\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/utils.py", line 164, in visualize_masks_on_image\n    overlay = torch.where(mask_3d, overlay * (1 - alpha) + color * alpha, overlay)\nRuntimeError: Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py", line 536, in proxy\n    result = worker.call_method(\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': ["{'checkpoint_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/models/sam3/sam3.safetensors', 'bpe_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3176, 0.5804, 0.7216],\n          [0.3333, 0.6039, 0.7451],\n          [0.3529, 0.6235, 0.7647]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3137, 0.5765, 0.7176],\n          [0.3137, 0.5843, 0.7255],\n          [0.3255, 0.5961, 0.7373]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3922, 0.5333, 0.6275],\n          [0.3922, 0.5294, 0.6235],\n          [0.3961, 0.5333, 0.6275]],\n\n         ...,\n\n         [[0.4941, 0.4863, 0.4157],\n          [0.4941, 0.4863, 0.4157],\n          [0.4980, 0.4902, 0.4196],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5098, 0.5020, 0.4314],\n          [0.5098, 0.5020, 0.4314],\n          [0.5137, 0.5059, 0.4353],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5176, 0.5098, 0.4392],\n          [0.5216, 0.5137, 0.4431],\n          [0.5255, 0.5176, 0.4471],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]]]])']}, 'current_outputs': ['12', '3', '15', '4', '1'], 'timestamp': 1778449493366}
-    Details: Workflow: /private/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy-test-run-nbu3rvsj/ComfyUI-SAM3/workflows/image_seg_text.json
-Node error: SAM3Grounding
+  [capture-loop] iter=300 t=70.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=3.8/7.0GB (86%) swap=2.1/3.0GB (70%) cpu=42% browser_rss=0.20GB
+  [capture-loop] iter=350 t=76.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=3.9/7.0GB (88%) swap=2.0/3.0GB (66%) cpu=34% browser_rss=0.21GB
+  [capture-loop] iter=400 t=82.4s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=2.8/7.0GB (75%) swap=2.0/3.0GB (66%) cpu=41% browser_rss=0.22GB
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] SAM3Grounding done (84.50s): result: NodeOutput
+  [ComfyUI] Prompt executed in 84.84 seconds
+  Node executed (1 total), capturing...
+  Frame 8 saved (frame_007.jpg, t=85.2s)
+  [capture-node] freeze=2ms shot=91ms unfreeze=2ms saved=True
+  Node executed (2 total), capturing...
+  Frame 9 saved (frame_008.jpg, t=85.5s)
+  [capture-node] freeze=2ms shot=81ms unfreeze=0ms saved=True
+  Execution complete (t=85.5s)
+  Captured 9 unique frames over 85.66s
+  [debug] iframes: 0
+  [timing] trigger_3d_previews: 0.0s
+  Saved high-quality screenshot: image_seg_text_executed.png
+  [timing] final_screenshot: 0.2s
+    Captured 10 video frames
