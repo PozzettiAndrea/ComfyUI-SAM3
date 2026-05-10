@@ -1,132 +1,107 @@
 {
-  "timestamp": "2026-05-09T10:22:57.882167+00:00",
+  "timestamp": "2026-05-10T20:12:03.184921+00:00",
   "platform": "windows",
   "hardware": {
-    "os": "Windows-10-10.0.26200-SP0",
-    "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-    "gpu": "NVIDIA GeForce RTX 3090"
+    "os": "Windows-11-10.0.26200-SP0",
+    "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
   },
-  "commit_hash": "699ede1c63b486cfeddc01747f42e40b9e29e922",
-  "success": true,
+  "commit_hash": "767791cdd4372cca671228148abaf009e2d7a7db",
+  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/25638440173",
+  "success": false,
   "summary": {
     "total": 5,
-    "passed": 5,
-    "failed": 0
+    "passed": 0,
+    "failed": 5
   },
   "workflows": [
     {
       "name": "image_seg_point",
-      "status": "pass",
-      "duration_seconds": 82.16,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 37.79,
+      "error": "Workflow execution failed: {'prompt_id': '86023375-1e85-4626-b82c-f22228be60f2', 'node_id': '31', 'node_type': 'SAM3Segmentation', 'executed': ['1', '30', '15'], 'exception_message': \"No module named 'timm'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\internal\\\\__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\segmentation.py\", line 469, in execute\\n    sam3_model = get_or_build_model(sam3_model_config)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\_model_cache.py\", line 32, in get_or_build_model\\n    from .sam3.predictor import Sam3VideoPredictor\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\__init__.py\", line 61, in <module>\\n    from .model import (\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\model.py\", line 60, in <module>\\n    from timm.models.layers import DropPath, trunc_normal_\\n'], 'current_inputs': {'refinement_iterations': [0], 'use_multimask': [True], 'output_best_mask': [True], 'sam3_model_config': [\"{'checkpoint_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\models\\\\\\\\sam3\\\\\\\\sam3.safetensors', 'bpe_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\custom_nodes\\\\\\\\ComfyUI-SAM3\\\\\\\\nodes\\\\\\\\sam3\\\\\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'auto', 'dtype': 'bf16', 'compile': False}\"], 'image': ['tensor([[[[0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          ...,\\n          [0.3176, 0.5765, 0.7176],\\n          [0.3333, 0.5961, 0.7451],\\n          [0.3529, 0.6157, 0.7647]],\\n\\n         [[0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          ...,\\n          [0.3137, 0.5725, 0.7137],\\n          [0.3137, 0.5765, 0.7255],\\n          [0.3255, 0.5882, 0.7373]],\\n\\n         [[0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          ...,\\n          [0.3882, 0.5294, 0.6235],\\n          [0.3922, 0.5216, 0.6196],\\n          [0.3961, 0.5255, 0.6235]],\\n\\n         ...,\\n\\n         [[0.4941, 0.4784, 0.4157],\\n          [0.4941, 0.4784, 0.4157],\\n          [0.4980, 0.4824, 0.4196],\\n          ...,\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020]],\\n\\n         [[0.5098, 0.4941, 0.4314],\\n          [0.5098, 0.4941, 0.4314],\\n          [0.5137, 0.4980, 0.4353],\\n          ...,\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020]],\\n\\n         [[0.5176, 0.5020, 0.4392],\\n          [0.5216, 0.5059, 0.4431],\\n          [0.5255, 0.5098, 0.4471],\\n          ...,\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020]]]])'], 'positive_points': [\"{'points': [[0.3330291853098248, 0.4464251623052616], [0.32588862185381995, 0.5657519162372204], [0.3373135233834277, 0.7637835504221735]], 'labels': [1, 1, 1]}\"], 'negative_points': [\"{'points': [], 'labels': []}\"]}, 'current_outputs': ['31', '1', '29', '30', '15', '28'], 'timestamp': 1778443891860}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\image_seg_point.json\nNode error: SAM3Segmentation",
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 6.45,
-          "avg": 1.7
+          "peak": 0.9,
+          "avg": 0.89
         },
         "total_ram_gb": 31.9,
-        "samples": 71,
-        "vram": {
-          "peak": 3.01,
-          "avg": 0.88
-        }
+        "samples": 37
       }
     },
     {
       "name": "image_seg_text",
-      "status": "pass",
-      "duration_seconds": 16.2,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 5.83,
+      "error": "Workflow execution failed: {'prompt_id': '260bc77d-fe5b-4b81-97e6-1a0685f84c2c', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['12', '1'], 'exception_message': \"No module named 'timm'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\internal\\\\__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\segmentation.py\", line 86, in execute\\n    sam3_model = get_or_build_model(sam3_model_config)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\_model_cache.py\", line 32, in get_or_build_model\\n    from .sam3.predictor import Sam3VideoPredictor\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\__init__.py\", line 61, in <module>\\n    from .model import (\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\model.py\", line 60, in <module>\\n    from timm.models.layers import DropPath, trunc_normal_\\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': [\"{'checkpoint_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\models\\\\\\\\sam3\\\\\\\\sam3.safetensors', 'bpe_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\custom_nodes\\\\\\\\ComfyUI-SAM3\\\\\\\\nodes\\\\\\\\sam3\\\\\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}\"], 'image': ['tensor([[[[0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          ...,\\n          [0.3176, 0.5765, 0.7176],\\n          [0.3333, 0.5961, 0.7451],\\n          [0.3529, 0.6157, 0.7647]],\\n\\n         [[0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          ...,\\n          [0.3137, 0.5725, 0.7137],\\n          [0.3137, 0.5765, 0.7255],\\n          [0.3255, 0.5882, 0.7373]],\\n\\n         [[0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          [0.2863, 0.4588, 0.5922],\\n          ...,\\n          [0.3882, 0.5294, 0.6235],\\n          [0.3922, 0.5216, 0.6196],\\n          [0.3961, 0.5255, 0.6235]],\\n\\n         ...,\\n\\n         [[0.4941, 0.4784, 0.4157],\\n          [0.4941, 0.4784, 0.4157],\\n          [0.4980, 0.4824, 0.4196],\\n          ...,\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020]],\\n\\n         [[0.5098, 0.4941, 0.4314],\\n          [0.5098, 0.4941, 0.4314],\\n          [0.5137, 0.4980, 0.4353],\\n          ...,\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020]],\\n\\n         [[0.5176, 0.5020, 0.4392],\\n          [0.5216, 0.5059, 0.4431],\\n          [0.5255, 0.5098, 0.4471],\\n          ...,\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020],\\n          [0.5608, 0.5529, 0.5020]]]])']}, 'current_outputs': ['12', '1', '4', '15', '3'], 'timestamp': 1778443898050}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\image_seg_text.json\nNode error: SAM3Grounding",
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 5.22,
-          "avg": 2.76
+          "peak": 0.9,
+          "avg": 0.9
         },
         "total_ram_gb": 31.9,
-        "samples": 15,
-        "vram": {
-          "peak": 3.21,
-          "avg": 1.36
-        }
+        "samples": 6
       }
     },
     {
       "name": "scene_seg",
-      "status": "pass",
-      "duration_seconds": 42.2,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 8.12,
+      "error": "Workflow execution failed: {'prompt_id': '71c3363c-b69c-4635-a6d2-719308767ae1', 'node_id': '27', 'node_type': 'SAM3MultipromptSegmentation', 'executed': ['12', '1', '20'], 'exception_message': \"No module named 'timm'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\internal\\\\__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\segmentation.py\", line 695, in execute\\n    sam3_model = get_or_build_model(sam3_model_config)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\_model_cache.py\", line 32, in get_or_build_model\\n    from .sam3.predictor import Sam3VideoPredictor\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\__init__.py\", line 61, in <module>\\n    from .model import (\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\model.py\", line 60, in <module>\\n    from timm.models.layers import DropPath, trunc_normal_\\n'], 'current_inputs': {'refinement_iterations': [0], 'use_multimask': [False], 'sam3_model_config': [\"{'checkpoint_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\models\\\\\\\\sam3\\\\\\\\sam3.safetensors', 'bpe_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\custom_nodes\\\\\\\\ComfyUI-SAM3\\\\\\\\nodes\\\\\\\\sam3\\\\\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}\"], 'image': ['tensor([[[[0.9176, 0.8392, 0.7333],\\n          [0.9294, 0.8471, 0.7412],\\n          [0.9176, 0.8353, 0.7294],\\n          ...,\\n          [0.8078, 0.6627, 0.4902],\\n          [0.8039, 0.6588, 0.4863],\\n          [0.8157, 0.6706, 0.4980]],\\n\\n         [[0.9137, 0.8353, 0.7294],\\n          [0.9216, 0.8392, 0.7333],\\n          [0.9176, 0.8353, 0.7294],\\n          ...,\\n          [0.8039, 0.6588, 0.4863],\\n          [0.8039, 0.6588, 0.4863],\\n          [0.8118, 0.6667, 0.4941]],\\n\\n         [[0.9137, 0.8314, 0.7255],\\n          [0.9137, 0.8314, 0.7255],\\n          [0.9176, 0.8353, 0.7294],\\n          ...,\\n          [0.8078, 0.6627, 0.4902],\\n          [0.8118, 0.6667, 0.4941],\\n          [0.8039, 0.6588, 0.4863]],\\n\\n         ...,\\n\\n         [[0.8667, 0.6784, 0.4902],\\n          [0.8706, 0.6824, 0.4941],\\n          [0.8706, 0.6824, 0.4941],\\n          ...,\\n          [0.6471, 0.4431, 0.2549],\\n          [0.6392, 0.4353, 0.2471],\\n          [0.6471, 0.4431, 0.2549]],\\n\\n         [[0.8588, 0.6706, 0.4824],\\n          [0.8667, 0.6784, 0.4902],\\n          [0.8706, 0.6824, 0.4941],\\n          ...,\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6471, 0.4431, 0.2549],\\n          [0.6549, 0.4510, 0.2627]],\\n\\n         [[0.8627, 0.6745, 0.4863],\\n          [0.8667, 0.6784, 0.4902],\\n          [0.8784, 0.6902, 0.5020],\\n          ...,\\n          [0.6353, 0.4314, 0.2431],\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6392, 0.4353, 0.2471]]]])'], 'multi_prompts': [\"[{'id': 0, 'positive_points': {'points': [[0.7518972528753959, 0.6355044797738758], [0.7340045522905485, 0.6593619024052091], [0.7021953068063758, 0.6623440802341257], [0.6902668397498108, 0.677254969378709], [0.668397983479442, 0.6742727915497924], [0.7180999295484621, 0.6176114128003758], [0.7180999295484621, 0.572878745366626], [0.7439449415043526, 0.5311282557617927], [0.7240641630767446, 0.5609500340509593], [0.6982191511208541, 0.5609500340509593]], 'labels': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.7141237738629407, 0.6056827014847093, 0.15109391604982114, 0.19085938105066613]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 1, 'positive_points': {'points': [[0.6513952517072837, 0.6001522443905642], [0.6354008929467748, 0.6921217188777309], [0.6433980723270292, 0.8680633222444846], [0.8859791801947458, 0.884058013459644], [0.9046392654153393, 0.6041509171943541], [0.9046392654153393, 0.5441708251375063], [0.8060073863922018, 0.5201787883147672]], 'labels': [1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [[0.7180384132094035, 0.5921548987829846], [0.7180384132094035, 0.5921548987829846], [0.7393642248900819, 0.6601323364474121], [0.7393642248900819, 0.6601323364474121], [0.7446956778102515, 0.6841243732701512], [0.7446956778102515, 0.6841243732701512], [0.670055336927877, 0.6721283548587816], [0.670055336927877, 0.6721283548587816], [0.6913811486085556, 0.608149589998144], [0.6913811486085556, 0.608149589998144], [0.6887154221484707, 0.552168170745086], [0.6887154221484707, 0.552168170745086], [0.7100412338291491, 0.552168170745086], [0.7100412338291491, 0.552168170745086], [0.7366984984299972, 0.552168170745086], [0.7366984984299972, 0.552168170745086]], 'labels': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, 'positive_boxes': {'boxes': [[0.7713529424110994, 0.7141144192985751, 0.31455572229000606, 0.4198606443979348]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 2, 'positive_points': {'points': [[0.5279788816577594, 0.8586378093779201], [0.5097671062510242, 0.6517998210195123], [0.4733435554375539, 0.64789721746558], [0.37968299620291596, 0.64789721746558], [0.39529308940868896, 0.8313195845003946], [0.5565973858683432, 0.8586378093779201], [0.569605796873154, 0.6439946139116478]], 'labels': [1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [[0.4863519664423647, 0.7415597027599534], [0.4863519664423647, 0.7415597027599534], [0.4837502842414026, 0.8508326022700556], [0.4837502842414026, 0.8508326022700556], [0.4473267334279323, 0.8664430164857846], [0.4473267334279323, 0.8664430164857846], [0.43431832242312146, 0.628384199695919], [0.43431832242312146, 0.628384199695919], [0.5123687884519864, 0.5893581641565967], [0.5123687884519864, 0.5893581641565967], [0.5019620596481378, 0.6361894068037834], [0.5019620596481378, 0.6361894068037834], [0.4291149580211971, 0.6400920103577157], [0.4291149580211971, 0.6400920103577157]], 'labels': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, 'positive_boxes': {'boxes': [[0.47724607873899716, 0.7591214187526485, 0.21593962267985972, 0.24586402389773]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 3, 'positive_points': {'points': [[0.43642532993691785, 0.595717523200948]], 'labels': [1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.4324084720788661, 0.6137937552745099, 0.06426972572882772, 0.07230492829424773]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 4, 'positive_points': {'points': [[0.5006950556657457, 0.595717523200948]], 'labels': [1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.5027034845947715, 0.5716158804361987, 0.09238773073518991, 0.1687114993532448]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 5, 'positive_points': {'points': [[0.9264819886192297, 0.384828149009392], [0.7939256793035224, 0.37880273831820466], [0.7939256793035224, 0.11368466790596292], [0.9304988464772813, 0.10765925721477561], [0.874262836464557, 0.22214206034733455], [0.8501616893162467, 0.22214206034733455], [0.846144831458195, 0.31854863140633155], [0.8983639836128675, 0.3004723993327696], [0.8943471257548158, 0.20406582827377262], [0.8943471257548158, 0.12573548928833755], [0.8421279736001431, 0.1558625427442741], [0.830077400025988, 0.28842157795039497], [0.8220436843098845, 0.33059945278870617]], 'labels': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.8662291207484536, 0.25829452449445844, 0.18477546147037982, 0.31332135594174026]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 6, 'positive_points': {'points': [[0.7045792285036274, 0.9568116711293354], [0.6789425589101554, 0.9568116711293354], [0.6569682706871793, 0.9348369322210276], [0.6716177961691634, 0.9293432474939506], [0.6569682706871793, 0.9403306169481045], [0.7082416098741234, 0.9403306169481045]], 'labels': [1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.6789425589101554, 0.943077459311643, 0.10254667837388842, 0.07141790145200044]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}]\"]}, 'current_outputs': ['12', '26', '1', '24', '20', '23', '4', '22', '3', '27'], 'timestamp': 1778443905617}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\scene_seg.json\nNode error: SAM3MultipromptSegmentation",
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 6.51,
-          "avg": 4.43
+          "peak": 1.25,
+          "avg": 0.99
         },
         "total_ram_gb": 31.9,
-        "samples": 37,
-        "vram": {
-          "peak": 4.99,
-          "avg": 3.14
-        }
+        "samples": 9
       }
     },
     {
       "name": "scene_seg_interactive",
-      "status": "pass",
-      "duration_seconds": 28.72,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 6.61,
+      "error": "Workflow execution failed: {'prompt_id': 'a9a9115b-eec6-4d35-b9e2-fcef958a13da', 'node_id': '26', 'node_type': 'SAM3InteractiveCollector', 'executed': ['12', '1'], 'exception_message': \"No module named 'timm'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\internal\\\\__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3_interactive.py\", line 667, in execute\\n    sam3_model = get_or_build_model(sam3_model_config)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\_model_cache.py\", line 32, in get_or_build_model\\n    from .sam3.predictor import Sam3VideoPredictor\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\__init__.py\", line 61, in <module>\\n    from .model import (\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\model.py\", line 60, in <module>\\n    from timm.models.layers import DropPath, trunc_normal_\\n'], 'current_inputs': {'multi_prompts_store': ['[{\"positive_points\":[{\"x\":3348.288109906738,\"y\":2452.2208696844737}],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 1\"},{\"positive_points\":[],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 2\"}]'], 'sam3_model_config': [\"{'checkpoint_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\models\\\\\\\\sam3\\\\\\\\sam3.safetensors', 'bpe_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\custom_nodes\\\\\\\\ComfyUI-SAM3\\\\\\\\nodes\\\\\\\\sam3\\\\\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'auto', 'dtype': 'bf16', 'compile': False}\"], 'image': ['tensor([[[[0.9176, 0.8392, 0.7333],\\n          [0.9294, 0.8471, 0.7412],\\n          [0.9176, 0.8353, 0.7294],\\n          ...,\\n          [0.8078, 0.6627, 0.4902],\\n          [0.8039, 0.6588, 0.4863],\\n          [0.8157, 0.6706, 0.4980]],\\n\\n         [[0.9137, 0.8353, 0.7294],\\n          [0.9216, 0.8392, 0.7333],\\n          [0.9176, 0.8353, 0.7294],\\n          ...,\\n          [0.8039, 0.6588, 0.4863],\\n          [0.8039, 0.6588, 0.4863],\\n          [0.8118, 0.6667, 0.4941]],\\n\\n         [[0.9137, 0.8314, 0.7255],\\n          [0.9137, 0.8314, 0.7255],\\n          [0.9176, 0.8353, 0.7294],\\n          ...,\\n          [0.8078, 0.6627, 0.4902],\\n          [0.8118, 0.6667, 0.4941],\\n          [0.8039, 0.6588, 0.4863]],\\n\\n         ...,\\n\\n         [[0.8667, 0.6784, 0.4902],\\n          [0.8706, 0.6824, 0.4941],\\n          [0.8706, 0.6824, 0.4941],\\n          ...,\\n          [0.6471, 0.4431, 0.2549],\\n          [0.6392, 0.4353, 0.2471],\\n          [0.6471, 0.4431, 0.2549]],\\n\\n         [[0.8588, 0.6706, 0.4824],\\n          [0.8667, 0.6784, 0.4902],\\n          [0.8706, 0.6824, 0.4941],\\n          ...,\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6471, 0.4431, 0.2549],\\n          [0.6549, 0.4510, 0.2627]],\\n\\n         [[0.8627, 0.6745, 0.4863],\\n          [0.8667, 0.6784, 0.4902],\\n          [0.8784, 0.6902, 0.5020],\\n          ...,\\n          [0.6353, 0.4314, 0.2431],\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6392, 0.4353, 0.2471]]]])']}, 'current_outputs': ['12', '1', '4', '26'], 'timestamp': 1778443913511}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\scene_seg_interactive.json\nNode error: SAM3InteractiveCollector",
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 8.93,
-          "avg": 4.8
+          "peak": 1.19,
+          "avg": 0.97
         },
         "total_ram_gb": 31.9,
-        "samples": 25,
-        "vram": {
-          "peak": 4.7,
-          "avg": 1.96
-        }
+        "samples": 7
       }
     },
     {
       "name": "video_point_prompt",
-      "status": "pass",
-      "duration_seconds": 62.32,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 8.95,
+      "error": "Workflow execution failed: {'prompt_id': 'ec0bb9dd-bd2e-4be1-8ded-e5af63b3b21f', 'node_id': '35', 'node_type': 'SAM3Propagate', 'executed': ['30', '9', '28', '27'], 'exception_message': \"No module named 'timm'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\internal\\\\__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3_video_nodes.py\", line 422, in execute\\n    sam3_model = get_or_build_model(sam3_model_config)\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\_model_cache.py\", line 32, in get_or_build_model\\n    from .sam3.predictor import Sam3VideoPredictor\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\__init__.py\", line 61, in <module>\\n    from .model import (\\n', '  File \"C:\\\\workspaces\\\\SAM3-2207\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\model.py\", line 60, in <module>\\n    from timm.models.layers import DropPath, trunc_normal_\\n'], 'current_inputs': {'start_frame': [0], 'end_frame': [-1], 'direction': ['forward'], 'sam3_model_config': [\"{'checkpoint_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\models\\\\\\\\sam3\\\\\\\\sam3.safetensors', 'bpe_path': 'C:\\\\\\\\workspaces\\\\\\\\SAM3-2207\\\\\\\\ComfyUI\\\\\\\\custom_nodes\\\\\\\\ComfyUI-SAM3\\\\\\\\nodes\\\\\\\\sam3\\\\\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'auto', 'dtype': 'bf16', 'compile': False}\"], 'video_state': [\"{'session_uuid': 'b380dbbd-30f3-4502-a96d-bd69ddbf2826', 'temp_dir': 'C:\\\\\\\\Users\\\\\\\\ContainerAdministrator\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sam3_b380dbbd_b4vrzunp', 'num_frames': 30, 'height': 544, 'width': 960, 'config': {'score_threshold_detection': 0.3, 'new_det_thresh': 0.4, 'fill_hole_area': 16, 'assoc_iou_thresh': 0.1, 'det_nms_thresh': 0.1, 'hotstart_unmatch_thresh': 8, 'hotstart_dup_thresh': 8, 'init_trk_keep_alive': 30, 'hotstart_delay': 15, 'decrease_keep_alive_empty': False, 'suppress_unmatched_globally': False}, 'prompts': [{'frame_idx': 0, 'prompt_type': 'point', 'obj_id': 1, 'data': (((0.38107258850429115, 0.15094459502434338), (0.405779333510521, 0.3307995326922488), (0.43048607851675086, 0.09644309876134173)), (1, 1, 1))}]}\"]}, 'current_outputs': ['13', '25', '35', '24', '9', '14', '30', '15', '21', '28', '27'], 'timestamp': 1778443922415}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3\\workflows\\video_point_prompt.json\nNode error: SAM3Propagate",
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 7.12,
-          "avg": 4.16
+          "peak": 1.4,
+          "avg": 1.05
         },
         "total_ram_gb": 31.9,
-        "samples": 55,
-        "vram": {
-          "peak": 4.43,
-          "avg": 3.0
-        }
+        "samples": 9
       }
     }
   ]
