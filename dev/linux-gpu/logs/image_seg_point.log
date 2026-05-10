@@ -3,9 +3,9 @@ Capturing execution frames: image_seg_point.json
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
   [ComfyUI] === /validate endpoint called ===
+  Queuing workflow for execution...
   [ComfyUI] Received JSON with keys: ['prompt']
   [ComfyUI] Prompt has 6 nodes
-  Queuing workflow for execution...
   [ComfyUI]   Node 1: LoadImage
   [ComfyUI]     Inputs: {"image": "example_image.jpg"}
   [ComfyUI]   Node 15: SAM3PointCollector
@@ -16,26 +16,24 @@ Capturing execution frames: image_seg_point.json
   [ComfyUI]     Inputs: {"mask": ["31", 0]}
   [ComfyUI]   Node 30: LoadSAM3Model
   [ComfyUI]     Inputs: {"precision": "auto", "compile": false}
+  [ComfyUI] [comfy-env] SubprocessWorker: /root/.ce/.pixi/envs/sam3-nodes/bin/python
   [ComfyUI]   Node 31: SAM3Segmentation
+  [ComfyUI] [comfy-env] env_vars: {'PYTORCH_ENABLE_MPS_FALLBACK': '1', 'COMFYUI_BASE': '/workspaces/SAM3-2216/ComfyUI'}
   [ComfyUI]     Inputs: {"refinement_iterations": 0, "use_multimask": true, "output_best_mask": true, "sam3_model_config": ["30", 0], "image": ["1", 0], "positive_points": ["15", 0], "negative_points": ["15", 1]}
-  [ComfyUI] Generated prompt_id: 15980403-fba5-4262-8d9f-7be0cc374198
+  [ComfyUI] [ComfyUI-SAM3] python: /root/.ce/.pixi/envs/sam3-nodes/bin/python
+  [ComfyUI] Generated prompt_id: d868ab0f-8e49-4d24-bd5f-ef07b25a00f2
+  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['/workspaces/SAM3-2216/ComfyUI', '/workspaces/SAM3-2216/ComfyUI/custom_nodes/ComfyUI-SAM3', '/root/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages', '/workspaces/SAM3-2216/ComfyUI/custom_nodes/ComfyUI-SAM3']
   [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/root/.ce/.pixi/envs/sam3-nodes/bin/python
   [ComfyUI] Validation result: valid=True
+  [ComfyUI] [SubprocessWorker] launching cmd=['/root/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/root/.ce/pixi.toml', '-e', 'sam3-nodes', 'python', '/tmp/comfyui_pvenv_io242tgm/persistent_worker.py', 'abstract://comfy_worker_4e6ef556e702']...
   [ComfyUI] === Validation PASSED ===
+  [ComfyUI] [SubprocessWorker] socket_addr=abstract://comfy_worker_4e6ef556e702 (abstract, no filesystem path)
   [ComfyUI] got prompt
   [ComfyUI] [comfy-env] Running SAM3PointCollector: points_store: '{"positive":[{"x":426.27735719657574,"y":321.42611685978..., coordinates: '[{"x":426.27735719657574,"y":321.42611685978835},{"x":41..., neg_coordinates: '[]', image: torch.float32 [1,720,1280,3] cpu
-  [ComfyUI] [comfy-env] SubprocessWorker: /root/.ce/.pixi/envs/sam3-nodes/bin/python
-  [ComfyUI] [VRAM] Before SAM3PointCollector: 302 / 24124 MB
-  [ComfyUI] [comfy-env] env_vars: {'PYTORCH_ENABLE_MPS_FALLBACK': '1', 'COMFYUI_BASE': '/workspaces/SAM3-2154/ComfyUI'}
+  [ComfyUI] [VRAM] Before SAM3PointCollector: 152 / 7703 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_interactive.SAM3PointCollector.EXECUTE_NORMALIZED
-  [ComfyUI] [ComfyUI-SAM3] python: /root/.ce/.pixi/envs/sam3-nodes/bin/python
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
-  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['/workspaces/SAM3-2154/ComfyUI', '/workspaces/SAM3-2154/ComfyUI/custom_nodes/ComfyUI-SAM3', '/root/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages', '/workspaces/SAM3-2154/ComfyUI/custom_nodes/ComfyUI-SAM3']
-  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/root/.ce/.pixi/envs/sam3-nodes/bin/python
-  [ComfyUI] [SubprocessWorker] launching cmd=['/root/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/root/.ce/pixi.toml', '-e', 'sam3-nodes', 'python', '/tmp/comfyui_pvenv_x810uyfi/persistent_worker.py', 'abstract://comfy_worker_1d4c53ee88d9']...
-  [ComfyUI] [SubprocessWorker] socket_addr=abstract://comfy_worker_1d4c53ee88d9 (abstract, no filesystem path)
-  Frame 2 saved (frame_001.jpg, t=2.5s)
-  [capture-periodic] freeze=4ms shot=208ms unfreeze=4ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
   [ComfyUI] [SubprocessWorker] worker started/confirmed
   [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 720, 1280, 3])
@@ -44,13 +42,15 @@ Capturing execution frames: image_seg_point.json
   [ComfyUI] [SubprocessWorker] sending request via socket...
   [ComfyUI] [SubprocessWorker] call_id=1 sending call_method
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  Frame 2 saved (frame_001.jpg, t=2.4s)
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 720, 1280, 3]
+  [capture-periodic] freeze=2ms shot=138ms unfreeze=4ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 720, 1280, 3])
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] SAM3PointCollector done (3.55s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3PointCollector: 563 / 24124 MB
+  [ComfyUI] [comfy-env] SAM3PointCollector done (2.52s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3PointCollector: 269 / 7703 MB
   [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'auto', compile: False
-  [ComfyUI] [VRAM] Before LoadSAM3Model: 563 / 24124 MB
+  [ComfyUI] [VRAM] Before LoadSAM3Model: 269 / 7703 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
@@ -60,33 +60,33 @@ Capturing execution frames: image_seg_point.json
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
   [ComfyUI] [SubprocessWorker] call_id=2 sending call_method
-  [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Model not found at /workspaces/SAM3-2154/ComfyUI/models/sam3/sam3.safetensors, downloading from HuggingFace...
+  [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Model not found at /workspaces/SAM3-2216/ComfyUI/models/sam3/sam3.safetensors, downloading from HuggingFace...
   Node executed (1 total), capturing...
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Downloading sam3.safetensors from apozz/sam3-safetensors...
-  Frame 3 saved (frame_002.jpg, t=4.3s)
-  [capture-node] freeze=4ms shot=234ms unfreeze=11ms saved=True
+  Frame 3 saved (frame_002.jpg, t=3.0s)
+  [capture-node] freeze=2ms shot=139ms unfreeze=3ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [capture-loop] iter=50 t=6.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=5.4/31.2GB (17%) swap=0.0/32.0GB (0%) cpu=4% browser_rss=0.88GB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 4 saved (frame_003.jpg, t=5.2s)
+  [capture-periodic] freeze=2ms shot=153ms unfreeze=2ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 4 saved (frame_003.jpg, t=6.7s)
-  [capture-periodic] freeze=10ms shot=235ms unfreeze=4ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 10%
+  [capture-loop] iter=50 t=6.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=6 ram=3.4/31.3GB (11%) swap=0.5/32.0GB (2%) cpu=8% browser_rss=0.88GB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 5 saved (frame_004.jpg, t=7.6s)
+  [capture-periodic] freeze=2ms shot=144ms unfreeze=2ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 5 saved (frame_004.jpg, t=9.1s)
-  [capture-periodic] freeze=9ms shot=241ms unfreeze=10ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
@@ -94,124 +94,126 @@ Capturing execution frames: image_seg_point.json
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 20%
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 6 saved (frame_005.jpg, t=11.5s)
-  [capture-periodic] freeze=9ms shot=241ms unfreeze=13ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 6 saved (frame_005.jpg, t=9.8s)
+  [capture-periodic] freeze=2ms shot=152ms unfreeze=4ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [capture-loop] iter=100 t=13.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=7 ram=5.4/31.2GB (18%) swap=0.0/32.0GB (0%) cpu=6% browser_rss=0.89GB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [capture-loop] iter=100 t=12.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=3.4/31.3GB (11%) swap=0.5/32.0GB (2%) cpu=10% browser_rss=0.89GB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 30%
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 7 saved (frame_006.jpg, t=13.9s)
-  [capture-periodic] freeze=8ms shot=246ms unfreeze=7ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 7 saved (frame_006.jpg, t=12.1s)
+  [capture-periodic] freeze=2ms shot=147ms unfreeze=2ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 8 saved (frame_007.jpg, t=14.4s)
+  [capture-periodic] freeze=5ms shot=148ms unfreeze=14ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 40%
-  Frame 8 saved (frame_007.jpg, t=16.3s)
-  [capture-periodic] freeze=3ms shot=237ms unfreeze=17ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 9 saved (frame_008.jpg, t=16.7s)
+  [capture-periodic] freeze=2ms shot=147ms unfreeze=2ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 9 saved (frame_008.jpg, t=18.8s)
-  [capture-periodic] freeze=4ms shot=240ms unfreeze=8ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [capture-loop] iter=150 t=17.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=3.4/31.3GB (11%) swap=0.5/32.0GB (2%) cpu=10% browser_rss=0.91GB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 50%
-  [capture-loop] iter=150 t=19.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=7 ram=5.5/31.2GB (18%) swap=0.0/32.0GB (0%) cpu=6% browser_rss=0.90GB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 10 saved (frame_009.jpg, t=19.0s)
+  [capture-periodic] freeze=2ms shot=167ms unfreeze=3ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 10 saved (frame_009.jpg, t=21.2s)
-  [capture-periodic] freeze=8ms shot=242ms unfreeze=6ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 60%
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 11 saved (frame_010.jpg, t=21.3s)
+  [capture-periodic] freeze=2ms shot=155ms unfreeze=4ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 11 saved (frame_010.jpg, t=23.6s)
-  [capture-periodic] freeze=9ms shot=239ms unfreeze=3ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [capture-loop] iter=200 t=23.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=3.5/31.3GB (11%) swap=0.5/32.0GB (2%) cpu=10% browser_rss=0.91GB
+  Frame 12 saved (frame_011.jpg, t=23.6s)
+  [capture-periodic] freeze=2ms shot=147ms unfreeze=5ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 70%
-  [capture-loop] iter=200 t=25.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=5.5/31.2GB (18%) swap=0.0/32.0GB (0%) cpu=6% browser_rss=0.90GB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 12 saved (frame_011.jpg, t=26.1s)
-  [capture-periodic] freeze=7ms shot=232ms unfreeze=3ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 13 saved (frame_012.jpg, t=25.9s)
+  [capture-periodic] freeze=1ms shot=163ms unfreeze=2ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 80%
-  Frame 13 saved (frame_012.jpg, t=28.4s)
-  [capture-periodic] freeze=3ms shot=234ms unfreeze=3ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 14 saved (frame_013.jpg, t=28.2s)
+  [capture-periodic] freeze=1ms shot=150ms unfreeze=14ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [capture-loop] iter=250 t=29.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=3.3/31.3GB (11%) swap=0.5/32.0GB (2%) cpu=12% browser_rss=0.82GB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 14 saved (frame_013.jpg, t=30.8s)
-  [capture-periodic] freeze=3ms shot=260ms unfreeze=7ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 90%
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [capture-loop] iter=250 t=32.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=7 ram=5.4/31.2GB (18%) swap=0.0/32.0GB (0%) cpu=6% browser_rss=0.93GB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  Frame 15 saved (frame_014.jpg, t=33.3s)
-  [capture-periodic] freeze=4ms shot=234ms unfreeze=4ms saved=True
+  Frame 15 saved (frame_014.jpg, t=30.4s)
+  [capture-periodic] freeze=2ms shot=150ms unfreeze=17ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  Frame 16 saved (frame_015.jpg, t=32.7s)
+  [capture-periodic] freeze=2ms shot=155ms unfreeze=7ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Download progress: 100%
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Downloaded sam3.safetensors
   [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Model downloaded successfully
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] LoadSAM3Model done (30.52s): result: NodeOutput
-  [ComfyUI] [VRAM] After LoadSAM3Model: 563 / 24124 MB
+  [ComfyUI] [comfy-env] LoadSAM3Model done (30.28s): result: NodeOutput
+  [ComfyUI] [VRAM] After LoadSAM3Model: 269 / 7703 MB
   [ComfyUI] [comfy-env] Running SAM3Segmentation: refinement_iterations: 0, use_multimask: True, output_best_mask: True, sam3_model_config: dict, image: torch.float32 [1,720,1280,3] cpu, positive_points: dict, negative_points: dict
-  [ComfyUI] [VRAM] Before SAM3Segmentation: 563 / 24124 MB
+  [ComfyUI] [VRAM] Before SAM3Segmentation: 269 / 7703 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.segmentation.SAM3Segmentation.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
@@ -225,30 +227,30 @@ Capturing execution frames: image_seg_point.json
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 720, 1280, 3]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 720, 1280, 3])
-  Frame 16 saved (frame_015.jpg, t=35.6s)
-  [capture-periodic] freeze=4ms shot=223ms unfreeze=11ms saved=True
-  [capture-loop] iter=300 t=38.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=6.3/31.2GB (20%) swap=0.0/32.0GB (0%) cpu=8% browser_rss=0.94GB
+  Frame 17 saved (frame_016.jpg, t=35.0s)
+  [capture-periodic] freeze=2ms shot=152ms unfreeze=5ms saved=True
+  [capture-loop] iter=300 t=35.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=3.6/31.3GB (12%) swap=0.5/32.0GB (2%) cpu=16% browser_rss=0.82GB
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=3
-  [ComfyUI] [comfy-env] VRAM request: 1.84GB, free before eviction: 24.65GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.65GB
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +303MB (now 303MB) reserved=320MB peak=303MB
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1746MB (now 2049MB) reserved=2144MB peak=2049MB
+  [ComfyUI] [comfy-env] VRAM request: 1.84GB, free before eviction: 7.69GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.69GB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +469MB (now 469MB) reserved=480MB peak=469MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1573MB (now 2042MB) reserved=2144MB peak=2096MB
   [ComfyUI] [SubprocessWorker] got response: ok
   [ComfyUI] [comfy-env] Created 1 model patchers: ['Sam3VideoInferenceWithInstanceInteractivity_1']
-  [ComfyUI] [comfy-env] SAM3Segmentation done (6.16s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3Segmentation: 2759 / 24124 MB
+  [ComfyUI] [comfy-env] SAM3Segmentation done (4.70s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3Segmentation: 2487 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (1756 MB)
   Node executed (2 total), capturing...
-  [ComfyUI] Prompt executed in 40.47 seconds
-  Frame 17 saved (frame_016.jpg, t=41.0s)
-  [capture-node] freeze=6ms shot=279ms unfreeze=18ms saved=True
+  [ComfyUI] Prompt executed in 37.61 seconds
+  Frame 18 saved (frame_017.jpg, t=38.0s)
+  [capture-node] freeze=2ms shot=149ms unfreeze=2ms saved=True
   Node executed (3 total), capturing...
-  Frame 18 saved (frame_017.jpg, t=41.7s)
-  [capture-node] freeze=4ms shot=235ms unfreeze=0ms saved=True
-  Execution complete (t=41.7s)
-  Captured 18 unique frames over 41.99s
+  Frame 19 saved (frame_018.jpg, t=38.4s)
+  [capture-node] freeze=2ms shot=155ms unfreeze=0ms saved=True
+  Execution complete (t=38.4s)
+  Captured 19 unique frames over 38.64s
   [debug] iframes: 0
   [timing] trigger_3d_previews: 0.0s
   Saved high-quality screenshot: image_seg_point_executed.png
-  [timing] final_screenshot: 0.5s
-    Captured 19 video frames
+  [timing] final_screenshot: 0.3s
+    Captured 20 video frames
