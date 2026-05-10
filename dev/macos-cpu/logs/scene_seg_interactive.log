@@ -1,7 +1,88 @@
 Capturing execution frames: scene_seg_interactive.json
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
-  Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 4 nodes, missing class_type: [12,26], sample: {"inputs":{"image":"image.png"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
-    Status: FAILED
-    Error: Workflow validation failed
-    Details: graphToPrompt produced nodes without class_type: graphToPrompt: 4 nodes, missing class_type: [12,26], sample: {"inputs":{"image":"image.png"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
+  [ComfyUI] === /validate endpoint called ===
+  [ComfyUI] Received JSON with keys: ['prompt']
+  [ComfyUI] Prompt has 4 nodes
+  [ComfyUI]   Node 1: LoadImage
+  [ComfyUI]     Inputs: {"image": "image.png"}
+  [ComfyUI]   Node 4: MaskPreview
+  [ComfyUI]     Inputs: {"mask": ["26", 0]}
+  [ComfyUI]   Node 12: LoadSAM3Model
+  [ComfyUI]     Inputs: {"precision": "auto", "compile": false}
+  [ComfyUI]   Node 26: SAM3InteractiveCollector
+  [ComfyUI]     Inputs: {"multi_prompts_store": "[{\"positive_points\":[{\"x\":3348.288109906738,\"y\":2452.2208696844737}],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 1\"},{\"positiv
+  [ComfyUI] Generated prompt_id: 811be13c-53ad-4f41-945b-c061fa52b40c
+  [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  Queuing workflow for execution...
+  [ComfyUI] got prompt
+  Frame 2 saved (frame_001.jpg, t=2.2s)
+  [capture-periodic] freeze=3ms shot=232ms unfreeze=2ms saved=True
+  [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'auto', compile: False
+  [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: failed
+  [ComfyUI] [ComfyUI-SAM3] Socket unhealthy, restarting worker...
+  [ComfyUI] [ComfyUI-SAM3] python: /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/bin/python
+  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3']
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/bin/python
+  [ComfyUI] [SubprocessWorker] launching cmd=['/Users/runner/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/pixi.toml', '-e', 'sam3-nodes', 'python', '/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_1h0x1hru/persistent_worker.py', 'unix:///var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy_worker_9c3d433d932a.sock']...
+  [ComfyUI] [SubprocessWorker] socket_addr=unix:///var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy_worker_9c3d433d932a.sock exists=True
+  Frame 3 saved (frame_002.jpg, t=4.5s)
+  [capture-periodic] freeze=7ms shot=131ms unfreeze=15ms saved=True
+  [capture-loop] iter=50 t=6.4s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=2.1/7.0GB (46%) swap=1.6/3.0GB (54%) cpu=54% browser_rss=0.53GB
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=9 sending call_method
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] LoadSAM3Model done (4.78s): result: NodeOutput
+  [ComfyUI] [comfy-env] Running SAM3InteractiveCollector: multi_prompts_store: '[{"positive_points":[{"x":3348.288109906738,"y":2452.220..., sam3_model_config: dict, image: torch.float32 [1,4480,6720,3] cpu, unique_id: '26'
+  [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_interactive.SAM3InteractiveCollector.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 4480, 6720, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=10 sending call_method
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 4480, 6720, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 4480, 6720, 3])
+  [ComfyUI] objc[7858]: Class AVFFrameReceiver is implemented in both /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/libavdevice.62.3.101.dylib (0x122e187a8) and /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/cv2/.dylibs/libavdevice.61.3.100.dylib (0x164e943a8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+  [ComfyUI] objc[7858]: Class AVFAudioReceiver is implemented in both /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/libavdevice.62.3.101.dylib (0x122e187f8) and /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/cv2/.dylibs/libavdevice.61.3.100.dylib (0x164e943f8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+  Frame 4 saved (frame_003.jpg, t=8.8s)
+  [capture-periodic] freeze=1ms shot=71ms unfreeze=2ms saved=True
+  [capture-loop] iter=100 t=12.0s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=3.4/7.0GB (62%) swap=0.5/2.0GB (26%) cpu=30% browser_rss=0.54GB
+  [capture-loop] iter=150 t=18.0s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=2.8/7.0GB (73%) swap=0.5/2.0GB (26%) cpu=32% browser_rss=0.25GB
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=10
+  [ComfyUI] [comfy-env] VRAM request: 1.84GB, free before eviction: 1.60GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 1.61GB
+  [capture-loop] iter=200 t=23.5s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=2.4/7.0GB (79%) swap=0.5/2.0GB (26%) cpu=24% browser_rss=0.23GB
+  [capture-loop] iter=250 t=29.7s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=2.5/7.0GB (78%) swap=0.4/2.0GB (22%) cpu=54% browser_rss=0.23GB
+  [capture-loop] iter=300 t=38.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=3.6/7.0GB (79%) swap=0.5/2.0GB (23%) cpu=43% browser_rss=0.21GB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=10
+  Frame 5 saved (frame_004.jpg, t=47.5s)
+  [capture-periodic] freeze=7ms shot=196ms unfreeze=4ms saved=True
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] SAM3InteractiveCollector done (41.76s): result: NodeOutput
+  [ComfyUI] Prompt executed in 49.97 seconds
+  Node executed (1 total), capturing...
+  Frame 6 saved (frame_005.jpg, t=51.5s)
+  [capture-node] freeze=352ms shot=331ms unfreeze=3ms saved=True
+  Node executed (2 total), capturing...
+  Frame 7 saved (frame_006.jpg, t=52.5s)
+  [capture-node] freeze=2ms shot=119ms unfreeze=0ms saved=True
+  Execution complete (t=52.5s)
+  Captured 7 unique frames over 52.61s
+  [debug] iframes: 0
+  [timing] trigger_3d_previews: 0.0s
+  Saved high-quality screenshot: scene_seg_interactive_executed.png
+  [timing] final_screenshot: 0.5s
+    Captured 8 video frames

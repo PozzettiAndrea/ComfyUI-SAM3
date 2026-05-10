@@ -1,7 +1,195 @@
 Capturing execution frames: image_seg_text.json
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
-  Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 5 nodes, missing class_type: [12,15], sample: {"inputs":{"image":"example_image.jpg"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
+  [ComfyUI] === /validate endpoint called ===
+  [ComfyUI] Received JSON with keys: ['prompt']
+  [ComfyUI] Prompt has 5 nodes
+  [ComfyUI]   Node 1: LoadImage
+  [ComfyUI]     Inputs: {"image": "example_image.jpg"}
+  [ComfyUI]   Node 3: PreviewImage
+  [ComfyUI]     Inputs: {"images": ["15", 1]}
+  [ComfyUI]   Node 4: MaskPreview
+  [ComfyUI]     Inputs: {"mask": ["15", 0]}
+  [ComfyUI]   Node 12: LoadSAM3Model
+  [ComfyUI]     Inputs: {"precision": "fp32", "compile": false}
+  [ComfyUI]   Node 15: SAM3Grounding
+  [ComfyUI]     Inputs: {"confidence_threshold": 0.2, "text_prompt": "child", "max_detections": -1, "sam3_model_config": ["12", 0], "image": ["1", 0]}
+  [ComfyUI] Generated prompt_id: 62db8f04-d13f-4afa-acc1-b9211e83e340
+  [ComfyUI] Calling execution.validate_prompt()...
+  Queuing workflow for execution...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  [ComfyUI] got prompt
+  [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'fp32', compile: False
+  [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: failed
+  [ComfyUI] [ComfyUI-SAM3] Socket unhealthy, restarting worker...
+  [ComfyUI] [ComfyUI-SAM3] python: /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/bin/python
+  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3']
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/bin/python
+  [ComfyUI] [SubprocessWorker] launching cmd=['/Users/runner/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/pixi.toml', '-e', 'sam3-nodes', 'python', '/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_1h0x1hru/persistent_worker.py', 'unix:///var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy_worker_ed81cb815898.sock']...
+  [ComfyUI] [SubprocessWorker] socket_addr=unix:///var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy_worker_ed81cb815898.sock exists=True
+  Frame 2 saved (frame_001.jpg, t=2.2s)
+  [capture-periodic] freeze=1ms shot=80ms unfreeze=2ms saved=True
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=4 sending call_method
+  Frame 3 saved (frame_002.jpg, t=4.4s)
+  [capture-periodic] freeze=2ms shot=90ms unfreeze=2ms saved=True
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] LoadSAM3Model done (4.54s): result: NodeOutput
+  [ComfyUI] [comfy-env] Running SAM3Grounding: confidence_threshold: 0.2, text_prompt: 'child', max_detections: -1, sam3_model_config: dict, image: torch.float32 [1,720,1280,3] cpu
+  [ComfyUI] [SubprocessWorker] call_method: nodes.segmentation.SAM3Grounding.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 720, 1280, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=5 sending call_method
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 720, 1280, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 720, 1280, 3])
+  [ComfyUI] objc[5291]: Class AVFFrameReceiver is implemented in both /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/libavdevice.62.3.101.dylib (0x123efc7a8) and /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/cv2/.dylibs/libavdevice.61.3.100.dylib (0x130e4c3a8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+  [ComfyUI] objc[5291]: Class AVFAudioReceiver is implemented in both /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/libavdevice.62.3.101.dylib (0x123efc7f8) and /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/cv2/.dylibs/libavdevice.61.3.100.dylib (0x130e4c3f8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+  [capture-loop] iter=50 t=5.7s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=2.5/7.0GB (47%) swap=0.0/0.0GB (0%) cpu=57% browser_rss=0.50GB
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=5
+  [ComfyUI] [comfy-env] VRAM request: 3.50GB, free before eviction: 3.92GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 3.92GB
+  Frame 4 saved (frame_003.jpg, t=6.5s)
+  [capture-periodic] freeze=2ms shot=430ms unfreeze=4ms saved=True
+  Frame 5 saved (frame_004.jpg, t=9.5s)
+  [capture-periodic] freeze=116ms shot=6069ms unfreeze=13ms saved=True
+  [capture-loop] iter=100 t=23.4s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=3.8/7.0GB (88%) swap=1.8/3.0GB (61%) cpu=60% browser_rss=0.18GB
+  Frame 6 saved (frame_005.jpg, t=24.1s)
+  [capture-periodic] freeze=2ms shot=1275ms unfreeze=41ms saved=True
+  [capture-loop] iter=150 t=31.0s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=6 ram=2.8/7.0GB (66%) swap=2.9/4.0GB (71%) cpu=56% browser_rss=0.24GB
+  [capture-loop] iter=200 t=39.5s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=5.8/7.0GB (90%) swap=0.9/2.0GB (47%) cpu=38% browser_rss=0.23GB
+  [ComfyUI] [SubprocessWorker] got response: error
+  [ComfyUI] !!! Exception during processing !!! The operator 'aten::_assert_async' is not currently implemented for the MPS device. If you want this op to be considered for addition please comment on https://github.com/pytorch/pytorch/issues/141287 and mention use-case, that resulted in missing op as well as commit hash 70d99e998b4955e0049d13a98d77ae1b14db1f45. As a temporary fix, you can set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1` to use the CPU as a fallback for this op. WARNING: this will be slower than running natively on MPS.
+  [ComfyUI] 
+  [ComfyUI] Worker traceback:
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_1h0x1hru/persistent_worker.py", line 1762, in main
+  [ComfyUI]     result = method(**inputs)
+  [ComfyUI]              ^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED
+  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
+  [ComfyUI]                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111, in execute
+  [ComfyUI]     result = cls._segment_grounding(
+  [ComfyUI]              ^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 138, in _segment_grounding
+  [ComfyUI]     state = processor.set_text_prompt(text_prompt.strip(), state)
+  [ComfyUI]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+  [ComfyUI]     return func(*args, **kwargs)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1393, in set_text_prompt
+  [ComfyUI]     return self._forward_grounding(state)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+  [ComfyUI]     return func(*args, **kwargs)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1477, in _forward_grounding
+  [ComfyUI]     outputs = self.model.forward_grounding(
+  [ComfyUI]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3819, in forward_grounding
+  [ComfyUI]     prompt, prompt_mask, backbone_out = self._encode_prompt(
+  [ComfyUI]                                         ^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3561, in _encode_prompt
+  [ComfyUI]     geo_feats, geo_masks = self.geometry_encoder(
+  [ComfyUI]                            ^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+  [ComfyUI]     return self._call_impl(*args, **kwargs)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+  [ComfyUI]     return forward_call(*args, **kwargs)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 2501, in forward
+  [ComfyUI]     final_embeds, final_mask = concat_padded_sequences(
+  [ComfyUI]                                ^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1824, in concat_padded_sequences
+  [ComfyUI]     torch._assert_async(is_right_padded(mask1))
+  [ComfyUI] NotImplementedError: The operator 'aten::_assert_async' is not currently implemented for the MPS device. If you want this op to be considered for addition please comment on https://github.com/pytorch/pytorch/issues/141287 and mention use-case, that resulted in missing op as well as commit hash 70d99e998b4955e0049d13a98d77ae1b14db1f45. As a temporary fix, you can set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1` to use the CPU as a fallback for this op. WARNING: this will be slower than running natively on MPS.
+  [ComfyUI] 
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 535, in execute
+  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 335, in get_output_data
+  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 309, in _async_map_node_over_list
+  [ComfyUI]     await process_inputs(input_dict, i)
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 297, in process_inputs
+  [ComfyUI]     result = f(**inputs)
+  [ComfyUI]              ^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py", line 536, in proxy
+  [ComfyUI]     result = worker.call_method(
+  [ComfyUI]              ^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method
+  [ComfyUI]     raise WorkerError(
+  [ComfyUI] comfy_env.isolation.workers.base.WorkerError: The operator 'aten::_assert_async' is not currently implemented for the MPS device. If you want this op to be considered for addition please comment on https://github.com/pytorch/pytorch/issues/141287 and mention use-case, that resulted in missing op as well as commit hash 70d99e998b4955e0049d13a98d77ae1b14db1f45. As a temporary fix, you can set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1` to use the CPU as a fallback for this op. WARNING: this will be slower than running natively on MPS.
+  [ComfyUI] 
+  [ComfyUI] Worker traceback:
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_1h0x1hru/persistent_worker.py", line 1762, in main
+  [ComfyUI]     result = method(**inputs)
+  [ComfyUI]              ^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED
+  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
+  [ComfyUI]                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111, in execute
+  [ComfyUI]     result = cls._segment_grounding(
+  [ComfyUI]              ^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 138, in _segment_grounding
+  [ComfyUI]     state = processor.set_text_prompt(text_prompt.strip(), state)
+  [ComfyUI]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+  [ComfyUI]     return func(*args, **kwargs)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1393, in set_text_prompt
+  [ComfyUI]     return self._forward_grounding(state)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+  [ComfyUI]     return func(*args, **kwargs)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1477, in _forward_grounding
+  [ComfyUI]     outputs = self.model.forward_grounding(
+  [ComfyUI]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3819, in forward_grounding
+  [ComfyUI]     prompt, prompt_mask, backbone_out = self._encode_prompt(
+  [ComfyUI]                                         ^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3561, in _encode_prompt
+  [ComfyUI]     geo_feats, geo_masks = self.geometry_encoder(
+  [ComfyUI]                            ^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+  [ComfyUI]     return self._call_impl(*args, **kwargs)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+  [ComfyUI]     return forward_call(*args, **kwargs)
+  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 2501, in forward
+  [ComfyUI]     final_embeds, final_mask = concat_padded_sequences(
+  [ComfyUI]                                ^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1824, in concat_padded_sequences
+  [ComfyUI]     torch._assert_async(is_right_padded(mask1))
+  [ComfyUI] NotImplementedError: The operator 'aten::_assert_async' is not currently implemented for the MPS device. If you want this op to be considered for addition please comment on https://github.com/pytorch/pytorch/issues/141287 and mention use-case, that resulted in missing op as well as commit hash 70d99e998b4955e0049d13a98d77ae1b14db1f45. As a temporary fix, you can set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1` to use the CPU as a fallback for this op. WARNING: this will be slower than running natively on MPS.
+  [ComfyUI] 
+  [ComfyUI] 
+  [ComfyUI] Prompt executed in 43.27 seconds
+  Frame 7 saved (frame_006.jpg, t=43.8s)
+  [capture-periodic] freeze=4ms shot=2159ms unfreeze=2ms saved=True
+  Execution complete (t=43.8s)
+  Execution error: {'prompt_id': '2b5feead-5a9f-46b9-9770-3ffbd0acb631', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['12', '1'], 'exception_message': 'The operator \'aten::_assert_async\' is not currently implemented for the MPS device. If you want this op to be considered for addition please comment on https://github.com/pytorch/pytorch/issues/141287 and mention use-case, that resulted in missing op as well as commit hash 70d99e998b4955e0049d13a98d77ae1b14db1f45. As a temporary fix, you can set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1` to use the CPU as a fallback for this op. WARNING: this will be slower than running natively on MPS.\n\nWorker traceback:\nTraceback (most recent call last):\n  File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_1h0x1hru/persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111, in execute\n    result = cls._segment_grounding(\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 138, in _segment_grounding\n    state = processor.set_text_prompt(text_prompt.strip(), state)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1393, in set_text_prompt\n    return self._forward_grounding(state)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1477, in _forward_grounding\n    outputs = self.model.forward_grounding(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3819, in forward_grounding\n    prompt, prompt_mask, backbone_out = self._encode_prompt(\n                                        ^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3561, in _encode_prompt\n    geo_feats, geo_masks = self.geometry_encoder(\n                           ^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 2501, in forward\n    final_embeds, final_mask = concat_padded_sequences(\n                               ^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1824, in concat_padded_sequences\n    torch._assert_async(is_right_padded(mask1))\nNotImplementedError: The operator \'aten::_assert_async\' is not currently implemented for the MPS device. If you want this op to be considered for addition please comment on https://github.com/pytorch/pytorch/issues/141287 and mention use-case, that resulted in missing op as well as commit hash 70d99e998b4955e0049d13a98d77ae1b14db1f45. As a temporary fix, you can set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1` to use the CPU as a fallback for this op. WARNING: this will be slower than running natively on MPS.\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py", line 536, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': ["{'checkpoint_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/models/sam3/sam3.safetensors', 'bpe_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3176, 0.5804, 0.7216],\n          [0.3333, 0.6039, 0.7451],\n          [0.3529, 0.6235, 0.7647]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3137, 0.5765, 0.7176],\n          [0.3137, 0.5843, 0.7255],\n          [0.3255, 0.5961, 0.7373]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3922, 0.5333, 0.6275],\n          [0.3922, 0.5294, 0.6235],\n          [0.3961, 0.5333, 0.6275]],\n\n         ...,\n\n         [[0.4941, 0.4863, 0.4157],\n          [0.4941, 0.4863, 0.4157],\n          [0.4980, 0.4902, 0.4196],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5098, 0.5020, 0.4314],\n          [0.5098, 0.5020, 0.4314],\n          [0.5137, 0.5059, 0.4353],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5176, 0.5098, 0.4392],\n          [0.5216, 0.5137, 0.4431],\n          [0.5255, 0.5176, 0.4471],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]]]])']}, 'current_outputs': ['4', '1', '15', '12', '3'], 'timestamp': 1778448334344}
     Status: FAILED
-    Error: Workflow validation failed
-    Details: graphToPrompt produced nodes without class_type: graphToPrompt: 5 nodes, missing class_type: [12,15], sample: {"inputs":{"image":"example_image.jpg"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
+    Error: Workflow execution failed: {'prompt_id': '2b5feead-5a9f-46b9-9770-3ffbd0acb631', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['12', '1'], 'exception_message': 'The operator \'aten::_assert_async\' is not currently implemented for the MPS device. If you want this op to be considered for addition please comment on https://github.com/pytorch/pytorch/issues/141287 and mention use-case, that resulted in missing op as well as commit hash 70d99e998b4955e0049d13a98d77ae1b14db1f45. As a temporary fix, you can set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1` to use the CPU as a fallback for this op. WARNING: this will be slower than running natively on MPS.\n\nWorker traceback:\nTraceback (most recent call last):\n  File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_1h0x1hru/persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111, in execute\n    result = cls._segment_grounding(\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 138, in _segment_grounding\n    state = processor.set_text_prompt(text_prompt.strip(), state)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1393, in set_text_prompt\n    return self._forward_grounding(state)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1477, in _forward_grounding\n    outputs = self.model.forward_grounding(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3819, in forward_grounding\n    prompt, prompt_mask, backbone_out = self._encode_prompt(\n                                        ^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3561, in _encode_prompt\n    geo_feats, geo_masks = self.geometry_encoder(\n                           ^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/.ce/.pixi/envs/sam3-nodes/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 2501, in forward\n    final_embeds, final_mask = concat_padded_sequences(\n                               ^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1824, in concat_padded_sequences\n    torch._assert_async(is_right_padded(mask1))\nNotImplementedError: The operator \'aten::_assert_async\' is not currently implemented for the MPS device. If you want this op to be considered for addition please comment on https://github.com/pytorch/pytorch/issues/141287 and mention use-case, that resulted in missing op as well as commit hash 70d99e998b4955e0049d13a98d77ae1b14db1f45. As a temporary fix, you can set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1` to use the CPU as a fallback for this op. WARNING: this will be slower than running natively on MPS.\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/execution.py", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py", line 536, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': ["{'checkpoint_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/models/sam3/sam3.safetensors', 'bpe_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2121/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3176, 0.5804, 0.7216],\n          [0.3333, 0.6039, 0.7451],\n          [0.3529, 0.6235, 0.7647]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3137, 0.5765, 0.7176],\n          [0.3137, 0.5843, 0.7255],\n          [0.3255, 0.5961, 0.7373]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3922, 0.5333, 0.6275],\n          [0.3922, 0.5294, 0.6235],\n          [0.3961, 0.5333, 0.6275]],\n\n         ...,\n\n         [[0.4941, 0.4863, 0.4157],\n          [0.4941, 0.4863, 0.4157],\n          [0.4980, 0.4902, 0.4196],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5098, 0.5020, 0.4314],\n          [0.5098, 0.5020, 0.4314],\n          [0.5137, 0.5059, 0.4353],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5176, 0.5098, 0.4392],\n          [0.5216, 0.5137, 0.4431],\n          [0.5255, 0.5176, 0.4471],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]]]])']}, 'current_outputs': ['4', '1', '15', '12', '3'], 'timestamp': 1778448334344}
+    Details: Workflow: /private/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy-test-run-agbqvzmh/ComfyUI-SAM3/workflows/image_seg_text.json
+Node error: SAM3Grounding
