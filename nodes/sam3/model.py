@@ -2341,7 +2341,16 @@ class SequenceGeometryEncoder(nn.Module):
         if self.points_pool_project is not None:
             grid = points.transpose(0, 1).unsqueeze(2)
             grid = (grid * 2) - 1
-            sampled = torch.nn.functional.grid_sample(img_feats, grid, align_corners=False)
+            if grid.numel() == 0:
+                # Empty grid (n_points == 0, e.g. text-only prompt with no
+                # point hints). PyTorch's MPS backend asserts
+                # `[srcBuf length] > 0` in OperationUtils.mm:554 on empty
+                # grid_sample input; CPU and CUDA return a correctly-shaped
+                # empty tensor. Mirror the CPU/CUDA contract so this code
+                # works on Apple Silicon ComfyUI Desktop (MPS device).
+                sampled = img_feats.new_zeros(bs, self.d_model, n_points, 1)
+            else:
+                sampled = torch.nn.functional.grid_sample(img_feats, grid, align_corners=False)
             assert list(sampled.shape) == [bs, self.d_model, n_points, 1]
             sampled = sampled.squeeze(-1).permute(2, 0, 1)
             proj = self.points_pool_project(sampled)
