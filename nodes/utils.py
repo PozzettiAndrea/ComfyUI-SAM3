@@ -128,7 +128,9 @@ def visualize_masks_on_image(image, masks, boxes=None, scores=None, alpha=0.5):
     else:
         masks_t = torch.from_numpy(np.asarray(masks))
 
-    device = masks_t.device if masks_t.is_cuda else torch.device('cpu')
+    import comfy.model_management
+    device = comfy.model_management.get_torch_device()
+    masks_t = masks_t.to(device)
     img_t = torch.from_numpy(np.array(image)).to(device=device, dtype=torch.float32) / 255.0  # [H, W, 3]
     H, W = img_t.shape[:2]
     overlay = img_t.clone()
