@@ -1,15 +1,16 @@
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB) -> cpu: 1042 / 12287 MB
 Capturing execution frames: scene_seg_interactive.json
-  [ComfyUI] Exception in callback _ProactorBasePipeTransport._call_connection_lost()
-  [ComfyUI] handle: <Handle _ProactorBasePipeTransport._call_connection_lost()>
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "asyncio\events.py", line 89, in _run
-  [ComfyUI]   File "asyncio\proactor_events.py", line 165, in _call_connection_lost
-  [ComfyUI] ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=13 sending model_to_device
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -322MB (now 3129MB) reserved=3616MB peak=3833MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -2492MB (now 638MB) reserved=3616MB peak=3833MB
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB): 1042 / 12287 MB
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
   [ComfyUI] === /validate endpoint called ===
-  [ComfyUI] Received JSON with keys: ['prompt']
   Queuing workflow for execution...
+  [ComfyUI] Received JSON with keys: ['prompt']
   [ComfyUI] Prompt has 4 nodes
   [ComfyUI]   Node 1: LoadImage
   [ComfyUI]     Inputs: {"image": "image.png"}
@@ -19,53 +20,92 @@ Capturing execution frames: scene_seg_interactive.json
   [ComfyUI]     Inputs: {"precision": "auto", "compile": false}
   [ComfyUI]   Node 26: SAM3InteractiveCollector
   [ComfyUI]     Inputs: {"multi_prompts_store": "[{\"positive_points\":[{\"x\":3348.288109906738,\"y\":2452.2208696844737}],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 1\"},{\"positiv
-  [ComfyUI] Generated prompt_id: 834039d0-91bf-443d-85f4-9b166fa60cb6
+  [ComfyUI] Generated prompt_id: 724ec18b-6218-4aa5-85ee-8d4ecae5d255
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
   [ComfyUI] got prompt
-  [ComfyUI] WARNING: 'NoneType' object has no attribute 'shape'
-  [ComfyUI] Resolved precision: auto -> bf16
-  [ComfyUI] SAM3 model cache miss � building model...
-  [ComfyUI] !!! Exception during processing !!! No module named 'timm'
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\sam3\model.py", line 58, in <module>
-  [ComfyUI]     from timm.layers import DropPath, trunc_normal_
-  [ComfyUI] ModuleNotFoundError: No module named 'timm'
-  [ComfyUI] 
-  [ComfyUI] During handling of the above exception, another exception occurred:
-  [ComfyUI] 
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 534, in execute
-  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 334, in get_output_data
-  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 308, in _async_map_node_over_list
-  [ComfyUI]     await process_inputs(input_dict, i)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 296, in process_inputs
-  [ComfyUI]     result = f(**inputs)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\internal\__init__.py", line 149, in wrapped_func
-  [ComfyUI]     return method(locked_class, **inputs)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1826, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\sam3_interactive.py", line 667, in execute
-  [ComfyUI]     sam3_model = get_or_build_model(sam3_model_config)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\_model_cache.py", line 32, in get_or_build_model
-  [ComfyUI]     from .sam3.predictor import Sam3VideoPredictor
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\sam3\__init__.py", line 61, in <module>
-  [ComfyUI]     from .model import (
-  [ComfyUI]     ...<26 lines>...
-  [ComfyUI]     )
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\sam3\model.py", line 60, in <module>
-  [ComfyUI]     from timm.models.layers import DropPath, trunc_normal_
-  [ComfyUI] ModuleNotFoundError: No module named 'timm'
-  [ComfyUI] 
-  [ComfyUI] Prompt executed in 1.02 seconds
-  Execution complete (t=1.3s)
-  Execution error: {'prompt_id': '76673fd6-7e92-4b6a-8ed4-cdb4419420ec', 'node_id': '26', 'node_type': 'SAM3InteractiveCollector', 'executed': ['12', '1'], 'exception_message': "No module named 'timm'\n", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 534, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 334, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 308, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 296, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\internal\\__init__.py", line 149, in wrapped_func\n    return method(locked_class, **inputs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1826, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3_interactive.py", line 667, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\_model_cache.py", line 32, in get_or_build_model\n    from .sam3.predictor import Sam3VideoPredictor\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3\\__init__.py", line 61, in <module>\n    from .model import (\n    ...<26 lines>...\n    )\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3\\model.py", line 60, in <module>\n    from timm.models.layers import DropPath, trunc_normal_\n'], 'current_inputs': {'multi_prompts_store': ['[{"positive_points":[{"x":3348.288109906738,"y":2452.2208696844737}],"negative_points":[],"positive_boxes":[],"negative_boxes":[],"name":"Prompt 1"},{"positive_points":[],"negative_points":[],"positive_boxes":[],"negative_boxes":[],"name":"Prompt 2"}]'], 'sam3_model_config': ["{'checkpoint_path': 'C:\\\\workspaces\\\\SAM3-2213\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\workspaces\\\\SAM3-2213\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'auto', 'dtype': 'bf16', 'compile': False}"], 'image': ['tensor([[[[0.9176, 0.8392, 0.7333],\n          [0.9294, 0.8471, 0.7412],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8039, 0.6588, 0.4863],\n          [0.8157, 0.6706, 0.4980]],\n\n         [[0.9137, 0.8353, 0.7294],\n          [0.9216, 0.8392, 0.7333],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8039, 0.6588, 0.4863],\n          [0.8039, 0.6588, 0.4863],\n          [0.8118, 0.6667, 0.4941]],\n\n         [[0.9137, 0.8314, 0.7255],\n          [0.9137, 0.8314, 0.7255],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8118, 0.6667, 0.4941],\n          [0.8039, 0.6588, 0.4863]],\n\n         ...,\n\n         [[0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6471, 0.4431, 0.2549],\n          [0.6392, 0.4353, 0.2471],\n          [0.6471, 0.4431, 0.2549]],\n\n         [[0.8588, 0.6706, 0.4824],\n          [0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6471, 0.4431, 0.2549],\n          [0.6549, 0.4510, 0.2627]],\n\n         [[0.8627, 0.6745, 0.4863],\n          [0.8667, 0.6784, 0.4902],\n          [0.8784, 0.6902, 0.5020],\n          ...,\n          [0.6353, 0.4314, 0.2431],\n          [0.6431, 0.4392, 0.2510],\n          [0.6392, 0.4353, 0.2471]]]])']}, 'current_outputs': ['4', '26', '12', '1'], 'timestamp': 1778444357459}
-    Status: FAILED
-    Error: Workflow execution failed: {'prompt_id': '76673fd6-7e92-4b6a-8ed4-cdb4419420ec', 'node_id': '26', 'node_type': 'SAM3InteractiveCollector', 'executed': ['12', '1'], 'exception_message': "No module named 'timm'\n", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 534, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 334, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 308, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 296, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\internal\\__init__.py", line 149, in wrapped_func\n    return method(locked_class, **inputs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1826, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3_interactive.py", line 667, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\_model_cache.py", line 32, in get_or_build_model\n    from .sam3.predictor import Sam3VideoPredictor\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3\\__init__.py", line 61, in <module>\n    from .model import (\n    ...<26 lines>...\n    )\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3\\model.py", line 60, in <module>\n    from timm.models.layers import DropPath, trunc_normal_\n'], 'current_inputs': {'multi_prompts_store': ['[{"positive_points":[{"x":3348.288109906738,"y":2452.2208696844737}],"negative_points":[],"positive_boxes":[],"negative_boxes":[],"name":"Prompt 1"},{"positive_points":[],"negative_points":[],"positive_boxes":[],"negative_boxes":[],"name":"Prompt 2"}]'], 'sam3_model_config': ["{'checkpoint_path': 'C:\\\\workspaces\\\\SAM3-2213\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\workspaces\\\\SAM3-2213\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'auto', 'dtype': 'bf16', 'compile': False}"], 'image': ['tensor([[[[0.9176, 0.8392, 0.7333],\n          [0.9294, 0.8471, 0.7412],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8039, 0.6588, 0.4863],\n          [0.8157, 0.6706, 0.4980]],\n\n         [[0.9137, 0.8353, 0.7294],\n          [0.9216, 0.8392, 0.7333],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8039, 0.6588, 0.4863],\n          [0.8039, 0.6588, 0.4863],\n          [0.8118, 0.6667, 0.4941]],\n\n         [[0.9137, 0.8314, 0.7255],\n          [0.9137, 0.8314, 0.7255],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8118, 0.6667, 0.4941],\n          [0.8039, 0.6588, 0.4863]],\n\n         ...,\n\n         [[0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6471, 0.4431, 0.2549],\n          [0.6392, 0.4353, 0.2471],\n          [0.6471, 0.4431, 0.2549]],\n\n         [[0.8588, 0.6706, 0.4824],\n          [0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6471, 0.4431, 0.2549],\n          [0.6549, 0.4510, 0.2627]],\n\n         [[0.8627, 0.6745, 0.4863],\n          [0.8667, 0.6784, 0.4902],\n          [0.8784, 0.6902, 0.5020],\n          ...,\n          [0.6353, 0.4314, 0.2431],\n          [0.6431, 0.4392, 0.2510],\n          [0.6392, 0.4353, 0.2471]]]])']}, 'current_outputs': ['4', '26', '12', '1'], 'timestamp': 1778444357459}
-    Details: Workflow: C:\ComfyUI-SAM3\workflows\scene_seg_interactive.json
-Node error: SAM3InteractiveCollector
+  [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'auto', compile: False
+  [ComfyUI] [VRAM] Before LoadSAM3Model: 1042 / 12287 MB
+  [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: failed
+  [ComfyUI] [ComfyUI-SAM3] Socket unhealthy, restarting worker...
+  [ComfyUI] [ComfyUI-SAM3] python: C:\workspaces\SAM3-2229\portable-comfyui\ComfyUI_windows_portable\ComfyUI\.ce\.pixi\envs\sam3-nodes\python.exe
+  [ComfyUI] [comfy-env] Invalidated 1 stale model patchers (will be cleaned up during next unload)
+  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI', 'C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3', 'C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\.ce\\.pixi\\envs\\sam3-nodes\\Lib\\site-packages', 'C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3']
+  [ComfyUI] [comfy-env] sam3-nodes: Library/bin has 235 DLLs
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=C:\workspaces\SAM3-2229\portable-comfyui\ComfyUI_windows_portable\ComfyUI\.ce\.pixi\envs\sam3-nodes\python.exe
+  [ComfyUI] [SubprocessWorker] launching cmd=['C:\\Users\\ContainerAdministrator\\.pixi\\bin\\pixi.exe', 'run', '--as-is', '--manifest-path', 'C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\.ce\\pixi.toml', '-e', 'sam3-nodes', 'python', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_hsq5yj7f\\persistent_worker.py', 'tcp://127.0.0.1:52316']...
+  Frame 2 saved (frame_001.jpg, t=2.3s)
+  [capture-periodic] freeze=4ms shot=119ms unfreeze=5ms saved=True
+  Frame 3 saved (frame_002.jpg, t=4.4s)
+  [capture-periodic] freeze=4ms shot=108ms unfreeze=6ms saved=True
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=14 sending call_method
+  [capture-loop] iter=50 t=6.1s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=4 ram=10.2/31.9GB (32%) swap=2.2/10.5GB (20%) cpu=6% browser_rss=1.33GB
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB) -> cpu: 1042 / 12287 MB
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=15 sending model_to_device
+  [ComfyUI] Model 'Sam3VideoInferenceWithInstanceInteractivity_1' gone from worker (restarted?), treating as offloaded
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB): 1042 / 12287 MB
+  [ComfyUI] [comfy-env] LoadSAM3Model done (5.23s): result: NodeOutput
+  [ComfyUI] [VRAM] After LoadSAM3Model: 1042 / 12287 MB
+  [ComfyUI] [comfy-env] Running SAM3InteractiveCollector: multi_prompts_store: '[{"positive_points":[{"x":3348.288109906738,"y":2452.220..., sam3_model_config: dict, image: torch.float32 [1,4480,6720,3] cpu, unique_id: '26'
+  [ComfyUI] [VRAM] Before SAM3InteractiveCollector: 1042 / 12287 MB
+  [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_interactive.SAM3InteractiveCollector.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 4480, 6720, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=16 sending call_method
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 4480, 6720, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 4480, 6720, 3])
+  Frame 4 saved (frame_003.jpg, t=6.6s)
+  [capture-periodic] freeze=5ms shot=129ms unfreeze=5ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=16
+  [ComfyUI] [comfy-env] VRAM request: 1.84GB, free before eviction: 11.79GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 11.79GB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +460MB (now 460MB) reserved=480MB peak=460MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1296MB (now 1756MB) reserved=1760MB peak=1756MB
+  [capture-loop] iter=100 t=12.3s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=4 ram=10.7/31.9GB (34%) swap=2.2/10.5GB (20%) cpu=15% browser_rss=1.33GB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +348MB (now 2105MB) reserved=2144MB peak=2105MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=16
+  Frame 5 saved (frame_004.jpg, t=13.1s)
+  [capture-periodic] freeze=9ms shot=210ms unfreeze=7ms saved=True
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] Created 1 model patchers: ['Sam3VideoInferenceWithInstanceInteractivity_1']
+  [ComfyUI] [comfy-env] SAM3InteractiveCollector done (8.92s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3InteractiveCollector: 1042 / 12287 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (1756 MB)
+  [ComfyUI] Prompt executed in 16.25 seconds
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB) -> cpu: 1042 / 12287 MB
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=17 sending model_to_device
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -286MB (now 1819MB) reserved=2528MB peak=2476MB
+  Node executed (1 total), capturing...
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB): 1042 / 12287 MB
+  Frame 6 saved (frame_005.jpg, t=16.8s)
+  [capture-node] freeze=149ms shot=546ms unfreeze=5ms saved=True
+  Node executed (2 total), capturing...
+  Frame 7 saved (frame_006.jpg, t=17.9s)
+  [capture-node] freeze=4ms shot=173ms unfreeze=0ms saved=True
+  Execution complete (t=17.9s)
+  Captured 7 unique frames over 18.11s
+  [debug] iframes: 0
+  [timing] trigger_3d_previews: 0.0s
+  Saved high-quality screenshot: scene_seg_interactive_executed.png
+  [timing] final_screenshot: 0.3s
+    Captured 8 video frames

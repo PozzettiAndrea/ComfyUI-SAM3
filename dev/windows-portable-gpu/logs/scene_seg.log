@@ -2,9 +2,9 @@ Capturing execution frames: scene_seg.json
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
   [ComfyUI] === /validate endpoint called ===
+  Queuing workflow for execution...
   [ComfyUI] Received JSON with keys: ['prompt']
   [ComfyUI] Prompt has 10 nodes
-  Queuing workflow for execution...
   [ComfyUI]   Node 1: LoadImage
   [ComfyUI]     Inputs: {"image": "image.png"}
   [ComfyUI]   Node 3: PreviewImage
@@ -25,67 +25,129 @@ Capturing execution frames: scene_seg.json
   [ComfyUI]     Inputs: {"upscale_method": "nearest-exact", "width": 900, "height": 600, "crop": "center", "multiband": ["22", 0]}
   [ComfyUI]   Node 27: SAM3MultipromptSegmentation
   [ComfyUI]     Inputs: {"refinement_iterations": 0, "use_multimask": false, "sam3_model_config": ["12", 0], "image": ["1", 0], "multi_prompts": ["20", 0]}
-  [ComfyUI] Generated prompt_id: 1022c332-632a-41af-9787-976d56877145
+  [ComfyUI] Generated prompt_id: 732287d1-e2b9-480f-876c-413718c19389
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
   [ComfyUI] got prompt
-  [ComfyUI] WARNING: 'NoneType' object has no attribute 'shape'
-  [ComfyUI] CACHE MISS - computing new result for key=35316a77
-  [ComfyUI] Image dimensions: 6720x4480
-  [ComfyUI] Processing 7 prompt regions
-  [ComfyUI]   Prompt 0: 10 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
-  [ComfyUI]   Prompt 1: 7 pos pts, 16 neg pts, 1 pos boxes, 0 neg boxes
-  [ComfyUI]   Prompt 2: 7 pos pts, 14 neg pts, 1 pos boxes, 0 neg boxes
-  [ComfyUI]   Prompt 3: 1 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
-  [ComfyUI]   Prompt 4: 1 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
-  [ComfyUI]   Prompt 5: 13 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
-  [ComfyUI]   Prompt 6: 6 pos pts, 0 neg pts, 1 pos boxes, 0 neg boxes
-  [ComfyUI] Output: 7 non-empty prompts
-  [ComfyUI] Resolved precision: fp32 -> fp32
-  [ComfyUI] SAM3 model cache miss � building model...
-  [ComfyUI] !!! Exception during processing !!! No module named 'timm'
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\sam3\model.py", line 58, in <module>
-  [ComfyUI]     from timm.layers import DropPath, trunc_normal_
-  [ComfyUI] ModuleNotFoundError: No module named 'timm'
-  [ComfyUI] 
-  [ComfyUI] During handling of the above exception, another exception occurred:
-  [ComfyUI] 
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 534, in execute
-  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 334, in get_output_data
-  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 308, in _async_map_node_over_list
-  [ComfyUI]     await process_inputs(input_dict, i)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 296, in process_inputs
-  [ComfyUI]     result = f(**inputs)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\internal\__init__.py", line 149, in wrapped_func
-  [ComfyUI]     return method(locked_class, **inputs)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1826, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\segmentation.py", line 695, in execute
-  [ComfyUI]     sam3_model = get_or_build_model(sam3_model_config)
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\_model_cache.py", line 32, in get_or_build_model
-  [ComfyUI]     from .sam3.predictor import Sam3VideoPredictor
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\sam3\__init__.py", line 61, in <module>
-  [ComfyUI]     from .model import (
-  [ComfyUI]     ...<26 lines>...
-  [ComfyUI]     )
-  [ComfyUI]   File "C:\workspaces\SAM3-2213\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\sam3\model.py", line 60, in <module>
-  [ComfyUI]     from timm.models.layers import DropPath, trunc_normal_
-  [ComfyUI] ModuleNotFoundError: No module named 'timm'
-  [ComfyUI] 
-  [ComfyUI] Prompt executed in 1.48 seconds
+  [ComfyUI] [comfy-env] Running SAM3MultiRegionCollector: multi_prompts_store: '[{"positive_points":[{"x":5052.74953932266,"y":2847.0600..., image: torch.float32 [1,4480,6720,3] cpu
+  [ComfyUI] [VRAM] Before SAM3MultiRegionCollector: 1042 / 12287 MB
+  [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_interactive.SAM3MultiRegionCollector.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: failed
+  [ComfyUI] [ComfyUI-SAM3] python: C:\workspaces\SAM3-2229\portable-comfyui\ComfyUI_windows_portable\ComfyUI\.ce\.pixi\envs\sam3-nodes\python.exe
+  [ComfyUI] [ComfyUI-SAM3] Socket unhealthy, restarting worker...
+  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI', 'C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3', 'C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\.ce\\.pixi\\envs\\sam3-nodes\\Lib\\site-packages', 'C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3']
+  [ComfyUI] [comfy-env] Invalidated 1 stale model patchers (will be cleaned up during next unload)
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=C:\workspaces\SAM3-2229\portable-comfyui\ComfyUI_windows_portable\ComfyUI\.ce\.pixi\envs\sam3-nodes\python.exe
+  [ComfyUI] [comfy-env] sam3-nodes: Library/bin has 235 DLLs
+  [ComfyUI] [SubprocessWorker] launching cmd=['C:\\Users\\ContainerAdministrator\\.pixi\\bin\\pixi.exe', 'run', '--as-is', '--manifest-path', 'C:\\workspaces\\SAM3-2229\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\.ce\\pixi.toml', '-e', 'sam3-nodes', 'python', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_hsq5yj7f\\persistent_worker.py', 'tcp://127.0.0.1:51226']...
+  Frame 2 saved (frame_001.jpg, t=2.3s)
+  [capture-periodic] freeze=4ms shot=128ms unfreeze=6ms saved=True
+  Frame 3 saved (frame_002.jpg, t=4.5s)
+  [capture-periodic] freeze=4ms shot=125ms unfreeze=5ms saved=True
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 4480, 6720, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=9 sending call_method
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 4480, 6720, 3]
+  [capture-loop] iter=50 t=6.1s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=6 ram=9.4/31.9GB (30%) swap=1.3/10.5GB (12%) cpu=7% browser_rss=1.12GB
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 4480, 6720, 3])
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB) -> cpu: 1042 / 12287 MB
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=10 sending model_to_device
+  [ComfyUI] Model 'Sam3VideoInferenceWithInstanceInteractivity_1' gone from worker (restarted?), treating as offloaded
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB): 1042 / 12287 MB
+  [ComfyUI] [comfy-env] SAM3MultiRegionCollector done (5.91s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3MultiRegionCollector: 1042 / 12287 MB
+  [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'fp32', compile: False
+  [ComfyUI] [VRAM] Before LoadSAM3Model: 1042 / 12287 MB
+  [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=11 sending call_method
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] LoadSAM3Model done (0.05s): result: NodeOutput
+  [ComfyUI] [VRAM] After LoadSAM3Model: 1042 / 12287 MB
+  [ComfyUI] [comfy-env] Running SAM3MultipromptSegmentation: refinement_iterations: 0, use_multimask: False, sam3_model_config: dict, image: torch.float32 [1,4480,6720,3] cpu, multi_prompts: list[7]
+  [ComfyUI] [VRAM] Before SAM3MultipromptSegmentation: 1042 / 12287 MB
+  [ComfyUI] [SubprocessWorker] call_method: nodes.segmentation.SAM3MultipromptSegmentation.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 4480, 6720, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=12 sending call_method
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 4480, 6720, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 4480, 6720, 3])
   Node executed (1 total), capturing...
-  Frame 2 saved (frame_001.jpg, t=2.4s)
-  [capture-node] freeze=63ms shot=331ms unfreeze=0ms saved=True
-  Execution complete (t=2.4s)
-  Execution error: {'prompt_id': '6326a312-eabd-46f6-a969-5cdbda4ac8a6', 'node_id': '27', 'node_type': 'SAM3MultipromptSegmentation', 'executed': ['12', '1', '20'], 'exception_message': "No module named 'timm'\n", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 534, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 334, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 308, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 296, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\internal\\__init__.py", line 149, in wrapped_func\n    return method(locked_class, **inputs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1826, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\segmentation.py", line 695, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\_model_cache.py", line 32, in get_or_build_model\n    from .sam3.predictor import Sam3VideoPredictor\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3\\__init__.py", line 61, in <module>\n    from .model import (\n    ...<26 lines>...\n    )\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3\\model.py", line 60, in <module>\n    from timm.models.layers import DropPath, trunc_normal_\n'], 'current_inputs': {'refinement_iterations': [0], 'use_multimask': [False], 'sam3_model_config': ["{'checkpoint_path': 'C:\\\\workspaces\\\\SAM3-2213\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\workspaces\\\\SAM3-2213\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.9176, 0.8392, 0.7333],\n          [0.9294, 0.8471, 0.7412],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8039, 0.6588, 0.4863],\n          [0.8157, 0.6706, 0.4980]],\n\n         [[0.9137, 0.8353, 0.7294],\n          [0.9216, 0.8392, 0.7333],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8039, 0.6588, 0.4863],\n          [0.8039, 0.6588, 0.4863],\n          [0.8118, 0.6667, 0.4941]],\n\n         [[0.9137, 0.8314, 0.7255],\n          [0.9137, 0.8314, 0.7255],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8118, 0.6667, 0.4941],\n          [0.8039, 0.6588, 0.4863]],\n\n         ...,\n\n         [[0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6471, 0.4431, 0.2549],\n          [0.6392, 0.4353, 0.2471],\n          [0.6471, 0.4431, 0.2549]],\n\n         [[0.8588, 0.6706, 0.4824],\n          [0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6471, 0.4431, 0.2549],\n          [0.6549, 0.4510, 0.2627]],\n\n         [[0.8627, 0.6745, 0.4863],\n          [0.8667, 0.6784, 0.4902],\n          [0.8784, 0.6902, 0.5020],\n          ...,\n          [0.6353, 0.4314, 0.2431],\n          [0.6431, 0.4392, 0.2510],\n          [0.6392, 0.4353, 0.2471]]]])'], 'multi_prompts': ["[{'id': 0, 'positive_points': {'points': [[0.7518972528753959, 0.6355044797738758], [0.7340045522905485, 0.6593619024052091], [0.7021953068063758, 0.6623440802341257], [0.6902668397498108, 0.677254969378709], [0.668397983479442, 0.6742727915497924], [0.7180999295484621, 0.6176114128003758], [0.7180999295484621, 0.572878745366626], [0.7439449415043526, 0.5311282557617927], [0.7240641630767446, 0.5609500340509593], [0.6982191511208541, 0.5609500340509593]], 'labels': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.7141237738629407, 0.6056827014847093, 0.15109391604982114, 0.19085938105066613]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 1, 'positive_points': {'points': [[0.6513952517072837, 0.6001522443905642], [0.6354008929467748, 0.6921217188777309], [0.6433980723270292, 0.8680633222444846], [0.8859791801947458, 0.884058013459644], [0.9046392654153393, 0.6041509171943541], [0.9046392654153393, 0.5441708251375063], [0.8060073863922018, 0.5201787883147672]], 'labels': [1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [[0.7180384132094035, 0.5921548987829846], [0.7180384132094035, 0.5921548987829846], [0.7393642248900819, 0.6601323364474121], [0.7393642248900819, 0.6601323364474121], [0.7446956778102515, 0.6841243732701512], [0.7446956778102515, 0.6841243732701512], [0.670055336927877, 0.6721283548587816], [0.670055336927877, 0.6721283548587816], [0.6913811486085556, 0.608149589998144], [0.6913811486085556, 0.608149589998144], [0.6887154221484707, 0.552168170745086], [0.6887154221484707, 0.552168170745086], [0.7100412338291491, 0.552168170745086], [0.7100412338291491, 0.552168170745086], [0.7366984984299972, 0.552168170745086], [0.7366984984299972, 0.552168170745086]], 'labels': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, 'positive_boxes': {'boxes': [[0.7713529424110994, 0.7141144192985751, 0.31455572229000606, 0.4198606443979348]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 2, 'positive_points': {'points': [[0.5279788816577594, 0.8586378093779201], [0.5097671062510242, 0.6517998210195123], [0.4733435554375539, 0.64789721746558], [0.37968299620291596, 0.64789721746558], [0.39529308940868896, 0.8313195845003946], [0.5565973858683432, 0.8586378093779201], [0.569605796873154, 0.6439946139116478]], 'labels': [1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [[0.4863519664423647, 0.7415597027599534], [0.4863519664423647, 0.7415597027599534], [0.4837502842414026, 0.8508326022700556], [0.4837502842414026, 0.8508326022700556], [0.4473267334279323, 0.8664430164857846], [0.4473267334279323, 0.8664430164857846], [0.43431832242312146, 0.628384199695919], [0.43431832242312146, 0.628384199695919], [0.5123687884519864, 0.5893581641565967], [0.5123687884519864, 0.5893581641565967], [0.5019620596481378, 0.6361894068037834], [0.5019620596481378, 0.6361894068037834], [0.4291149580211971, 0.6400920103577157], [0.4291149580211971, 0.6400920103577157]], 'labels': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, 'positive_boxes': {'boxes': [[0.47724607873899716, 0.7591214187526485, 0.21593962267985972, 0.24586402389773]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 3, 'positive_points': {'points': [[0.43642532993691785, 0.595717523200948]], 'labels': [1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.4324084720788661, 0.6137937552745099, 0.06426972572882772, 0.07230492829424773]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 4, 'positive_points': {'points': [[0.5006950556657457, 0.595717523200948]], 'labels': [1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.5027034845947715, 0.5716158804361987, 0.09238773073518991, 0.1687114993532448]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 5, 'positive_points': {'points': [[0.9264819886192297, 0.384828149009392], [0.7939256793035224, 0.37880273831820466], [0.7939256793035224, 0.11368466790596292], [0.9304988464772813, 0.10765925721477561], [0.874262836464557, 0.22214206034733455], [0.8501616893162467, 0.22214206034733455], [0.846144831458195, 0.31854863140633155], [0.8983639836128675, 0.3004723993327696], [0.8943471257548158, 0.20406582827377262], [0.8943471257548158, 0.12573548928833755], [0.8421279736001431, 0.1558625427442741], [0.830077400025988, 0.28842157795039497], [0.8220436843098845, 0.33059945278870617]], 'labels': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.8662291207484536, 0.25829452449445844, 0.18477546147037982, 0.31332135594174026]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 6, 'positive_points': {'points': [[0.7045792285036274, 0.9568116711293354], [0.6789425589101554, 0.9568116711293354], [0.6569682706871793, 0.9348369322210276], [0.6716177961691634, 0.9293432474939506], [0.6569682706871793, 0.9403306169481045], [0.7082416098741234, 0.9403306169481045]], 'labels': [1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.6789425589101554, 0.943077459311643, 0.10254667837388842, 0.07141790145200044]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}]"]}, 'current_outputs': ['24', '20', '27', '26', '12', '22', '23', '3', '1', '4'], 'timestamp': 1778444348745}
-    Status: FAILED
-    Error: Workflow execution failed: {'prompt_id': '6326a312-eabd-46f6-a969-5cdbda4ac8a6', 'node_id': '27', 'node_type': 'SAM3MultipromptSegmentation', 'executed': ['12', '1', '20'], 'exception_message': "No module named 'timm'\n", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 534, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 334, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 308, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 296, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\internal\\__init__.py", line 149, in wrapped_func\n    return method(locked_class, **inputs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1826, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\segmentation.py", line 695, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\_model_cache.py", line 32, in get_or_build_model\n    from .sam3.predictor import Sam3VideoPredictor\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3\\__init__.py", line 61, in <module>\n    from .model import (\n    ...<26 lines>...\n    )\n', '  File "C:\\workspaces\\SAM3-2213\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3\\model.py", line 60, in <module>\n    from timm.models.layers import DropPath, trunc_normal_\n'], 'current_inputs': {'refinement_iterations': [0], 'use_multimask': [False], 'sam3_model_config': ["{'checkpoint_path': 'C:\\\\workspaces\\\\SAM3-2213\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\workspaces\\\\SAM3-2213\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.9176, 0.8392, 0.7333],\n          [0.9294, 0.8471, 0.7412],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8039, 0.6588, 0.4863],\n          [0.8157, 0.6706, 0.4980]],\n\n         [[0.9137, 0.8353, 0.7294],\n          [0.9216, 0.8392, 0.7333],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8039, 0.6588, 0.4863],\n          [0.8039, 0.6588, 0.4863],\n          [0.8118, 0.6667, 0.4941]],\n\n         [[0.9137, 0.8314, 0.7255],\n          [0.9137, 0.8314, 0.7255],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8118, 0.6667, 0.4941],\n          [0.8039, 0.6588, 0.4863]],\n\n         ...,\n\n         [[0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6471, 0.4431, 0.2549],\n          [0.6392, 0.4353, 0.2471],\n          [0.6471, 0.4431, 0.2549]],\n\n         [[0.8588, 0.6706, 0.4824],\n          [0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6471, 0.4431, 0.2549],\n          [0.6549, 0.4510, 0.2627]],\n\n         [[0.8627, 0.6745, 0.4863],\n          [0.8667, 0.6784, 0.4902],\n          [0.8784, 0.6902, 0.5020],\n          ...,\n          [0.6353, 0.4314, 0.2431],\n          [0.6431, 0.4392, 0.2510],\n          [0.6392, 0.4353, 0.2471]]]])'], 'multi_prompts': ["[{'id': 0, 'positive_points': {'points': [[0.7518972528753959, 0.6355044797738758], [0.7340045522905485, 0.6593619024052091], [0.7021953068063758, 0.6623440802341257], [0.6902668397498108, 0.677254969378709], [0.668397983479442, 0.6742727915497924], [0.7180999295484621, 0.6176114128003758], [0.7180999295484621, 0.572878745366626], [0.7439449415043526, 0.5311282557617927], [0.7240641630767446, 0.5609500340509593], [0.6982191511208541, 0.5609500340509593]], 'labels': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.7141237738629407, 0.6056827014847093, 0.15109391604982114, 0.19085938105066613]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 1, 'positive_points': {'points': [[0.6513952517072837, 0.6001522443905642], [0.6354008929467748, 0.6921217188777309], [0.6433980723270292, 0.8680633222444846], [0.8859791801947458, 0.884058013459644], [0.9046392654153393, 0.6041509171943541], [0.9046392654153393, 0.5441708251375063], [0.8060073863922018, 0.5201787883147672]], 'labels': [1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [[0.7180384132094035, 0.5921548987829846], [0.7180384132094035, 0.5921548987829846], [0.7393642248900819, 0.6601323364474121], [0.7393642248900819, 0.6601323364474121], [0.7446956778102515, 0.6841243732701512], [0.7446956778102515, 0.6841243732701512], [0.670055336927877, 0.6721283548587816], [0.670055336927877, 0.6721283548587816], [0.6913811486085556, 0.608149589998144], [0.6913811486085556, 0.608149589998144], [0.6887154221484707, 0.552168170745086], [0.6887154221484707, 0.552168170745086], [0.7100412338291491, 0.552168170745086], [0.7100412338291491, 0.552168170745086], [0.7366984984299972, 0.552168170745086], [0.7366984984299972, 0.552168170745086]], 'labels': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, 'positive_boxes': {'boxes': [[0.7713529424110994, 0.7141144192985751, 0.31455572229000606, 0.4198606443979348]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 2, 'positive_points': {'points': [[0.5279788816577594, 0.8586378093779201], [0.5097671062510242, 0.6517998210195123], [0.4733435554375539, 0.64789721746558], [0.37968299620291596, 0.64789721746558], [0.39529308940868896, 0.8313195845003946], [0.5565973858683432, 0.8586378093779201], [0.569605796873154, 0.6439946139116478]], 'labels': [1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [[0.4863519664423647, 0.7415597027599534], [0.4863519664423647, 0.7415597027599534], [0.4837502842414026, 0.8508326022700556], [0.4837502842414026, 0.8508326022700556], [0.4473267334279323, 0.8664430164857846], [0.4473267334279323, 0.8664430164857846], [0.43431832242312146, 0.628384199695919], [0.43431832242312146, 0.628384199695919], [0.5123687884519864, 0.5893581641565967], [0.5123687884519864, 0.5893581641565967], [0.5019620596481378, 0.6361894068037834], [0.5019620596481378, 0.6361894068037834], [0.4291149580211971, 0.6400920103577157], [0.4291149580211971, 0.6400920103577157]], 'labels': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, 'positive_boxes': {'boxes': [[0.47724607873899716, 0.7591214187526485, 0.21593962267985972, 0.24586402389773]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 3, 'positive_points': {'points': [[0.43642532993691785, 0.595717523200948]], 'labels': [1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.4324084720788661, 0.6137937552745099, 0.06426972572882772, 0.07230492829424773]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 4, 'positive_points': {'points': [[0.5006950556657457, 0.595717523200948]], 'labels': [1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.5027034845947715, 0.5716158804361987, 0.09238773073518991, 0.1687114993532448]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 5, 'positive_points': {'points': [[0.9264819886192297, 0.384828149009392], [0.7939256793035224, 0.37880273831820466], [0.7939256793035224, 0.11368466790596292], [0.9304988464772813, 0.10765925721477561], [0.874262836464557, 0.22214206034733455], [0.8501616893162467, 0.22214206034733455], [0.846144831458195, 0.31854863140633155], [0.8983639836128675, 0.3004723993327696], [0.8943471257548158, 0.20406582827377262], [0.8943471257548158, 0.12573548928833755], [0.8421279736001431, 0.1558625427442741], [0.830077400025988, 0.28842157795039497], [0.8220436843098845, 0.33059945278870617]], 'labels': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.8662291207484536, 0.25829452449445844, 0.18477546147037982, 0.31332135594174026]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 6, 'positive_points': {'points': [[0.7045792285036274, 0.9568116711293354], [0.6789425589101554, 0.9568116711293354], [0.6569682706871793, 0.9348369322210276], [0.6716177961691634, 0.9293432474939506], [0.6569682706871793, 0.9403306169481045], [0.7082416098741234, 0.9403306169481045]], 'labels': [1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.6789425589101554, 0.943077459311643, 0.10254667837388842, 0.07141790145200044]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}]"]}, 'current_outputs': ['24', '20', '27', '26', '12', '22', '23', '3', '1', '4'], 'timestamp': 1778444348745}
-    Details: Workflow: C:\ComfyUI-SAM3\workflows\scene_seg.json
-Node error: SAM3MultipromptSegmentation
+  Frame 4 saved (frame_003.jpg, t=8.0s)
+  [capture-node] freeze=33ms shot=210ms unfreeze=24ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=12
+  [ComfyUI] [comfy-env] VRAM request: 3.50GB, free before eviction: 11.79GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 11.79GB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +359MB (now 359MB) reserved=384MB peak=359MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1722MB (now 2082MB) reserved=2112MB peak=2082MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1252MB (now 3334MB) reserved=3360MB peak=3334MB
+  [capture-loop] iter=100 t=13.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=10.2/31.9GB (32%) swap=1.3/10.5GB (12%) cpu=8% browser_rss=1.58GB
+  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: attention_flash cannot run on fp32 Q/K/V. Falling back to attention_pytorch with flash-SDPA disabled.
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +268MB (now 3603MB) reserved=3680MB peak=3603MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=12
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=12
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +229MB (now 3833MB) reserved=3936MB peak=3833MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=12
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=12
+  Frame 5 saved (frame_004.jpg, t=16.9s)
+  [capture-periodic] freeze=6ms shot=321ms unfreeze=20ms saved=True
+  [capture-loop] iter=150 t=20.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=12.8/31.9GB (40%) swap=1.3/10.5GB (12%) cpu=34% browser_rss=1.68GB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -382MB (now 3451MB) reserved=3936MB peak=3833MB
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] Created 1 model patchers: ['Sam3VideoInferenceWithInstanceInteractivity_1']
+  [ComfyUI] [comfy-env] SAM3MultipromptSegmentation done (13.12s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3MultipromptSegmentation: 1042 / 12287 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (3334 MB)
+  Frame 6 saved (frame_005.jpg, t=21.7s)
+  [capture-periodic] freeze=4ms shot=157ms unfreeze=4ms saved=True
+  Node executed (2 total), capturing...
+  Frame 7 saved (frame_006.jpg, t=22.9s)
+  [capture-node] freeze=6ms shot=251ms unfreeze=18ms saved=True
+  Frame 8 saved (frame_007.jpg, t=25.3s)
+  [capture-periodic] freeze=4ms shot=182ms unfreeze=26ms saved=True
+  [capture-loop] iter=200 t=27.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=12.3/31.9GB (39%) swap=1.3/10.5GB (12%) cpu=8% browser_rss=1.99GB
+  [ComfyUI] BatchToMultiband: Processed 1 images with 3 channels each -> 3 channels
+  [ComfyUI] BatchToMultiband: Processed 7 masks -> 7 channels
+  [ComfyUI] BatchToMultiband: Output shape torch.Size([1, 10, 4480, 6720]), channels: ['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI] ResizeMultiband: 4480x6720 -> 600x900
+  [ComfyUI] PreviewMultibandImage: Batch=1, Channels=10, Names=['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  Node executed (3 total), capturing...
+  Frame 9 saved (frame_008.jpg, t=30.7s)
+  [capture-node] freeze=13ms shot=217ms unfreeze=18ms saved=True
+  Node executed (4 total), capturing...
+  [ComfyUI] SaveMultibandImage: Saved to output/multiband.npz
+  [ComfyUI] Prompt executed in 31.06 seconds
+  [ComfyUI]   Shape: (1, 10, 600, 900)
+  [ComfyUI]   Format: npz
+  Frame 10 saved (frame_009.jpg, t=31.3s)
+  [capture-node] freeze=7ms shot=229ms unfreeze=5ms saved=True
+  Execution complete (t=31.7s)
+  Captured 10 unique frames over 31.83s
+  [debug] iframes: 0
+  [timing] trigger_3d_previews: 0.0s
+  Saved high-quality screenshot: scene_seg_executed.png
+  [timing] final_screenshot: 0.4s
+    Captured 11 video frames
