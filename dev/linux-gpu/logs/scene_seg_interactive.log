@@ -1,11 +1,19 @@
 Capturing execution frames: scene_seg_interactive.json
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB) -> cpu: 3927 / 7703 MB
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=13 sending model_to_device
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -303MB (now 3148MB) reserved=3552MB peak=3833MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -1468MB (now 1680MB) reserved=3552MB peak=3833MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -1564MB (now 117MB) reserved=3552MB peak=3833MB
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB): 599 / 7703 MB
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
   [ComfyUI] === /validate endpoint called ===
-  Queuing workflow for execution...
   [ComfyUI] Received JSON with keys: ['prompt']
   [ComfyUI] Prompt has 4 nodes
   [ComfyUI]   Node 1: LoadImage
+  Queuing workflow for execution...
   [ComfyUI]     Inputs: {"image": "image.png"}
   [ComfyUI]   Node 4: MaskPreview
   [ComfyUI]     Inputs: {"mask": ["26", 0]}
@@ -13,13 +21,13 @@ Capturing execution frames: scene_seg_interactive.json
   [ComfyUI]     Inputs: {"precision": "auto", "compile": false}
   [ComfyUI]   Node 26: SAM3InteractiveCollector
   [ComfyUI]     Inputs: {"multi_prompts_store": "[{\"positive_points\":[{\"x\":3348.288109906738,\"y\":2452.2208696844737}],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 1\"},{\"positiv
-  [ComfyUI] Generated prompt_id: 5f14e7ae-15cc-483e-a41f-fa362fcaede7
+  [ComfyUI] Generated prompt_id: 5deb6358-6d70-4825-9328-7e0ab4c1934d
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
   [ComfyUI] got prompt
   [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'auto', compile: False
-  [ComfyUI] [VRAM] Before LoadSAM3Model: 824 / 24124 MB
+  [ComfyUI] [VRAM] Before LoadSAM3Model: 599 / 7703 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
@@ -28,63 +36,57 @@ Capturing execution frames: scene_seg_interactive.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=6 sending call_method
-  [ComfyUI] [worker:ComfyUI-SAM3] [SAM3] Model not found at /workspaces/SAM3-1956/ComfyUI/models/sam3/sam3.safetensors, downloading from HuggingFace...
-  [ComfyUI] [SubprocessWorker] got response: error
-  [ComfyUI] !!! Exception during processing !!! No module named 'requests'
-  [ComfyUI] 
-  [ComfyUI] Worker traceback:
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_w7r6my3t/persistent_worker.py", line 1762, in main
-  [ComfyUI]     result = method(**inputs)
-  [ComfyUI]              ^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py", line 73, in execute
-  [ComfyUI]     cls._download_from_huggingface(pbar)
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py", line 110, in _download_from_huggingface
-  [ComfyUI]     import requests
-  [ComfyUI] ModuleNotFoundError: No module named 'requests'
-  [ComfyUI] 
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 535, in execute
-  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 335, in get_output_data
-  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 309, in _async_map_node_over_list
-  [ComfyUI]     await process_inputs(input_dict, i)
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 297, in process_inputs
-  [ComfyUI]     result = f(**inputs)
-  [ComfyUI]              ^^^^^^^^^^^
-  [ComfyUI]   File "/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py", line 536, in proxy
-  [ComfyUI]     result = worker.call_method(
-  [ComfyUI]              ^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method
-  [ComfyUI]     raise WorkerError(
-  [ComfyUI] comfy_env.isolation.workers.base.WorkerError: No module named 'requests'
-  [ComfyUI] 
-  [ComfyUI] Worker traceback:
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_w7r6my3t/persistent_worker.py", line 1762, in main
-  [ComfyUI]     result = method(**inputs)
-  [ComfyUI]              ^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py", line 73, in execute
-  [ComfyUI]     cls._download_from_huggingface(pbar)
-  [ComfyUI]   File "/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py", line 110, in _download_from_huggingface
-  [ComfyUI]     import requests
-  [ComfyUI] ModuleNotFoundError: No module named 'requests'
-  Execution complete (t=1.2s)
-  [ComfyUI] 
-  Execution error: {'prompt_id': 'b49760e0-3808-47ad-91e9-053cc665acfd', 'node_id': '12', 'node_type': 'LoadSAM3Model', 'executed': ['1'], 'exception_message': 'No module named \'requests\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "/tmp/comfyui_pvenv_w7r6my3t/persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "/workspaces/SAM3-1956/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py", line 73, in execute\n    cls._download_from_huggingface(pbar)\n  File "/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py", line 110, in _download_from_huggingface\n    import requests\nModuleNotFoundError: No module named \'requests\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n', '  File "/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py", line 536, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n', '  File "/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'precision': ['auto'], 'compile': [False]}, 'current_outputs': ['12', '4', '1', '26'], 'timestamp': 1778443345195}
-  [ComfyUI] 
-    Status: FAILED
-    Error: Workflow execution failed: {'prompt_id': 'b49760e0-3808-47ad-91e9-053cc665acfd', 'node_id': '12', 'node_type': 'LoadSAM3Model', 'executed': ['1'], 'exception_message': 'No module named \'requests\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "/tmp/comfyui_pvenv_w7r6my3t/persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "/workspaces/SAM3-1956/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py", line 73, in execute\n    cls._download_from_huggingface(pbar)\n  File "/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py", line 110, in _download_from_huggingface\n    import requests\nModuleNotFoundError: No module named \'requests\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "/workspaces/SAM3-1956/ComfyUI/execution.py", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n', '  File "/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py", line 536, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n', '  File "/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'precision': ['auto'], 'compile': [False]}, 'current_outputs': ['12', '4', '1', '26'], 'timestamp': 1778443345195}
-    Details: Workflow: /node/ComfyUI-SAM3/workflows/scene_seg_interactive.json
-Node error: LoadSAM3Model
-  [ComfyUI] Prompt executed in 0.77 seconds
+  [ComfyUI] [SubprocessWorker] call_id=14 sending call_method
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] LoadSAM3Model done (0.03s): result: NodeOutput
+  [ComfyUI] [VRAM] After LoadSAM3Model: 599 / 7703 MB
+  [ComfyUI] [comfy-env] Running SAM3InteractiveCollector: multi_prompts_store: '[{"positive_points":[{"x":3348.288109906738,"y":2452.220..., sam3_model_config: dict, image: torch.float32 [1,4480,6720,3] cpu, unique_id: '26'
+  [ComfyUI] [VRAM] Before SAM3InteractiveCollector: 599 / 7703 MB
+  [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_interactive.SAM3InteractiveCollector.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 4480, 6720, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=15 sending call_method
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 4480, 6720, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 4480, 6720, 3])
+  Frame 2 saved (frame_001.jpg, t=2.3s)
+  [capture-periodic] freeze=2ms shot=151ms unfreeze=3ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=15
+  [ComfyUI] [comfy-env] VRAM request: 1.84GB, free before eviction: 7.45GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.45GB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +691MB (now 808MB) reserved=896MB peak=3833MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=15
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1342MB (now 2150MB) reserved=2720MB peak=3833MB
+  Frame 3 saved (frame_002.jpg, t=4.6s)
+  [capture-periodic] freeze=1ms shot=153ms unfreeze=2ms saved=True
+  [capture-loop] iter=50 t=5.7s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=11.1/31.3GB (36%) swap=0.5/32.0GB (2%) cpu=14% browser_rss=1.40GB
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] Created 1 model patchers: ['Sam3VideoInferenceWithInstanceInteractivity_2']
+  [ComfyUI] [comfy-env] SAM3InteractiveCollector done (5.53s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3InteractiveCollector: 3097 / 7703 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (1756 MB)
+  [ComfyUI] Prompt executed in 7.12 seconds
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_2' (1756 MB) -> cpu: 3097 / 7703 MB
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=16 sending model_to_device
+  Node executed (1 total), capturing...
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -689MB (now 1461MB) reserved=2720MB peak=3833MB
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_2' (1756 MB): 1017 / 7703 MB
+  Frame 4 saved (frame_003.jpg, t=7.7s)
+  [capture-node] freeze=455ms shot=1006ms unfreeze=10ms saved=True
+  Node executed (2 total), capturing...
+  [capture-node] freeze=2ms shot=185ms unfreeze=0ms saved=False
+  Execution complete (t=9.4s)
+  Captured 4 unique frames over 9.61s
+  [debug] iframes: 0
+  [timing] trigger_3d_previews: 0.0s
+  Saved high-quality screenshot: scene_seg_interactive_executed.png
+  [timing] final_screenshot: 0.4s
+    Captured 5 video frames

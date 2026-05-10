@@ -1,132 +1,132 @@
 {
-  "timestamp": "2026-05-10T20:02:34.417394+00:00",
+  "timestamp": "2026-05-10T20:36:19.506463+00:00",
   "platform": "linux",
   "hardware": {
     "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-    "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
-    "gpu": "NVIDIA GeForce RTX 3090"
+    "cpu": "AMD Ryzen 5 3600 6-Core Processor",
+    "gpu": "NVIDIA GeForce RTX 5060"
   },
-  "commit_hash": "70f6d67a41ded1564f2abbe9210fd581ad82bef4",
-  "run_url": null,
-  "success": false,
+  "commit_hash": "089bac52181f0989aa6b741238f5d2918ce7bbc1",
+  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/25638990913",
+  "success": true,
   "summary": {
     "total": 5,
-    "passed": 0,
-    "failed": 5
+    "passed": 5,
+    "failed": 0
   },
   "workflows": [
     {
       "name": "image_seg_point",
-      "status": "fail",
-      "duration_seconds": 11.72,
-      "error": "Workflow execution failed: {'prompt_id': '4674e4b1-32b6-4b5e-a924-bcac340445fa', 'node_id': '30', 'node_type': 'LoadSAM3Model', 'executed': ['15', '1'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv_w7r6my3t/persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/comfy_api/latest/_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n             ^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n             ^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['auto'], 'compile': [False]}, 'current_outputs': ['15', '30', '29', '28', '1', '31'], 'timestamp': 1778443317920}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3/workflows/image_seg_point.json\nNode error: LoadSAM3Model",
+      "status": "pass",
+      "duration_seconds": 46.73,
+      "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
+        "gpu": "NVIDIA GeForce RTX 5060"
       },
       "resources": {
         "ram": {
-          "peak": 1.92,
-          "avg": 1.28
+          "peak": 5.71,
+          "avg": 1.99
         },
-        "total_ram_gb": 31.2,
-        "samples": 12,
+        "total_ram_gb": 31.3,
+        "samples": 46,
         "vram": {
-          "peak": 0.5,
-          "avg": 0.27
+          "peak": 2.38,
+          "avg": 0.38
         }
       }
     },
     {
       "name": "image_seg_text",
-      "status": "fail",
-      "duration_seconds": 6.76,
-      "error": "Workflow execution failed: {'prompt_id': '09bebc16-8291-49fb-ae1a-1601e276dd4b', 'node_id': '12', 'node_type': 'LoadSAM3Model', 'executed': ['1'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv_w7r6my3t/persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/comfy_api/latest/_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n             ^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n             ^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['fp32'], 'compile': [False]}, 'current_outputs': ['15', '12', '4', '3', '1'], 'timestamp': 1778443325356}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3/workflows/image_seg_text.json\nNode error: LoadSAM3Model",
+      "status": "pass",
+      "duration_seconds": 11.64,
+      "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
+        "gpu": "NVIDIA GeForce RTX 5060"
       },
       "resources": {
         "ram": {
-          "peak": 1.92,
-          "avg": 1.92
+          "peak": 8.72,
+          "avg": 5.86
         },
-        "total_ram_gb": 31.2,
-        "samples": 7,
+        "total_ram_gb": 31.3,
+        "samples": 12,
         "vram": {
-          "peak": 0.5,
-          "avg": 0.5
+          "peak": 4.51,
+          "avg": 2.25
         }
       }
     },
     {
       "name": "scene_seg",
-      "status": "fail",
-      "duration_seconds": 10.82,
-      "error": "Workflow execution failed: {'prompt_id': 'aa925566-2a32-44bf-b3c6-d31abf5c476c', 'node_id': '12', 'node_type': 'LoadSAM3Model', 'executed': ['20', '1'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv_w7r6my3t/persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/comfy_api/latest/_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n             ^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n             ^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['fp32'], 'compile': [False]}, 'current_outputs': ['27', '12', '26', '20', '4', '23', '3', '1', '24', '22'], 'timestamp': 1778443334867}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3/workflows/scene_seg.json\nNode error: LoadSAM3Model",
+      "status": "pass",
+      "duration_seconds": 35.97,
+      "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
+        "gpu": "NVIDIA GeForce RTX 5060"
       },
       "resources": {
         "ram": {
-          "peak": 2.55,
-          "avg": 2.08
+          "peak": 8.83,
+          "avg": 6.13
         },
-        "total_ram_gb": 31.2,
-        "samples": 11,
+        "total_ram_gb": 31.3,
+        "samples": 36,
         "vram": {
-          "peak": 0.5,
-          "avg": 0.5
+          "peak": 4.17,
+          "avg": 2.87
         }
       }
     },
     {
       "name": "scene_seg_interactive",
-      "status": "fail",
-      "duration_seconds": 8.25,
-      "error": "Workflow execution failed: {'prompt_id': 'b49760e0-3808-47ad-91e9-053cc665acfd', 'node_id': '12', 'node_type': 'LoadSAM3Model', 'executed': ['1'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv_w7r6my3t/persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/comfy_api/latest/_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n             ^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n             ^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['auto'], 'compile': [False]}, 'current_outputs': ['12', '4', '1', '26'], 'timestamp': 1778443345195}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3/workflows/scene_seg_interactive.json\nNode error: LoadSAM3Model",
+      "status": "pass",
+      "duration_seconds": 17.1,
+      "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
+        "gpu": "NVIDIA GeForce RTX 5060"
       },
       "resources": {
         "ram": {
-          "peak": 2.71,
-          "avg": 2.35
+          "peak": 12.65,
+          "avg": 9.78
         },
-        "total_ram_gb": 31.2,
-        "samples": 9,
+        "total_ram_gb": 31.3,
+        "samples": 17,
         "vram": {
-          "peak": 0.5,
-          "avg": 0.5
+          "peak": 3.79,
+          "avg": 1.88
         }
       }
     },
     {
       "name": "video_point_prompt",
-      "status": "fail",
-      "duration_seconds": 8.53,
-      "error": "Workflow execution failed: {'prompt_id': '33e1d167-9f11-4888-8de3-b95de902186d', 'node_id': '30', 'node_type': 'LoadSAM3Model', 'executed': ['28', '27', '9'], 'exception_message': 'No module named \\'requests\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv_w7r6my3t/persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/comfy_api/latest/_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 73, in execute\\n    cls._download_from_huggingface(pbar)\\n  File \"/workspaces/SAM3-1956/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/load_model.py\", line 110, in _download_from_huggingface\\n    import requests\\nModuleNotFoundError: No module named \\'requests\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3-1956/ComfyUI/execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n             ^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n             ^^^^^^^^^^^^^^^^^^^\\n', '  File \"/workspaces/SAM3-1956/.venv/lib/python3.11/site-packages/comfy_env/isolation/workers/subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'precision': ['auto'], 'compile': [False]}, 'current_outputs': ['15', '27', '13', '30', '14', '25', '21', '28', '35', '24', '9'], 'timestamp': 1778443353839}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3/workflows/video_point_prompt.json\nNode error: LoadSAM3Model",
+      "status": "pass",
+      "duration_seconds": 46.22,
+      "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
-        "gpu": "NVIDIA GeForce RTX 3090"
+        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
+        "gpu": "NVIDIA GeForce RTX 5060"
       },
       "resources": {
         "ram": {
-          "peak": 2.82,
-          "avg": 2.51
+          "peak": 11.29,
+          "avg": 5.53
         },
-        "total_ram_gb": 31.2,
-        "samples": 9,
+        "total_ram_gb": 31.3,
+        "samples": 46,
         "vram": {
-          "peak": 0.5,
-          "avg": 0.5
+          "peak": 3.67,
+          "avg": 2.55
         }
       }
     }
