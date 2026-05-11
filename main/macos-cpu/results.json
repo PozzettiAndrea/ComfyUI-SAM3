@@ -1,23 +1,23 @@
 {
-  "timestamp": "2026-05-10T21:49:14.926270+00:00",
+  "timestamp": "2026-05-11T00:38:04.453049+00:00",
   "platform": "macos",
   "hardware": {
     "os": "macOS-15.7.4-arm64-arm-64bit",
     "cpu": "arm"
   },
-  "commit_hash": "d71090e6be47ba6b1ee4c8a6c82d344225c90b8e",
-  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/25640423024",
-  "success": false,
+  "commit_hash": "51651e3d116394fa8411d6948f37969e1289800e",
+  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/25644100168",
+  "success": true,
   "summary": {
     "total": 5,
-    "passed": 3,
-    "failed": 1
+    "passed": 4,
+    "failed": 0
   },
   "workflows": [
     {
       "name": "image_seg_point",
       "status": "pass",
-      "duration_seconds": 142.05,
+      "duration_seconds": 81.75,
       "error": null,
       "hardware": {
         "os": "macOS-15.7.4-arm64-arm-64bit",
@@ -25,35 +25,35 @@
       },
       "resources": {
         "ram": {
-          "peak": 2.33,
-          "avg": 1.06
+          "peak": 2.43,
+          "avg": 1.1
         },
         "total_ram_gb": 7.0,
-        "samples": 129
+        "samples": 74
       }
     },
     {
       "name": "image_seg_text",
-      "status": "fail",
-      "duration_seconds": 176.49,
-      "error": "Workflow execution failed: {'prompt_id': 'd49ef70f-d2d0-4eaf-bcc9-9bb34ce2e60a', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['12', '1'], 'exception_message': 'Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_9iclx1mf/persistent_worker.py\", line 1762, in main\\n    result = method(**inputs)\\n  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/comfy_api/latest/_io.py\", line 1833, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py\", line 111, in execute\\n    result = cls._segment_grounding(\\n  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py\", line 201, in _segment_grounding\\n    vis_image = visualize_masks_on_image(\\n  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/utils.py\", line 164, in visualize_masks_on_image\\n    overlay = torch.where(mask_3d, overlay * (1 - alpha) + color * alpha, overlay)\\nRuntimeError: Expected all tensors to be on the same device, but found at least two devices, mps:0 and cpu!\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py\", line 536, in proxy\\n    result = worker.call_method(\\n', '  File \"/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py\", line 674, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': [\"{'checkpoint_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/models/sam3/sam3.safetensors', 'bpe_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-2137/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}\"], 'image': ['tensor([[[[0.2902, 0.4667, 0.5961],\\n          [0.2902, 0.4667, 0.5961],\\n          [0.2902, 0.4667, 0.5961],\\n          ...,\\n          [0.3176, 0.5804, 0.7216],\\n          [0.3333, 0.6039, 0.7451],\\n          [0.3529, 0.6235, 0.7647]],\\n\\n         [[0.2902, 0.4667, 0.5961],\\n          [0.2902, 0.4667, 0.5961],\\n          [0.2902, 0.4667, 0.5961],\\n          ...,\\n          [0.3137, 0.5765, 0.7176],\\n          [0.3137, 0.5843, 0.7255],\\n          [0.3255, 0.5961, 0.7373]],\\n\\n         [[0.2902, 0.4667, 0.5961],\\n          [0.2902, 0.4667, 0.5961],\\n          [0.2902, 0.4667, 0.5961],\\n          ...,\\n          [0.3922, 0.5333, 0.6275],\\n          [0.3922, 0.5294, 0.6235],\\n          [0.3961, 0.5333, 0.6275]],\\n\\n         ...,\\n\\n         [[0.4941, 0.4863, 0.4157],\\n          [0.4941, 0.4863, 0.4157],\\n          [0.4980, 0.4902, 0.4196],\\n          ...,\\n          [0.5647, 0.5608, 0.5059],\\n          [0.5647, 0.5608, 0.5059],\\n          [0.5647, 0.5608, 0.5059]],\\n\\n         [[0.5098, 0.5020, 0.4314],\\n          [0.5098, 0.5020, 0.4314],\\n          [0.5137, 0.5059, 0.4353],\\n          ...,\\n          [0.5647, 0.5608, 0.5059],\\n          [0.5647, 0.5608, 0.5059],\\n          [0.5647, 0.5608, 0.5059]],\\n\\n         [[0.5176, 0.5098, 0.4392],\\n          [0.5216, 0.5137, 0.4431],\\n          [0.5255, 0.5176, 0.4471],\\n          ...,\\n          [0.5647, 0.5608, 0.5059],\\n          [0.5647, 0.5608, 0.5059],\\n          [0.5647, 0.5608, 0.5059]]]])']}, 'current_outputs': ['12', '3', '15', '4', '1'], 'timestamp': 1778449493366}\n\nDetails:\nWorkflow: /private/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy-test-run-nbu3rvsj/ComfyUI-SAM3/workflows/image_seg_text.json\nNode error: SAM3Grounding",
+      "status": "pass",
+      "duration_seconds": 102.59,
+      "error": null,
       "hardware": {
         "os": "macOS-15.7.4-arm64-arm-64bit",
         "cpu": "arm"
       },
       "resources": {
         "ram": {
-          "peak": 0.87,
-          "avg": 0.19
+          "peak": 0.93,
+          "avg": 0.21
         },
         "total_ram_gb": 7.0,
-        "samples": 156
+        "samples": 91
       }
     },
     {
       "name": "scene_seg",
       "status": "pass",
-      "duration_seconds": 152.75,
+      "duration_seconds": 102.18,
       "error": null,
       "hardware": {
         "os": "macOS-15.7.4-arm64-arm-64bit",
@@ -61,17 +61,17 @@
       },
       "resources": {
         "ram": {
-          "peak": 2.52,
-          "avg": 0.77
+          "peak": 3.78,
+          "avg": 0.78
         },
         "total_ram_gb": 7.0,
-        "samples": 137
+        "samples": 92
       }
     },
     {
       "name": "scene_seg_interactive",
       "status": "pass",
-      "duration_seconds": 100.99,
+      "duration_seconds": 70.12,
       "error": null,
       "hardware": {
         "os": "macOS-15.7.4-arm64-arm-64bit",
@@ -79,11 +79,11 @@
       },
       "resources": {
         "ram": {
-          "peak": 2.01,
-          "avg": 0.97
+          "peak": 1.76,
+          "avg": 1.03
         },
         "total_ram_gb": 7.0,
-        "samples": 91
+        "samples": 64
       }
     },
     {
