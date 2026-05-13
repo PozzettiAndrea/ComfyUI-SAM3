@@ -14,7 +14,7 @@ Capturing execution frames: image_seg_text.json
   [ComfyUI]     Inputs: {"precision": "fp32", "compile": false}
   [ComfyUI]   Node 15: SAM3Grounding
   [ComfyUI]     Inputs: {"confidence_threshold": 0.2, "text_prompt": "child", "max_detections": -1, "sam3_model_config": ["12", 0], "image": ["1", 0]}
-  [ComfyUI] Generated prompt_id: 05393566-8c64-45b1-a2b5-9a4b49daa7d0
+  [ComfyUI] Generated prompt_id: 80ac7d4f-4993-4501-b5c6-62caeb5506ff
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
@@ -46,85 +46,87 @@ Capturing execution frames: image_seg_text.json
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 720, 1280, 3]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 720, 1280, 3])
-  [ComfyUI] [SubprocessWorker] got response: error
-  [ComfyUI] !!! Exception during processing !!! No module named 'transformers'
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=5
+  [ComfyUI] [comfy-env] VRAM request: 3.50GB, free before eviction: 2.13GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 2.13GB
+  Frame 2 saved (frame_001.jpg, t=2.1s)
+  [capture-periodic] freeze=2ms shot=126ms unfreeze=3ms saved=True
+  Frame 3 saved (frame_002.jpg, t=4.3s)
+  [capture-periodic] freeze=12ms shot=2591ms unfreeze=16ms saved=True
+  [capture-loop] iter=50 t=8.7s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=3 ram=3.8/7.0GB (86%) swap=0.1/1.0GB (12%) cpu=67% browser_rss=0.42GB
+  Frame 4 saved (frame_003.jpg, t=9.1s)
+  [capture-periodic] freeze=17ms shot=580ms unfreeze=14ms saved=True
+  Frame 5 saved (frame_004.jpg, t=11.8s)
+  [capture-periodic] freeze=3ms shot=4854ms unfreeze=21ms saved=True
+  Frame 6 saved (frame_005.jpg, t=18.9s)
+  [capture-periodic] freeze=33ms shot=802ms unfreeze=76ms saved=True
+  [capture-loop] iter=100 t=21.6s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=2.6/7.0GB (92%) swap=2.6/3.0GB (86%) cpu=61% browser_rss=0.17GB
+  [capture-loop] iter=150 t=28.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=5.8/7.0GB (89%) swap=1.0/2.0GB (48%) cpu=50% browser_rss=0.26GB
+  [ComfyUI] [worker:ComfyUI-SAM3]
+  [ComfyUI] === WATCHDOG TICK 2 ===
+  [ComfyUI] [worker:ComfyUI-SAM3] Current thread 0x000000016e38b000 (most recent call first):
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_mabulj2c/persistent_worker.py", line 52 in _watchdog
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 953 in run
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 1016 in _bootstrap_inner
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 973 in _bootstrap
   [ComfyUI] 
-  [ComfyUI] Worker traceback:
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_2ezacctk/persistent_worker.py", line 1762, in main
-  [ComfyUI]     result = method(**inputs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 86, in execute
-  [ComfyUI]     sam3_model = get_or_build_model(sam3_model_config)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/_model_cache.py", line 31, in get_or_build_model
-  [ComfyUI]     from .sam3_model_patcher import SAM3UnifiedModel
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3_model_patcher.py", line 14, in <module>
-  [ComfyUI]     from comfy.model_patcher import ModelPatcher
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/model_patcher.py", line 32, in <module>
-  [ComfyUI]     import comfy.hooks
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/hooks.py", line 14, in <module>
-  [ComfyUI]     import comfy.lora
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/lora.py", line 23, in <module>
-  [ComfyUI]     import comfy.model_base
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/model_base.py", line 61, in <module>
-  [ComfyUI]     import comfy.ldm.hidream_o1.model
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/ldm/hidream_o1/model.py", line 20, in <module>
-  [ComfyUI]     from comfy.text_encoders.qwen35 import Qwen35VisionModel
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/text_encoders/qwen35.py", line 10, in <module>
-  [ComfyUI]     from comfy import sd1_clip
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/sd1_clip.py", line 3, in <module>
-  [ComfyUI]     from transformers import CLIPTokenizer
-  [ComfyUI] ModuleNotFoundError: No module named 'transformers'
+  [ComfyUI] Thread 0x00000001f9e2a240 (most recent call first):
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/comfy/ldm/modules/sub_quadratic_attention.py", line 159 in _get_attention_scores_no_kv_chunking
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/comfy/ldm/modules/sub_quadratic_attention.py", line 269 in <listcomp>
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/comfy/ldm/modules/sub_quadratic_attention.py", line 268 in efficient_dot_product_attention
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/comfy/ldm/modules/attention.py", line 275 in attention_sub_quad
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/comfy/ldm/modules/attention.py", line 139 in wrapper
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/attention.py", line 120 in sam3_attention
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 729 in forward
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 819 in forward
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 983 in forward
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 2041 in forward
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3321 in _forward_image_no_act_ckpt
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3314 in forward_image
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1324 in set_image
+  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 133 in _segment_grounding
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 111 in execute
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_mabulj2c/persistent_worker.py", line 1762 in main
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_mabulj2c/persistent_worker.py", line 1807 in <module>
   [ComfyUI] 
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 535, in execute
-  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 335, in get_output_data
-  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 309, in _async_map_node_over_list
-  [ComfyUI]     await process_inputs(input_dict, i)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 297, in process_inputs
-  [ComfyUI]     result = f(**inputs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py", line 556, in proxy
-  [ComfyUI]     result = worker.call_method(
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method
-  [ComfyUI]     raise WorkerError(
-  [ComfyUI] comfy_env.isolation.workers.base.WorkerError: No module named 'transformers'
+  [ComfyUI] [worker:ComfyUI-SAM3] === END ===
   [ComfyUI] 
-  [ComfyUI] Worker traceback:
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_2ezacctk/persistent_worker.py", line 1762, in main
-  [ComfyUI]     result = method(**inputs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 86, in execute
-  [ComfyUI]     sam3_model = get_or_build_model(sam3_model_config)
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/_model_cache.py", line 31, in get_or_build_model
-  [ComfyUI]     from .sam3_model_patcher import SAM3UnifiedModel
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3_model_patcher.py", line 14, in <module>
-  [ComfyUI]     from comfy.model_patcher import ModelPatcher
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/model_patcher.py", line 32, in <module>
-  [ComfyUI]     import comfy.hooks
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/hooks.py", line 14, in <module>
-  [ComfyUI]     import comfy.lora
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/lora.py", line 23, in <module>
-  [ComfyUI]     import comfy.model_base
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/model_base.py", line 61, in <module>
-  [ComfyUI]     import comfy.ldm.hidream_o1.model
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/ldm/hidream_o1/model.py", line 20, in <module>
-  [ComfyUI]     from comfy.text_encoders.qwen35 import Qwen35VisionModel
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/text_encoders/qwen35.py", line 10, in <module>
-  [ComfyUI]     from comfy import sd1_clip
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/sd1_clip.py", line 3, in <module>
-  [ComfyUI]     from transformers import CLIPTokenizer
-  [ComfyUI] ModuleNotFoundError: No module named 'transformers'
-  [ComfyUI] 
-  [ComfyUI] 
-  [ComfyUI] Prompt executed in 0.03 seconds
-  Execution complete (t=0.3s)
-  Execution error: {'prompt_id': 'b3cb8b18-c610-4a74-b79f-40cb18370e25', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['12', '1'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_2ezacctk/persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 86, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/_model_cache.py", line 31, in get_or_build_model\n    from .sam3_model_patcher import SAM3UnifiedModel\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3_model_patcher.py", line 14, in <module>\n    from comfy.model_patcher import ModelPatcher\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/hooks.py", line 14, in <module>\n    import comfy.lora\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/lora.py", line 23, in <module>\n    import comfy.model_base\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/ldm/hidream_o1/model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/text_encoders/qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py", line 556, in proxy\n    result = worker.call_method(\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': ["{'checkpoint_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/models/sam3/sam3.safetensors', 'bpe_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3176, 0.5804, 0.7216],\n          [0.3333, 0.6039, 0.7451],\n          [0.3529, 0.6235, 0.7647]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3137, 0.5765, 0.7176],\n          [0.3137, 0.5843, 0.7255],\n          [0.3255, 0.5961, 0.7373]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3922, 0.5333, 0.6275],\n          [0.3922, 0.5294, 0.6235],\n          [0.3961, 0.5333, 0.6275]],\n\n         ...,\n\n         [[0.4941, 0.4863, 0.4157],\n          [0.4941, 0.4863, 0.4157],\n          [0.4980, 0.4902, 0.4196],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5098, 0.5020, 0.4314],\n          [0.5098, 0.5020, 0.4314],\n          [0.5137, 0.5059, 0.4353],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5176, 0.5098, 0.4392],\n          [0.5216, 0.5137, 0.4431],\n          [0.5255, 0.5176, 0.4471],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]]]])']}, 'current_outputs': ['12', '15', '1', '4', '3'], 'timestamp': 1778659157315}
-    Status: FAILED
-    Error: Workflow execution failed: {'prompt_id': 'b3cb8b18-c610-4a74-b79f-40cb18370e25', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['12', '1'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_2ezacctk/persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy_api/latest/_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 86, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/_model_cache.py", line 31, in get_or_build_model\n    from .sam3_model_patcher import SAM3UnifiedModel\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3_model_patcher.py", line 14, in <module>\n    from comfy.model_patcher import ModelPatcher\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/hooks.py", line 14, in <module>\n    import comfy.lora\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/lora.py", line 23, in <module>\n    import comfy.model_base\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/ldm/hidream_o1/model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/text_encoders/qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/comfy/sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py", line 556, in proxy\n    result = worker.call_method(\n', '  File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': ["{'checkpoint_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/models/sam3/sam3.safetensors', 'bpe_path': '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0756/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3176, 0.5804, 0.7216],\n          [0.3333, 0.6039, 0.7451],\n          [0.3529, 0.6235, 0.7647]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3137, 0.5765, 0.7176],\n          [0.3137, 0.5843, 0.7255],\n          [0.3255, 0.5961, 0.7373]],\n\n         [[0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          [0.2902, 0.4667, 0.5961],\n          ...,\n          [0.3922, 0.5333, 0.6275],\n          [0.3922, 0.5294, 0.6235],\n          [0.3961, 0.5333, 0.6275]],\n\n         ...,\n\n         [[0.4941, 0.4863, 0.4157],\n          [0.4941, 0.4863, 0.4157],\n          [0.4980, 0.4902, 0.4196],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5098, 0.5020, 0.4314],\n          [0.5098, 0.5020, 0.4314],\n          [0.5137, 0.5059, 0.4353],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]],\n\n         [[0.5176, 0.5098, 0.4392],\n          [0.5216, 0.5137, 0.4431],\n          [0.5255, 0.5176, 0.4471],\n          ...,\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059],\n          [0.5647, 0.5608, 0.5059]]]])']}, 'current_outputs': ['12', '15', '1', '4', '3'], 'timestamp': 1778659157315}
-    Details: Workflow: /private/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy-test-run-mric64us/ComfyUI-SAM3/workflows/image_seg_text.json
-Node error: SAM3Grounding
+  Frame 7 saved (frame_006.jpg, t=29.5s)
+  [capture-periodic] freeze=1ms shot=7038ms unfreeze=27ms saved=True
+  Frame 8 saved (frame_007.jpg, t=38.8s)
+  [capture-periodic] freeze=2ms shot=3705ms unfreeze=6ms saved=True
+  [capture-loop] iter=200 t=45.4s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=5.0/7.0GB (89%) swap=1.2/2.0GB (61%) cpu=46% browser_rss=0.18GB
+  [capture-loop] iter=250 t=54.7s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=1 ram=4.8/7.0GB (75%) swap=1.2/2.0GB (60%) cpu=50% browser_rss=0.19GB
+  [ComfyUI] /Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-0821/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py:1824: UserWarning: The operator 'aten::_assert_async' is not currently supported on the MPS backend and will fall back to run on the CPU. This may have performance implications. (Triggered internally at /Users/runner/work/pytorch/pytorch/pytorch/aten/src/ATen/mps/MPSFallback.mm:34.)
+  [ComfyUI]   torch._assert_async(is_right_padded(mask1))
+  [capture-loop] iter=300 t=61.5s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=2.0/7.0GB (81%) swap=1.5/2.0GB (76%) cpu=55% browser_rss=0.19GB
+  Frame 9 saved (frame_008.jpg, t=63.4s)
+  [capture-periodic] freeze=14ms shot=4452ms unfreeze=18ms saved=True
+  Frame 10 saved (frame_009.jpg, t=70.0s)
+  [capture-periodic] freeze=1ms shot=89ms unfreeze=3ms saved=True
+  [capture-loop] iter=350 t=71.7s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=1 ram=3.9/7.0GB (88%) swap=2.0/3.0GB (67%) cpu=45% browser_rss=0.21GB
+  [capture-loop] iter=400 t=77.4s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=2 ram=3.6/7.0GB (84%) swap=1.9/3.0GB (65%) cpu=38% browser_rss=0.21GB
+  [capture-loop] iter=450 t=83.2s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=10 ram=3.8/7.0GB (88%) swap=2.1/3.0GB (70%) cpu=58% browser_rss=0.21GB
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] SAM3Grounding done (84.29s): result: NodeOutput
+  [ComfyUI] Prompt executed in 85.11 seconds
+  Frame 11 saved (frame_010.jpg, t=85.1s)
+  [capture-periodic] freeze=21ms shot=264ms unfreeze=1ms saved=True
+  Node executed (2 total), capturing...
+  Frame 12 saved (frame_011.jpg, t=85.7s)
+  [capture-node] freeze=1ms shot=72ms unfreeze=0ms saved=True
+  Execution complete (t=85.7s)
+  Captured 12 unique frames over 85.83s
+  [debug] iframes: 0
+  [timing] trigger_3d_previews: 0.0s
+  Saved high-quality screenshot: image_seg_text_executed.png
+  [timing] final_screenshot: 0.2s
+    Captured 13 video frames
