@@ -1,23 +1,9 @@
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB) -> cpu: 1042 / 12287 MB
 Capturing execution frames: image_seg_text.json
-  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=4 sending model_to_device
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -227MB (now 1818MB) reserved=2112MB peak=2068MB
-  [ComfyUI] Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
-  [ComfyUI] handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\asyncio\events.py", line 84, in _run
-  [ComfyUI]     self._context.run(self._callback, *self._args)
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
-  [ComfyUI]     self._sock.shutdown(socket.SHUT_RDWR)
-  [ComfyUI] ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
-  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB): 1042 / 12287 MB
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
   [ComfyUI] === /validate endpoint called ===
-  Queuing workflow for execution...
   [ComfyUI] Received JSON with keys: ['prompt']
+  Queuing workflow for execution...
   [ComfyUI] Prompt has 5 nodes
   [ComfyUI]   Node 1: LoadImage
   [ComfyUI]     Inputs: {"image": "example_image.jpg"}
@@ -29,45 +15,39 @@ Capturing execution frames: image_seg_text.json
   [ComfyUI]     Inputs: {"precision": "fp32", "compile": false}
   [ComfyUI]   Node 15: SAM3Grounding
   [ComfyUI]     Inputs: {"confidence_threshold": 0.2, "text_prompt": "child", "max_detections": -1, "sam3_model_config": ["12", 0], "image": ["1", 0]}
-  [ComfyUI] Generated prompt_id: cbcc267d-9a8d-40c9-acb7-14e1fee41297
+  [ComfyUI] Generated prompt_id: 4e30568a-8ff3-42b1-bb49-408d1774dbb8
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
   [ComfyUI] got prompt
   [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'fp32', compile: False
-  [ComfyUI] [VRAM] Before LoadSAM3Model: 1042 / 12287 MB
-  [ComfyUI] [ComfyUI-SAM3] python: C:\ce\.pixi\envs\sam3-nodes\python.exe
+  [ComfyUI] [VRAM] Before LoadSAM3Model: 1271 / 24575 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
-  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['C:\\workspaces\\SAM3-1210\\ComfyUI', 'C:\\workspaces\\SAM3-1210\\ComfyUI\\custom_nodes\\ComfyUI-SAM3', 'C:\\ce\\.pixi\\envs\\sam3-nodes\\Lib\\site-packages', 'C:\\workspaces\\SAM3-1210\\ComfyUI\\custom_nodes\\ComfyUI-SAM3']
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
-  [ComfyUI] [SubprocessWorker] is_pixi=True, python=C:\ce\.pixi\envs\sam3-nodes\python.exe
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [SubprocessWorker] launching cmd=['C:\\Users\\ContainerAdministrator\\.pixi\\bin\\pixi.exe', 'run', '--as-is', '--manifest-path', 'C:\\ce\\pixi.toml', '-e', 'sam3-nodes', 'python', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_xjrfb5_a\\persistent_worker.py', 'tcp://127.0.0.1:60627']...
   [ComfyUI] [ComfyUI-SAM3] Health check: failed
   [ComfyUI] [ComfyUI-SAM3] Socket unhealthy, restarting worker...
-  [ComfyUI] [comfy-env] Invalidated 1 stale model patchers (will be cleaned up during next unload)
   [ComfyUI] [comfy-env] sam3-nodes: Library/bin has 236 DLLs
-  Frame 2 saved (frame_001.jpg, t=2.3s)
-  [capture-periodic] freeze=4ms shot=97ms unfreeze=5ms saved=True
-  Frame 3 saved (frame_002.jpg, t=4.4s)
-  [capture-periodic] freeze=3ms shot=109ms unfreeze=4ms saved=True
+  [ComfyUI] [ComfyUI-SAM3] python: C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3-nodes\python.exe
+  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['C:\\workspaces\\SAM3-1004\\ComfyUI', 'C:\\workspaces\\SAM3-1004\\ComfyUI\\custom_nodes\\ComfyUI-SAM3', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3-nodes\\Lib\\site-packages', 'C:\\workspaces\\SAM3-1004\\ComfyUI\\custom_nodes\\ComfyUI-SAM3']
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3-nodes\python.exe
+  [ComfyUI] [SubprocessWorker] launching cmd=['C:\\Users\\ContainerAdministrator\\.pixi\\bin\\pixi.exe', 'run', '--as-is', '--manifest-path', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\pixi.toml', '-e', 'sam3-nodes', 'python', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_tbfq2w2_\\persistent_worker.py', 'tcp://127.0.0.1:59085']...
+  Frame 2 saved (frame_001.jpg, t=2.2s)
+  [capture-periodic] freeze=4ms shot=106ms unfreeze=5ms saved=True
+  Frame 3 saved (frame_002.jpg, t=4.5s)
+  [capture-periodic] freeze=4ms shot=111ms unfreeze=7ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
+  [capture-loop] iter=50 t=6.0s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=4 ram=8.8/31.9GB (27%) swap=0.0/2.0GB (0%) cpu=7% browser_rss=0.67GB
   [ComfyUI] [SubprocessWorker] worker started/confirmed
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=5 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=4 sending call_method
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB) -> cpu: 1042 / 12287 MB
-  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=6 sending model_to_device
-  [ComfyUI] Model 'Sam3VideoInferenceWithInstanceInteractivity_1' gone from worker (restarted?), treating as offloaded
-  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB): 1042 / 12287 MB
-  [ComfyUI] [comfy-env] LoadSAM3Model done (5.71s): result: NodeOutput
-  [ComfyUI] [VRAM] After LoadSAM3Model: 1042 / 12287 MB
+  [ComfyUI] [comfy-env] LoadSAM3Model done (6.29s): result: NodeOutput
+  [ComfyUI] [VRAM] After LoadSAM3Model: 1271 / 24575 MB
   [ComfyUI] [comfy-env] Running SAM3Grounding: confidence_threshold: 0.2, text_prompt: 'child', max_detections: -1, sam3_model_config: dict, image: torch.float32 [1,720,1280,3] cpu
-  [ComfyUI] [VRAM] Before SAM3Grounding: 1042 / 12287 MB
+  [ComfyUI] [VRAM] Before SAM3Grounding: 1271 / 24575 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.segmentation.SAM3Grounding.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
@@ -77,93 +57,59 @@ Capturing execution frames: image_seg_text.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=7 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=5 sending call_method
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 720, 1280, 3]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 720, 1280, 3])
-  [capture-loop] iter=50 t=6.0s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=6 ram=7.7/31.9GB (24%) swap=0.6/8.1GB (7%) cpu=7% browser_rss=0.69GB
-  Frame 4 saved (frame_003.jpg, t=6.6s)
-  [capture-periodic] freeze=3ms shot=105ms unfreeze=5ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=7
-  [ComfyUI] [comfy-env] VRAM request: 3.50GB, free before eviction: 11.79GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 11.79GB
-  Frame 5 saved (frame_004.jpg, t=8.8s)
-  [capture-periodic] freeze=3ms shot=119ms unfreeze=6ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +230MB (now 230MB) reserved=256MB peak=230MB
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1756MB (now 1986MB) reserved=2016MB peak=1986MB
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1348MB (now 3334MB) reserved=3360MB peak=3334MB
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: attention_flash cannot run on fp32 Q/K/V. Falling back to attention_pytorch with flash-SDPA disabled.
-  [capture-loop] iter=100 t=12.1s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=4 ram=8.0/31.9GB (25%) swap=0.6/8.1GB (7%) cpu=8% browser_rss=0.67GB
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +244MB (now 3578MB) reserved=3712MB peak=3578MB
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] Created 1 model patchers: ['Sam3VideoInferenceWithInstanceInteractivity_1']
-  [ComfyUI] [comfy-env] SAM3Grounding done (7.76s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3Grounding: 1042 / 12287 MB
-  [ComfyUI] [VRAM] Loaded: SubprocessModel (3334 MB)
-  Node executed (1 total), capturing...
-  [ComfyUI] Prompt executed in 13.81 seconds
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB) -> cpu: 1042 / 12287 MB
-  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=8 sending model_to_device
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -325MB (now 3254MB) reserved=3648MB peak=3818MB
-  Frame 6 saved (frame_005.jpg, t=13.9s)
-  [capture-node] freeze=5ms shot=135ms unfreeze=7ms saved=True
-  Node executed (2 total), capturing...
-  Frame 7 saved (frame_006.jpg, t=14.4s)
-  [capture-node] freeze=5ms shot=144ms unfreeze=0ms saved=True
-  Execution complete (t=14.4s)
-  Captured 7 unique frames over 14.62s
-  [debug] iframes: 0
-  [timing] trigger_3d_previews: 0.0s
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -2745MB (now 510MB) reserved=3648MB peak=3818MB
-  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (3334 MB): 1042 / 12287 MB
-  Saved high-quality screenshot: image_seg_text_executed.png
-  [timing] final_screenshot: 0.3s
-    Captured 8 video frames
+  Frame 4 saved (frame_003.jpg, t=6.7s)
+  [capture-periodic] freeze=6ms shot=126ms unfreeze=4ms saved=True
+  [ComfyUI] [SubprocessWorker] got response: error
+  [ComfyUI] !!! Exception during processing !!! No module named 'transformers'
+  [ComfyUI] 
+  [ComfyUI] Worker traceback:
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_tbfq2w2_\persistent_worker.py", line 1762, in main
+  [ComfyUI]     result = method(**inputs)
+  [ComfyUI]              ^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
+  [ComfyUI]                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\segmentation.py", line 86, in execute
+  [ComfyUI]     sam3_model = get_or_build_model(sam3_model_config)
+  [ComfyUI]                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\_model_cache.py", line 31, in get_or_build_model
+  [ComfyUI]     from .sam3_model_patcher import SAM3UnifiedModel
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\custom_nodes\ComfyUI-SAM3\nodes\sam3_model_patcher.py", line 14, in <module>
+  [ComfyUI]     from comfy.model_patcher import ModelPatcher
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+  [ComfyUI]     import comfy.hooks
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\comfy\hooks.py", line 14, in <module>
+  [ComfyUI]     import comfy.lora
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\comfy\lora.py", line 23, in <module>
+  [ComfyUI]     import comfy.model_base
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\comfy\model_base.py", line 61, in <module>
+  [ComfyUI]     import comfy.ldm.hidream_o1.model
+  Execution complete (t=7.7s)
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+  Execution error: {'prompt_id': '1a802b3b-c269-4d33-9e62-f033c204bd39', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['1', '12'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_tbfq2w2_\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\segmentation.py", line 86, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\_model_cache.py", line 31, in get_or_build_model\n    from .sam3_model_patcher import SAM3UnifiedModel\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3_model_patcher.py", line 14, in <module>\n    from comfy.model_patcher import ModelPatcher\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-1004\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-1004\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': ["{'checkpoint_path': 'C:\\\\workspaces\\\\SAM3-1004\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\workspaces\\\\SAM3-1004\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3176, 0.5765, 0.7176],\n          [0.3333, 0.5961, 0.7451],\n          [0.3529, 0.6157, 0.7647]],\n\n         [[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3137, 0.5725, 0.7137],\n          [0.3137, 0.5765, 0.7255],\n          [0.3255, 0.5882, 0.7373]],\n\n         [[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3882, 0.5294, 0.6235],\n          [0.3922, 0.5216, 0.6196],\n          [0.3961, 0.5255, 0.6235]],\n\n         ...,\n\n         [[0.4941, 0.4784, 0.4157],\n          [0.4941, 0.4784, 0.4157],\n          [0.4980, 0.4824, 0.4196],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]],\n\n         [[0.5098, 0.4941, 0.4314],\n          [0.5098, 0.4941, 0.4314],\n          [0.5137, 0.4980, 0.4353],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]],\n\n         [[0.5176, 0.5020, 0.4392],\n          [0.5216, 0.5059, 0.4431],\n          [0.5255, 0.5098, 0.4471],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]]]])']}, 'current_outputs': ['12', '1', '15', '3', '4'], 'timestamp': 1778659951503}
+  [ComfyUI]     from comfy.text_encoders.qwen35 import Qwen35VisionModel
+    Status: FAILED
+    Error: Workflow execution failed: {'prompt_id': '1a802b3b-c269-4d33-9e62-f033c204bd39', 'node_id': '15', 'node_type': 'SAM3Grounding', 'executed': ['1', '12'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_tbfq2w2_\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\segmentation.py", line 86, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\_model_cache.py", line 31, in get_or_build_model\n    from .sam3_model_patcher import SAM3UnifiedModel\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\custom_nodes\\ComfyUI-SAM3\\nodes\\sam3_model_patcher.py", line 14, in <module>\n    from comfy.model_patcher import ModelPatcher\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3-1004\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-1004\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3-1004\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'confidence_threshold': [0.2], 'text_prompt': ['child'], 'max_detections': [-1], 'sam3_model_config': ["{'checkpoint_path': 'C:\\\\workspaces\\\\SAM3-1004\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\workspaces\\\\SAM3-1004\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"], 'image': ['tensor([[[[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3176, 0.5765, 0.7176],\n          [0.3333, 0.5961, 0.7451],\n          [0.3529, 0.6157, 0.7647]],\n\n         [[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3137, 0.5725, 0.7137],\n          [0.3137, 0.5765, 0.7255],\n          [0.3255, 0.5882, 0.7373]],\n\n         [[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3882, 0.5294, 0.6235],\n          [0.3922, 0.5216, 0.6196],\n          [0.3961, 0.5255, 0.6235]],\n\n         ...,\n\n         [[0.4941, 0.4784, 0.4157],\n          [0.4941, 0.4784, 0.4157],\n          [0.4980, 0.4824, 0.4196],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]],\n\n         [[0.5098, 0.4941, 0.4314],\n          [0.5098, 0.4941, 0.4314],\n          [0.5137, 0.4980, 0.4353],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]],\n\n         [[0.5176, 0.5020, 0.4392],\n          [0.5216, 0.5059, 0.4431],\n          [0.5255, 0.5098, 0.4471],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]]]])']}, 'current_outputs': ['12', '1', '15', '3', '4'], 'timestamp': 1778659951503}
+    Details: Workflow: C:\ComfyUI-SAM3\workflows\image_seg_text.json
+Node error: SAM3Grounding
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+  [ComfyUI]     from comfy import sd1_clip
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+  [ComfyUI]     from transformers import CLIPTokenizer
+  [ComfyUI] ModuleNotFoundError: No module named 'transformers'
+  [ComfyUI] 
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\execution.py", line 535, in execute
+  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\execution.py", line 335, in get_output_data
+  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\execution.py", line 309, in _async_map_node_over_list
+  [ComfyUI]     await process_inputs(input_dict, i)
+  [ComfyUI]   File "C:\workspaces\SAM3-1004\ComfyUI\execution.py", line 297, in process_inputs
