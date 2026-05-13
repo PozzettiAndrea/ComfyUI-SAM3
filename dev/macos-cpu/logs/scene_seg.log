@@ -17,26 +17,43 @@ Capturing execution frames: scene_seg.json
   [ComfyUI]   Node 22: MultibandFromBatch
   [ComfyUI]     Inputs: {"images": ["1", 0], "masks": ["27", 0]}
   [ComfyUI]   Node 23: MultibandSave
-  Queuing workflow for execution...
   [ComfyUI]     Inputs: {"file_path": "output/multiband", "format": "npz", "multiband": ["26", 0]}
   [ComfyUI]   Node 24: MultibandPreview
   [ComfyUI]     Inputs: {"channel_index": 0, "multiband": ["26", 0]}
   [ComfyUI]   Node 26: MultibandResize
   [ComfyUI]     Inputs: {"upscale_method": "nearest-exact", "width": 900, "height": 600, "crop": "center", "multiband": ["22", 0]}
+  Queuing workflow for execution...
   [ComfyUI]   Node 27: SAM3MultipromptSegmentation
   [ComfyUI]     Inputs: {"refinement_iterations": 0, "use_multimask": false, "sam3_model_config": ["12", 0], "image": ["1", 0], "multi_prompts": ["20", 0]}
-  [ComfyUI] Generated prompt_id: fe550f16-d75a-4730-bbd7-e9ce56b41032
+  [ComfyUI] Generated prompt_id: 200bcc05-d618-40a9-9ba1-ee861e115253
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
   [ComfyUI] got prompt
-  Frame 2 saved (frame_001.jpg, t=2.2s)
-  [capture-periodic] freeze=3ms shot=649ms unfreeze=21ms saved=True
+  Frame 2 saved (frame_001.jpg, t=2.3s)
+  [capture-periodic] freeze=1ms shot=1237ms unfreeze=176ms saved=True
   [ComfyUI] [comfy-env] Running SAM3MultiRegionCollector: multi_prompts_store: '[{"positive_points":[{"x":5052.74953932266,"y":2847.0600..., image: torch.float32 [1,4480,6720,3] cpu
   [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_interactive.SAM3MultiRegionCollector.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [ComfyUI-SAM3] Health check: failed
+  [ComfyUI] [ComfyUI-SAM3] Socket unhealthy, restarting worker...
+  [ComfyUI] [ComfyUI-SAM3] python: /Users/runner/.ce/.pixi/envs/sam3-nodes/bin/python
+  [ComfyUI] [ComfyUI-SAM3] sys_path sent to worker: ['/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1105/ComfyUI', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1105/ComfyUI/custom_nodes/ComfyUI-SAM3', '/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.1/site-packages', '/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1105/ComfyUI/custom_nodes/ComfyUI-SAM3']
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/Users/runner/.ce/.pixi/envs/sam3-nodes/bin/python
+  [ComfyUI] [SubprocessWorker] launching cmd=['/Users/runner/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/Users/runner/.ce/pixi.toml', '-e', 'sam3-nodes', 'python', '/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_im9_9hfa/persistent_worker.py', 'unix:///var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy_worker_86bf87a1cb40.sock']...
+  [ComfyUI] [SubprocessWorker] socket_addr=unix:///var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfy_worker_86bf87a1cb40.sock exists=True
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_im9_9hfa/persistent_worker.py", line 1807, in <module>
+  [ComfyUI]     main()
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_im9_9hfa/persistent_worker.py", line 1667, in main
+  [ComfyUI]     transport.send({"status": "pong", "call_id": _current_call_id})
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_im9_9hfa/persistent_worker.py", line 1075, in send
+  [ComfyUI]     self._sock.sendall(msg)
+  [ComfyUI] BrokenPipeError: [Errno 32] Broken pipe
+  Frame 3 saved (frame_002.jpg, t=6.0s)
+  [capture-periodic] freeze=4ms shot=120ms unfreeze=6ms saved=True
+  [capture-loop] iter=50 t=8.8s state={'complete': False, 'error': None, 'executedCount': 0, 'wsState': 1} eval_ms=4 ram=2.3/7.0GB (39%) swap=1.7/3.0GB (56%) cpu=56% browser_rss=0.50GB
   [ComfyUI] [SubprocessWorker] worker started/confirmed
   [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 4480, 6720, 3])
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
@@ -46,10 +63,8 @@ Capturing execution frames: scene_seg.json
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 4480, 6720, 3]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 4480, 6720, 3])
-  Frame 3 saved (frame_002.jpg, t=5.1s)
-  [capture-periodic] freeze=6ms shot=445ms unfreeze=17ms saved=True
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] SAM3MultiRegionCollector done (1.38s): result: NodeOutput
+  [ComfyUI] [comfy-env] SAM3MultiRegionCollector done (7.63s): result: NodeOutput
   [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'fp32', compile: False
   [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
@@ -76,82 +91,87 @@ Capturing execution frames: scene_seg.json
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 4480, 6720, 3]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 4480, 6720, 3])
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=8
-  [ComfyUI] [comfy-env] VRAM request: 3.50GB, free before eviction: 1.39GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 1.39GB
   Node executed (1 total), capturing...
-  Frame 4 saved (frame_003.jpg, t=7.6s)
-  [capture-node] freeze=7ms shot=176ms unfreeze=4ms saved=True
-  [capture-loop] iter=50 t=9.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=43 ram=2.3/7.0GB (83%) swap=2.1/3.0GB (68%) cpu=59% browser_rss=0.51GB
+  Frame 4 saved (frame_003.jpg, t=13.7s)
+  [capture-node] freeze=6ms shot=172ms unfreeze=4ms saved=True
+  [ComfyUI] objc[15943]: Class AVFFrameReceiver is implemented in both /Users/runner/.ce/.pixi/envs/sam3-nodes/lib/libavdevice.62.3.101.dylib (0x1236e47a8) and /Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/cv2/.dylibs/libavdevice.61.3.100.dylib (0x15b7183a8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+  [ComfyUI] objc[15943]: Class AVFAudioReceiver is implemented in both /Users/runner/.ce/.pixi/envs/sam3-nodes/lib/libavdevice.62.3.101.dylib (0x1236e47f8) and /Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/cv2/.dylibs/libavdevice.61.3.100.dylib (0x15b7183f8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+  [capture-loop] iter=100 t=15.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=2.7/7.0GB (42%) swap=0.6/2.0GB (29%) cpu=51% browser_rss=0.66GB
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=8
+  [ComfyUI] [comfy-env] VRAM request: 3.50GB, free before eviction: 4.20GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 4.20GB
+  [capture-loop] iter=150 t=24.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=52 ram=3.5/7.0GB (72%) swap=0.6/2.0GB (28%) cpu=51% browser_rss=0.53GB
+  [capture-loop] iter=200 t=40.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21 ram=1.9/7.0GB (93%) swap=0.8/2.0GB (40%) cpu=68% browser_rss=0.25GB
+  [capture-loop] iter=250 t=54.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=8 ram=2.4/7.0GB (84%) swap=3.0/4.0GB (75%) cpu=67% browser_rss=0.25GB
+  [capture-loop] iter=300 t=61.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=3.1/7.0GB (74%) swap=3.6/4.0GB (90%) cpu=66% browser_rss=0.25GB
   [ComfyUI] [worker:ComfyUI-SAM3]
-  [ComfyUI] === WATCHDOG TICK 4 ===
-  [ComfyUI] [worker:ComfyUI-SAM3] Current thread 0x000000016bf6b000 (most recent call first):
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_qxn7twk_/persistent_worker.py", line 52 in _watchdog
+  [ComfyUI] === WATCHDOG TICK 1 ===
+  [ComfyUI] [worker:ComfyUI-SAM3] Current thread 0x000000016c7ef000 (most recent call first):
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_im9_9hfa/persistent_worker.py", line 52 in _watchdog
   [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 953 in run
   [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 1016 in _bootstrap_inner
   [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/threading.py", line 973 in _bootstrap
   [ComfyUI] 
-  [ComfyUI] Thread 0x000000020330e240 (most recent call first):
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1102/ComfyUI/comfy/ops.py", line 640 in forward_comfy_cast_weights
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1102/ComfyUI/comfy/ops.py", line 649 in forward
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/container.py", line 253 in forward
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1102/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 2049 in forward
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1102/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3321 in _forward_image_no_act_ckpt
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1102/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3314 in forward_image
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1102/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1324 in set_image
+  [ComfyUI] Thread 0x00000001ffed2240 (most recent call first):
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1105/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 44 in _dtype_debug
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1105/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/model.py", line 3311 in forward_image
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1105/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3/utils.py", line 1324 in set_image
   [ComfyUI]   File "/Users/runner/.ce/.pixi/envs/sam3-nodes/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1102/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 733 in execute
-  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1102/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_qxn7twk_/persistent_worker.py", line 1762 in main
-  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_qxn7twk_/persistent_worker.py", line 1807 in <module>
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1105/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/segmentation.py", line 733 in execute
+  [ComfyUI]   File "/Users/runner/work/comfy-gpu-ci/comfy-gpu-ci/test_workspaces/SAM3-1105/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_im9_9hfa/persistent_worker.py", line 1762 in main
+  [ComfyUI]   File "/var/folders/tb/y368xp_x10s3ty1b_mtl5mxr0000gn/T/comfyui_pvenv_im9_9hfa/persistent_worker.py", line 1807 in <module>
   [ComfyUI] 
   [ComfyUI] [worker:ComfyUI-SAM3] === END ===
   [ComfyUI] 
-  [capture-loop] iter=100 t=39.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=3.8/7.0GB (78%) swap=2.1/3.0GB (71%) cpu=49% browser_rss=0.26GB
+  [capture-loop] iter=350 t=67.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=3.2/7.0GB (59%) swap=2.4/4.0GB (60%) cpu=53% browser_rss=0.26GB
+  [capture-loop] iter=400 t=84.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=9 ram=5.7/7.0GB (93%) swap=0.9/2.0GB (45%) cpu=50% browser_rss=0.21GB
+  [capture-loop] iter=450 t=93.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=3.2/7.0GB (85%) swap=1.0/2.0GB (49%) cpu=55% browser_rss=0.20GB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=8
+  Frame 5 saved (frame_004.jpg, t=95.1s)
+  [capture-periodic] freeze=3ms shot=266ms unfreeze=14ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=8
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=8
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=8
-  Frame 5 saved (frame_004.jpg, t=46.1s)
-  [capture-periodic] freeze=1ms shot=145ms unfreeze=4ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=8
+  Frame 6 saved (frame_005.jpg, t=97.5s)
+  [capture-periodic] freeze=6ms shot=436ms unfreeze=123ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=8
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=8
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=8
-  [capture-loop] iter=150 t=47.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=4.1/7.0GB (89%) swap=2.7/3.0GB (89%) cpu=54% browser_rss=0.26GB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=8
-  Frame 6 saved (frame_005.jpg, t=48.4s)
-  [capture-periodic] freeze=11ms shot=336ms unfreeze=14ms saved=True
-  [capture-loop] iter=200 t=54.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=3.3/7.0GB (83%) swap=3.0/4.0GB (75%) cpu=68% browser_rss=0.20GB
+  Frame 7 saved (frame_006.jpg, t=100.2s)
+  [capture-periodic] freeze=33ms shot=647ms unfreeze=65ms saved=True
+  [capture-loop] iter=500 t=101.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=60 ram=2.5/7.0GB (80%) swap=1.8/3.0GB (60%) cpu=75% browser_rss=0.20GB
+  Frame 8 saved (frame_007.jpg, t=103.1s)
+  [capture-periodic] freeze=5ms shot=469ms unfreeze=22ms saved=True
+  [capture-loop] iter=550 t=108.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=6 ram=3.1/7.0GB (89%) swap=2.4/3.0GB (81%) cpu=67% browser_rss=0.21GB
+  [capture-loop] iter=600 t=124.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=3.1/7.0GB (67%) swap=3.8/5.0GB (76%) cpu=60% browser_rss=0.18GB
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] SAM3MultipromptSegmentation done (59.66s): result: NodeOutput
-  Frame 7 saved (frame_006.jpg, t=65.9s)
-  [capture-periodic] freeze=4ms shot=356ms unfreeze=4ms saved=True
-  [capture-loop] iter=250 t=67.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=2.9/7.0GB (57%) swap=3.8/5.0GB (76%) cpu=53% browser_rss=0.24GB
+  [ComfyUI] [comfy-env] SAM3MultipromptSegmentation done (112.23s): result: NodeOutput
+  Frame 9 saved (frame_008.jpg, t=126.1s)
+  [capture-periodic] freeze=2ms shot=103ms unfreeze=2ms saved=True
   Node executed (2 total), capturing...
-  Frame 8 saved (frame_007.jpg, t=69.8s)
-  [capture-node] freeze=17ms shot=361ms unfreeze=1ms saved=True
+  Frame 10 saved (frame_009.jpg, t=126.9s)
+  [capture-node] freeze=2ms shot=632ms unfreeze=3ms saved=True
+  [capture-loop] iter=650 t=131.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=6 ram=2.8/7.0GB (54%) swap=3.7/5.0GB (74%) cpu=64% browser_rss=0.43GB
   [ComfyUI] BatchToMultiband: Processed 1 images with 3 channels each -> 3 channels
   [ComfyUI] BatchToMultiband: Processed 7 masks -> 7 channels
   Node executed (3 total), capturing...
-  Frame 9 saved (frame_008.jpg, t=71.2s)
-  [capture-node] freeze=2ms shot=508ms unfreeze=2ms saved=True
+  Frame 11 saved (frame_010.jpg, t=132.7s)
+  [capture-node] freeze=4ms shot=520ms unfreeze=8ms saved=True
   [ComfyUI] BatchToMultiband: Output shape torch.Size([1, 10, 4480, 6720]), channels: ['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
   [ComfyUI] ResizeMultiband: 4480x6720 -> 600x900
   [ComfyUI] PreviewMultibandImage: Batch=1, Channels=10, Names=['img_01_r', 'img_01_g', 'img_01_b', 'mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
   Node executed (4 total), capturing...
+  Frame 12 saved (frame_011.jpg, t=137.2s)
+  [capture-node] freeze=6ms shot=241ms unfreeze=4ms saved=True
   [ComfyUI] SaveMultibandImage: Saved to output/multiband.npz
   [ComfyUI]   Shape: (1, 10, 600, 900)
   [ComfyUI]   Format: npz
-  [ComfyUI] Prompt executed in 74.47 seconds
-  Frame 10 saved (frame_009.jpg, t=74.5s)
-  [capture-node] freeze=2ms shot=130ms unfreeze=4ms saved=True
-  Execution complete (t=74.8s)
-  Captured 10 unique frames over 74.76s
+  [ComfyUI] Prompt executed in 137.53 seconds
+  Execution complete (t=137.7s)
+  Captured 12 unique frames over 137.75s
   [debug] iframes: 0
   [timing] trigger_3d_previews: 0.0s
   Saved high-quality screenshot: scene_seg_executed.png
-  [timing] final_screenshot: 1.0s
-    Captured 11 video frames
+  [timing] final_screenshot: 4.0s
+    Captured 13 video frames
