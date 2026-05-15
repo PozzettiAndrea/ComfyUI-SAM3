@@ -1,89 +1,89 @@
 {
-  "timestamp": "2026-05-15T07:49:32.452834+00:00",
+  "timestamp": "2026-05-15T11:22:27.806124+00:00",
   "platform": "windows_portable",
   "hardware": {
-    "os": "Windows-2025Server-10.0.26100-SP0",
+    "os": "Windows-10-10.0.26100-SP0",
     "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
   },
   "commit_hash": "d4c77f889f6f741d633fd010c1f5057bc910f706",
-  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/25906248471",
-  "success": true,
+  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/25914502195",
+  "success": false,
   "summary": {
     "total": 5,
-    "passed": 4,
-    "failed": 0
+    "passed": 3,
+    "failed": 1
   },
   "workflows": [
     {
       "name": "image_seg_point",
       "status": "pass",
-      "duration_seconds": 125.4,
+      "duration_seconds": 127.48,
       "error": null,
       "hardware": {
-        "os": "Windows-2025Server-10.0.26100-SP0",
+        "os": "Windows-10-10.0.26100-SP0",
         "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
       },
       "resources": {
         "ram": {
-          "peak": 5.23,
-          "avg": 2.61
+          "peak": 5.44,
+          "avg": 2.65
         },
         "total_ram_gb": 16.0,
-        "samples": 125
+        "samples": 127
       }
     },
     {
       "name": "image_seg_text",
       "status": "pass",
-      "duration_seconds": 84.57,
+      "duration_seconds": 83.12,
       "error": null,
       "hardware": {
-        "os": "Windows-2025Server-10.0.26100-SP0",
+        "os": "Windows-10-10.0.26100-SP0",
         "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
       },
       "resources": {
         "ram": {
-          "peak": 5.78,
-          "avg": 3.22
+          "peak": 6.0,
+          "avg": 3.28
         },
         "total_ram_gb": 16.0,
-        "samples": 85
+        "samples": 83
       }
     },
     {
       "name": "scene_seg",
       "status": "pass",
-      "duration_seconds": 92.65,
+      "duration_seconds": 95.74,
       "error": null,
       "hardware": {
-        "os": "Windows-2025Server-10.0.26100-SP0",
+        "os": "Windows-10-10.0.26100-SP0",
         "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
       },
       "resources": {
         "ram": {
-          "peak": 8.11,
-          "avg": 5.8
+          "peak": 8.36,
+          "avg": 5.79
         },
         "total_ram_gb": 16.0,
-        "samples": 93
+        "samples": 96
       }
     },
     {
       "name": "scene_seg_interactive",
-      "status": "pass",
-      "duration_seconds": 151.85,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 78.93,
+      "error": "Workflow execution failed: {'prompt_id': 'e8fe8e73-ae5a-4d26-965c-830aaaab7f1f', 'node_id': '12', 'node_type': 'LoadSAM3Model', 'executed': ['1'], 'exception_message': 'ComfyUI-SAM3: Worker failed to connect (timeout). Check stderr output above.\\n', 'exception_type': 'RuntimeError', 'traceback': ['  File \"D:\\\\a\\\\comfy-gpu-ci\\\\comfy-gpu-ci\\\\test_workspaces\\\\SAM3-1107\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"D:\\\\a\\\\comfy-gpu-ci\\\\comfy-gpu-ci\\\\test_workspaces\\\\SAM3-1107\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"D:\\\\a\\\\comfy-gpu-ci\\\\comfy-gpu-ci\\\\test_workspaces\\\\SAM3-1107\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"D:\\\\a\\\\comfy-gpu-ci\\\\comfy-gpu-ci\\\\test_workspaces\\\\SAM3-1107\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"D:\\\\a\\\\comfy-gpu-ci\\\\comfy-gpu-ci\\\\test_workspaces\\\\SAM3-1107\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\python_embeded\\\\Lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\metadata.py\", line 556, in proxy\\n    result = worker.call_method(\\n        module_name=mod,\\n    ...<4 lines>...\\n        timeout=600.0,\\n    )\\n', '  File \"D:\\\\a\\\\comfy-gpu-ci\\\\comfy-gpu-ci\\\\test_workspaces\\\\SAM3-1107\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\python_embeded\\\\Lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 634, in call_method\\n    self._ensure_started()\\n    ~~~~~~~~~~~~~~~~~~~~^^\\n', '  File \"D:\\\\a\\\\comfy-gpu-ci\\\\comfy-gpu-ci\\\\test_workspaces\\\\SAM3-1107\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\python_embeded\\\\Lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 433, in _ensure_started\\n    raise RuntimeError(f\"{self.name}: Worker failed to connect (timeout). Check stderr output above.\")\\n'], 'current_inputs': {'precision': ['auto'], 'compile': [False]}, 'current_outputs': ['12', '26', '4', '1'], 'timestamp': 1778844137629}\n\nDetails:\nWorkflow: C:\\Users\\stduser\\AppData\\Local\\Temp\\comfy-test-run-k10fuexf\\ComfyUI-SAM3\\workflows\\scene_seg_interactive.json\nNode error: LoadSAM3Model",
       "hardware": {
-        "os": "Windows-2025Server-10.0.26100-SP0",
+        "os": "Windows-10-10.0.26100-SP0",
         "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
       },
       "resources": {
         "ram": {
-          "peak": 6.76,
-          "avg": 2.9
+          "peak": 7.06,
+          "avg": 2.63
         },
         "total_ram_gb": 16.0,
-        "samples": 152
+        "samples": 79
       }
     },
     {
