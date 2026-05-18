@@ -287,6 +287,7 @@ app.registerExtension({
 
                 canvas.addEventListener("contextmenu", (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     // Trigger mousedown with right button flag
                     canvas.dispatchEvent(new MouseEvent('mousedown', {
                         button: 2,
