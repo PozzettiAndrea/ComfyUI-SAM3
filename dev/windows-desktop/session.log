@@ -8,406 +8,143 @@
 [  10s]   clicked [TILE|CPU]
 [  13s]   clicked [BTN|Next]
 [  20s]   clicked [BTN|Next]
-[  24s]   clicked [BTN|Install]
-[  28s]   url: file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/install -> file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/server-start
-[ 162s]   /system_stats up after 158s
-[ 162s]   app: waiting for backend stability (continuous /system_stats up for 30s)
-[ 162s]   app: /system_stats up; awaiting 30s of stability
-[ 193s]   app: backend stable for 30s; proceeding
-[ 193s]   capturing canvas load...
-[ 201s]   post: waiting for Cloud upsell
-[ 234s]   post: Cloud upsell not found, skipping
-[ 234s]   post: pressed Escape (Cloud upsell fallback)
-[ 236s]   post: waiting for Close Templates
-[ 248s]   post: Close Templates not found, skipping
-[ 248s]   post: pressed Escape (Close Templates fallback)
-[ 250s]   post: waiting for Extensions
-[ 251s]   post: clicked Extensions via [button[aria-label="Extensions"]:visible]
-[ 253s]   ext: node meta = display='SAM3' publisher='pznodes' version='0.1.19'
-[ 257s]   ext: searching "SAM3"
-[ 260s]   ext: clicking SAM3 by pznodes tile
-[ 263s]   ext: scrolling to + opening version selector
-[ 267s]   ext: selected 0.1.19
-[ 268s]   ext: clicking right-panel Install
-[ 270s]   ext: clicked Install (last of 8 visible)
-[ 278s]   ext: waiting for "Apply Changes" toast
-[ 278s]   ext: clicked Apply Changes
-[ 284s]   app: Apply Changes already triggered in-app restart, skipping pkill
-[ 289s]   app: relaunching with CDP
-[ 289s]   app: waiting for CDP
-[ 290s]   app: CDP up after 1s
-[ 290s]   app: reconnecting Playwright
-[ 291s]   app: attached to http://127.0.0.1:8000/
-[ 395s]   app: server ready after 26s
-[ 395s]   app: waiting for main canvas (window.app.graph)
-[ 395s]   app: canvas ready after 1s (http://127.0.0.1:8000/#f97fea37-f72d-4130-b23e-b0e3d3fe8777)
-[ 400s]   app: forcing renderer reload to refresh node-pack manifest
-[ 403s]   app: canvas re-ready after reload in 2s
-[ 406s]   ext: closing Nodes Manager dialog
-[ 406s]   ext: dismissing What's New popup
-[ 406s]   ext: closed What's New popup
-[ 408s]   ext: dismissing Node Pack Issues modal (if present)
-[ 408s]   ext: Node Pack Issues modal not present
-[ 408s]   ext: opening Templates sidebar
-[ 409s]   ext: clicked Templates
-[ 413s]   ext: locating "comfyui-sam3" section in Templates panel
-[ 415s]   ext: clicked comfyui-sam3 section
-[ 417s]   ext: fetching comfy-test.toml from https://raw.githubusercontent.com/PozzettiAndrea/ComfyUI-SAM3/main/comfy-test.toml
-[ 417s]   ext: cpu spec = exclude ['video_point_prompt']
-[ 417s]   ext: picking first matching comfyui-sam3 template
-[ 417s]   ext: 5 visible cards
-[ 419s]   ext: clicked template image_seg_point
-[ 424s]   ext: installing WS execution listener
-[ 424s]   ext: clicking Run
-[ 425s]   ext: clicked Run
-[ 425s]   ext: waiting for execution_success / execution_error
-[ 457s]   ext: WS events=215 elapsed=31s
-[ 457s]     ws: {'type': 'progress', 'ts': 1779129394805}
-[ 457s]     ws: {'type': 'progress_state', 'ts': 1779129394911}
-[ 457s]     ws: {'type': 'progress', 'ts': 1779129394911}
-[ 457s]     ws: {'type': 'progress_state', 'ts': 1779129395015}
-[ 457s]     ws: {'type': 'progress', 'ts': 1779129395015}
-[ 457s]     ws: {'type': 'progress_state', 'ts': 1779129395164}
-[ 457s]     ws: {'type': 'progress', 'ts': 1779129395164}
-[ 457s]     ws: {'type': 'progress_state', 'ts': 1779129396131}
-[ 457s]     ws: {'type': 'progress', 'ts': 1779129396131}
-[ 457s]     ws: {'type': 'progress_state', 'ts': 1779129398617}
-[ 457s]     ws: {'type': 'progress_state', 'ts': 1779129398619}
-[ 457s]     ws: {'type': 'executing', 'ts': 1779129398620}
-[ 457s]     ws: {'type': 'execution_error', 'ts': 1779129402989}
-[ 457s]     ws: {'type': 'status', 'ts': 1779129402993}
-[ 457s]     ws: {'type': 'executing', 'ts': 1779129403015}
-[ 457s]   ext: execution_error data:
-[ 457s] {
-  "prompt_id": "089de42f-7c3c-4049-8505-7c7b4ec922fa",
-  "node_id": "31",
-  "node_type": "SAM3Segmentation",
-  "executed": [
-    "15",
-    "30",
-    "1"
-  ],
-  "exception_message": "No module named 'transformers'\n\nWorker traceback:\nTraceback (most recent call last):\n  File \"C:\\Users\\stduser\\AppData\\Local\\Temp\\comfyui_pvenv_m0zsps7a\\persistent_worker.py\", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy_api\\latest\\_io.py\", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\segmentation.py\", line 469, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\_model_cache.py\", line 31, in get_or_build_model\n    from .sam3_model_patcher import SAM3UnifiedModel\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\sam3_model_patcher.py\", line 14, in <module>\n    from comfy.model_patcher import ModelPatcher\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\model_patcher.py\", line 32, in <module>\n    import comfy.hooks\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\hooks.py\", line 14, in <module>\n    import comfy.lora\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\lora.py\", line 23, in <module>\n    import comfy.model_base\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\model_base.py\", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py\", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\text_encoders\\qwen35.py\", line 10, in <module>\n    from comfy import sd1_clip\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\sd1_clip.py\", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named 'transformers'\n\n",
-  "exception_type": "comfy_env.isolation.workers.base.WorkerError",
-  "traceback": [
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py\", line 556, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py\", line 674, in call_method\n    raise WorkerError(\n"
-  ],
-  "current_inputs": {
-    "refinement_iterations": [
-      0
-    ],
-    "use_multimask": [
-      true
-    ],
-    "output_best_mask": [
-      true
-    ],
-    "sam3_model_config": [
-      "{'checkpoint_path': 'C:\\\\Users\\\\stduser\\\\Documents\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\Users\\\\stduser\\\\Documents\\\\ComfyUI\\\\custom_nodes\\\\comfyui-sam3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'auto', 'dtype': 'fp32', 'compile': False}"
-    ],
-    "image": [
-      "tensor([[[[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3176, 0.5765, 0.7176],\n          [0.3333, 0.5961, 0.7451],\n          [0.3529, 0.6157, 0.7647]],\n\n         [[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3137, 0.5725, 0.7137],\n          [0.3137, 0.5765, 0.7255],\n          [0.3255, 0.5882, 0.7373]],\n\n         [[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3882, 0.5294, 0.6235],\n          [0.3922, 0.5216, 0.6196],\n          [0.3961, 0.5255, 0.6235]],\n\n         ...,\n\n         [[0.4941, 0.4784, 0.4157],\n          [0.4941, 0.4784, 0.4157],\n          [0.4980, 0.4824, 0.4196],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]],\n\n         [[0.5098, 0.4941, 0.4314],\n          [0.5098, 0.4941, 0.4314],\n          [0.5137, 0.4980, 0.4353],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]],\n\n         [[0.5176, 0.5020, 0.4392],\n          [0.5216, 0.5059, 0.4431],\n          [0.5255, 0.5098, 0.4471],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]]]])"
-    ],
-    "positive_points": [
-      "{'points': [[0.3330291853098248, 0.4464251623052616], [0.32588862185381995, 0.5657519162372204], [0.3373135233834277, 0.7637835504221735]], 'labels': [1, 1, 1]}"
-    ],
-    "negative_points": [
-      "{'points': [], 'labels': []}"
-    ]
-  },
-  "current_outputs": [
-    "15",
-    "31",
-    "29",
-    "1",
-    "28",
-    "30"
-  ],
-  "timestamp": 1779129402972
-}
-[ 462s]   ext: fetching comfy-test.toml from https://raw.githubusercontent.com/PozzettiAndrea/ComfyUI-SAM3/main/comfy-test.toml
-[ 462s]   ext: cpu spec = exclude ['video_point_prompt']
-[ 462s]   loop: workflows/ from $COMFY_TEST_WORKFLOWS -> ['image_seg_point', 'image_seg_text', 'scene_seg', 'scene_seg_interactive', 'video_point_prompt']
-[ 462s]   loop: spec=exclude items=['video_point_prompt'] -> 4 workflow(s) ['image_seg_point', 'image_seg_text', 'scene_seg', 'scene_seg_interactive']
-[ 462s]   loop: matching=4 first_ran='image_seg_point' remaining=3 -> ['image_seg_text', 'scene_seg', 'scene_seg_interactive']
-[ 462s]   loop: full restart for workflow 2/4 (image_seg_text)
-[ 462s]   loop: closing current browser
-[ 462s]   loop: killing ComfyUI process
-[ 468s]   loop: launching ComfyUI with --remote-debugging-port=0
-[ 468s]   loop: waiting for DevToolsActivePort at C:\Users\stduser\AppData\Roaming\ComfyUI\DevToolsActivePort
-[ 470s]   loop: DevToolsActivePort -> 60179 after 3s
-[ 470s]   loop: reconnecting Playwright on port 60179
-[ 471s]   loop: attached to file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/desktop-start
-[ 471s]   loop: server ready after 1s
-[ 501s]   loop: canvas ready after 24s
-[ 501s]   loop: forcing renderer reload
-[ 503s]   loop: canvas ready after 2s
-[ 507s]   ext: closing Nodes Manager dialog
-[ 507s]   ext: dismissing What's New popup
-[ 507s]   ext: What's New popup not present
-[ 507s]   ext: dismissing Node Pack Issues modal (if present)
-[ 507s]   ext: Node Pack Issues modal not present
-[ 507s]   ext: opening Templates sidebar
-[ 507s]   ext: clicked Templates
-[ 512s]   ext: locating "comfyui-sam3" section in Templates panel
-[ 514s]   ext: clicked comfyui-sam3 section
-[ 516s]   ext: clicking template image_seg_text
-[ 517s]   ext: clicked template image_seg_text
-[ 523s]   ext: installing WS execution listener
-[ 523s]   ext: clicking Run
-[ 523s]   ext: clicked Run
-[ 523s]   ext: waiting for execution_success / execution_error
-[ 529s]   ext: WS events=15 elapsed=5s
-[ 529s]     ws: {'type': 'status', 'ts': 1779129469432}
-[ 529s]     ws: {'type': 'status', 'ts': 1779129469433}
-[ 529s]     ws: {'type': 'execution_start', 'ts': 1779129469441}
-[ 529s]     ws: {'type': 'execution_cached', 'ts': 1779129469451}
-[ 529s]     ws: {'type': 'progress_state', 'ts': 1779129469513}
-[ 529s]     ws: {'type': 'executing', 'ts': 1779129469514}
-[ 529s]     ws: {'type': 'progress_state', 'ts': 1779129469523}
-[ 529s]     ws: {'type': 'progress_state', 'ts': 1779129469525}
-[ 529s]     ws: {'type': 'executing', 'ts': 1779129469525}
-[ 529s]     ws: {'type': 'progress_state', 'ts': 1779129474285}
-[ 529s]     ws: {'type': 'progress_state', 'ts': 1779129474288}
-[ 529s]     ws: {'type': 'executing', 'ts': 1779129474288}
-[ 529s]     ws: {'type': 'execution_error', 'ts': 1779129475344}
-[ 529s]     ws: {'type': 'status', 'ts': 1779129475371}
-[ 529s]     ws: {'type': 'executing', 'ts': 1779129475371}
-[ 529s]   ext: execution_error data:
-[ 529s] {
-  "prompt_id": "06bc4cd0-0ffa-4f39-9e27-e1fced9b6089",
-  "node_id": "15",
-  "node_type": "SAM3Grounding",
-  "executed": [
-    "1",
-    "12"
-  ],
-  "exception_message": "No module named 'transformers'\n\nWorker traceback:\nTraceback (most recent call last):\n  File \"C:\\Users\\stduser\\AppData\\Local\\Temp\\comfyui_pvenv_9ayavl0x\\persistent_worker.py\", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy_api\\latest\\_io.py\", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\segmentation.py\", line 86, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\_model_cache.py\", line 31, in get_or_build_model\n    from .sam3_model_patcher import SAM3UnifiedModel\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\sam3_model_patcher.py\", line 14, in <module>\n    from comfy.model_patcher import ModelPatcher\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\model_patcher.py\", line 32, in <module>\n    import comfy.hooks\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\hooks.py\", line 14, in <module>\n    import comfy.lora\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\lora.py\", line 23, in <module>\n    import comfy.model_base\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\model_base.py\", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py\", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\text_encoders\\qwen35.py\", line 10, in <module>\n    from comfy import sd1_clip\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\sd1_clip.py\", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named 'transformers'\n\n",
-  "exception_type": "comfy_env.isolation.workers.base.WorkerError",
-  "traceback": [
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py\", line 556, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py\", line 674, in call_method\n    raise WorkerError(\n"
-  ],
-  "current_inputs": {
-    "confidence_threshold": [
-      0.2
-    ],
-    "text_prompt": [
-      "child"
-    ],
-    "max_detections": [
-      -1
-    ],
-    "sam3_model_config": [
-      "{'checkpoint_path': 'C:\\\\Users\\\\stduser\\\\Documents\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\Users\\\\stduser\\\\Documents\\\\ComfyUI\\\\custom_nodes\\\\comfyui-sam3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"
-    ],
-    "image": [
-      "tensor([[[[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3176, 0.5765, 0.7176],\n          [0.3333, 0.5961, 0.7451],\n          [0.3529, 0.6157, 0.7647]],\n\n         [[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3137, 0.5725, 0.7137],\n          [0.3137, 0.5765, 0.7255],\n          [0.3255, 0.5882, 0.7373]],\n\n         [[0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          [0.2863, 0.4588, 0.5922],\n          ...,\n          [0.3882, 0.5294, 0.6235],\n          [0.3922, 0.5216, 0.6196],\n          [0.3961, 0.5255, 0.6235]],\n\n         ...,\n\n         [[0.4941, 0.4784, 0.4157],\n          [0.4941, 0.4784, 0.4157],\n          [0.4980, 0.4824, 0.4196],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]],\n\n         [[0.5098, 0.4941, 0.4314],\n          [0.5098, 0.4941, 0.4314],\n          [0.5137, 0.4980, 0.4353],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]],\n\n         [[0.5176, 0.5020, 0.4392],\n          [0.5216, 0.5059, 0.4431],\n          [0.5255, 0.5098, 0.4471],\n          ...,\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020],\n          [0.5608, 0.5529, 0.5020]]]])"
-    ]
-  },
-  "current_outputs": [
-    "15",
-    "4",
-    "3",
-    "1",
-    "12"
-  ],
-  "timestamp": 1779129475333
-}
-[ 534s]   loop: full restart for workflow 3/4 (scene_seg)
-[ 534s]   loop: closing current browser
-[ 534s]   loop: killing ComfyUI process
-[ 539s]   loop: launching ComfyUI with --remote-debugging-port=0
-[ 539s]   loop: waiting for DevToolsActivePort at C:\Users\stduser\AppData\Roaming\ComfyUI\DevToolsActivePort
-[ 541s]   loop: DevToolsActivePort -> 60320 after 3s
-[ 541s]   loop: reconnecting Playwright on port 60320
-[ 542s]   loop: attached to file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/desktop-start
-[ 542s]   loop: server ready after 1s
-[ 565s]   loop: canvas ready after 19s
-[ 565s]   loop: forcing renderer reload
-[ 567s]   loop: canvas ready after 2s
-[ 570s]   ext: closing Nodes Manager dialog
-[ 570s]   ext: dismissing What's New popup
-[ 570s]   ext: What's New popup not present
-[ 570s]   ext: dismissing Node Pack Issues modal (if present)
-[ 570s]   ext: Node Pack Issues modal not present
-[ 570s]   ext: opening Templates sidebar
-[ 571s]   ext: clicked Templates
-[ 575s]   ext: locating "comfyui-sam3" section in Templates panel
-[ 577s]   ext: clicked comfyui-sam3 section
-[ 579s]   ext: clicking template scene_seg
-[ 581s]   ext: clicked template scene_seg
-[ 586s]   ext: installing WS execution listener
-[ 586s]   ext: clicking Run
-[ 587s]   ext: clicked Run
-[ 587s]   ext: waiting for execution_success / execution_error
-[ 595s]   ext: WS events=19 elapsed=8s
-[ 595s]     ws: {'type': 'progress_state', 'ts': 1779129533243}
-[ 595s]     ws: {'type': 'executing', 'ts': 1779129533243}
-[ 595s]     ws: {'type': 'progress_state', 'ts': 1779129534178}
-[ 595s]     ws: {'type': 'progress_state', 'ts': 1779129534180}
-[ 595s]     ws: {'type': 'executing', 'ts': 1779129534183}
-[ 595s]     ws: {'type': 'executed', 'ts': 1779129540154}
-[ 595s]     ws: {'type': 'progress_state', 'ts': 1779129540158}
-[ 595s]     ws: {'type': 'progress_state', 'ts': 1779129540241}
-[ 595s]     ws: {'type': 'executing', 'ts': 1779129540241}
-[ 595s]     ws: {'type': 'progress_state', 'ts': 1779129540252}
-[ 595s]     ws: {'type': 'progress_state', 'ts': 1779129540255}
-[ 595s]     ws: {'type': 'executing', 'ts': 1779129540255}
-[ 595s]     ws: {'type': 'execution_error', 'ts': 1779129541366}
-[ 595s]     ws: {'type': 'status', 'ts': 1779129541386}
-[ 595s]     ws: {'type': 'executing', 'ts': 1779129541386}
-[ 595s]   ext: execution_error data:
-[ 595s] {
-  "prompt_id": "7648d725-0098-4471-b45d-e8255f0681cd",
-  "node_id": "27",
-  "node_type": "SAM3MultipromptSegmentation",
-  "executed": [
-    "12",
-    "1",
-    "20"
-  ],
-  "exception_message": "No module named 'transformers'\n\nWorker traceback:\nTraceback (most recent call last):\n  File \"C:\\Users\\stduser\\AppData\\Local\\Temp\\comfyui_pvenv_hbuhv1bo\\persistent_worker.py\", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy_api\\latest\\_io.py\", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\segmentation.py\", line 695, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\_model_cache.py\", line 31, in get_or_build_model\n    from .sam3_model_patcher import SAM3UnifiedModel\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\sam3_model_patcher.py\", line 14, in <module>\n    from comfy.model_patcher import ModelPatcher\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\model_patcher.py\", line 32, in <module>\n    import comfy.hooks\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\hooks.py\", line 14, in <module>\n    import comfy.lora\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\lora.py\", line 23, in <module>\n    import comfy.model_base\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\model_base.py\", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py\", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\text_encoders\\qwen35.py\", line 10, in <module>\n    from comfy import sd1_clip\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\sd1_clip.py\", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named 'transformers'\n\n",
-  "exception_type": "comfy_env.isolation.workers.base.WorkerError",
-  "traceback": [
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py\", line 556, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py\", line 674, in call_method\n    raise WorkerError(\n"
-  ],
-  "current_inputs": {
-    "refinement_iterations": [
-      0
-    ],
-    "use_multimask": [
-      false
-    ],
-    "sam3_model_config": [
-      "{'checkpoint_path': 'C:\\\\Users\\\\stduser\\\\Documents\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\Users\\\\stduser\\\\Documents\\\\ComfyUI\\\\custom_nodes\\\\comfyui-sam3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'fp32', 'dtype': 'fp32', 'compile': False}"
-    ],
-    "image": [
-      "tensor([[[[0.9176, 0.8392, 0.7333],\n          [0.9294, 0.8471, 0.7412],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8039, 0.6588, 0.4863],\n          [0.8157, 0.6706, 0.4980]],\n\n         [[0.9137, 0.8353, 0.7294],\n          [0.9216, 0.8392, 0.7333],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8039, 0.6588, 0.4863],\n          [0.8039, 0.6588, 0.4863],\n          [0.8118, 0.6667, 0.4941]],\n\n         [[0.9137, 0.8314, 0.7255],\n          [0.9137, 0.8314, 0.7255],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8118, 0.6667, 0.4941],\n          [0.8039, 0.6588, 0.4863]],\n\n         ...,\n\n         [[0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6471, 0.4431, 0.2549],\n          [0.6392, 0.4353, 0.2471],\n          [0.6471, 0.4431, 0.2549]],\n\n         [[0.8588, 0.6706, 0.4824],\n          [0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6471, 0.4431, 0.2549],\n          [0.6549, 0.4510, 0.2627]],\n\n         [[0.8627, 0.6745, 0.4863],\n          [0.8667, 0.6784, 0.4902],\n          [0.8784, 0.6902, 0.5020],\n          ...,\n          [0.6353, 0.4314, 0.2431],\n          [0.6431, 0.4392, 0.2510],\n          [0.6392, 0.4353, 0.2471]]]])"
-    ],
-    "multi_prompts": [
-      "[{'id': 0, 'positive_points': {'points': [[0.7518972528753959, 0.6355044797738758], [0.7340045522905485, 0.6593619024052091], [0.7021953068063758, 0.6623440802341257], [0.6902668397498108, 0.677254969378709], [0.668397983479442, 0.6742727915497924], [0.7180999295484621, 0.6176114128003758], [0.7180999295484621, 0.572878745366626], [0.7439449415043526, 0.5311282557617927], [0.7240641630767446, 0.5609500340509593], [0.6982191511208541, 0.5609500340509593]], 'labels': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.7141237738629407, 0.6056827014847093, 0.15109391604982114, 0.19085938105066613]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 1, 'positive_points': {'points': [[0.6513952517072837, 0.6001522443905642], [0.6354008929467748, 0.6921217188777309], [0.6433980723270292, 0.8680633222444846], [0.8859791801947458, 0.884058013459644], [0.9046392654153393, 0.6041509171943541], [0.9046392654153393, 0.5441708251375063], [0.8060073863922018, 0.5201787883147672]], 'labels': [1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [[0.7180384132094035, 0.5921548987829846], [0.7180384132094035, 0.5921548987829846], [0.7393642248900819, 0.6601323364474121], [0.7393642248900819, 0.6601323364474121], [0.7446956778102515, 0.6841243732701512], [0.7446956778102515, 0.6841243732701512], [0.670055336927877, 0.6721283548587816], [0.670055336927877, 0.6721283548587816], [0.6913811486085556, 0.608149589998144], [0.6913811486085556, 0.608149589998144], [0.6887154221484707, 0.552168170745086], [0.6887154221484707, 0.552168170745086], [0.7100412338291491, 0.552168170745086], [0.7100412338291491, 0.552168170745086], [0.7366984984299972, 0.552168170745086], [0.7366984984299972, 0.552168170745086]], 'labels': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, 'positive_boxes': {'boxes': [[0.7713529424110994, 0.7141144192985751, 0.31455572229000606, 0.4198606443979348]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 2, 'positive_points': {'points': [[0.5279788816577594, 0.8586378093779201], [0.5097671062510242, 0.6517998210195123], [0.4733435554375539, 0.64789721746558], [0.37968299620291596, 0.64789721746558], [0.39529308940868896, 0.8313195845003946], [0.5565973858683432, 0.8586378093779201], [0.569605796873154, 0.6439946139116478]], 'labels': [1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [[0.4863519664423647, 0.7415597027599534], [0.4863519664423647, 0.7415597027599534], [0.4837502842414026, 0.8508326022700556], [0.4837502842414026, 0.8508326022700556], [0.4473267334279323, 0.8664430164857846], [0.4473267334279323, 0.8664430164857846], [0.43431832242312146, 0.628384199695919], [0.43431832242312146, 0.628384199695919], [0.5123687884519864, 0.5893581641565967], [0.5123687884519864, 0.5893581641565967], [0.5019620596481378, 0.6361894068037834], [0.5019620596481378, 0.6361894068037834], [0.4291149580211971, 0.6400920103577157], [0.4291149580211971, 0.6400920103577157]], 'labels': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, 'positive_boxes': {'boxes': [[0.47724607873899716, 0.7591214187526485, 0.21593962267985972, 0.24586402389773]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 3, 'positive_points': {'points': [[0.43642532993691785, 0.595717523200948]], 'labels': [1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.4324084720788661, 0.6137937552745099, 0.06426972572882772, 0.07230492829424773]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 4, 'positive_points': {'points': [[0.5006950556657457, 0.595717523200948]], 'labels': [1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.5027034845947715, 0.5716158804361987, 0.09238773073518991, 0.1687114993532448]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 5, 'positive_points': {'points': [[0.9264819886192297, 0.384828149009392], [0.7939256793035224, 0.37880273831820466], [0.7939256793035224, 0.11368466790596292], [0.9304988464772813, 0.10765925721477561], [0.874262836464557, 0.22214206034733455], [0.8501616893162467, 0.22214206034733455], [0.846144831458195, 0.31854863140633155], [0.8983639836128675, 0.3004723993327696], [0.8943471257548158, 0.20406582827377262], [0.8943471257548158, 0.12573548928833755], [0.8421279736001431, 0.1558625427442741], [0.830077400025988, 0.28842157795039497], [0.8220436843098845, 0.33059945278870617]], 'labels': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.8662291207484536, 0.25829452449445844, 0.18477546147037982, 0.31332135594174026]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}, {'id': 6, 'positive_points': {'points': [[0.7045792285036274, 0.9568116711293354], [0.6789425589101554, 0.9568116711293354], [0.6569682706871793, 0.9348369322210276], [0.6716177961691634, 0.9293432474939506], [0.6569682706871793, 0.9403306169481045], [0.7082416098741234, 0.9403306169481045]], 'labels': [1, 1, 1, 1, 1, 1]}, 'negative_points': {'points': [], 'labels': []}, 'positive_boxes': {'boxes': [[0.6789425589101554, 0.943077459311643, 0.10254667837388842, 0.07141790145200044]], 'labels': [True]}, 'negative_boxes': {'boxes': [], 'labels': []}}]"
-    ]
-  },
-  "current_outputs": [
-    "22",
-    "26",
-    "4",
-    "24",
-    "12",
-    "23",
-    "27",
-    "3",
-    "1",
-    "20"
-  ],
-  "timestamp": 1779129541355
-}
-[ 601s]   loop: full restart for workflow 4/4 (scene_seg_interactive)
-[ 601s]   loop: closing current browser
-[ 601s]   loop: killing ComfyUI process
-[ 606s]   loop: launching ComfyUI with --remote-debugging-port=0
-[ 606s]   loop: waiting for DevToolsActivePort at C:\Users\stduser\AppData\Roaming\ComfyUI\DevToolsActivePort
-[ 608s]   loop: DevToolsActivePort -> 60462 after 3s
-[ 608s]   loop: reconnecting Playwright on port 60462
-[ 608s]   loop: attached to file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/desktop-start
-[ 608s]   loop: server ready after 1s
-[ 631s]   loop: canvas ready after 19s
-[ 631s]   loop: forcing renderer reload
-[ 633s]   loop: canvas ready after 2s
-[ 636s]   ext: closing Nodes Manager dialog
-[ 636s]   ext: dismissing What's New popup
-[ 636s]   ext: What's New popup not present
-[ 636s]   ext: dismissing Node Pack Issues modal (if present)
-[ 636s]   ext: Node Pack Issues modal not present
-[ 636s]   ext: opening Templates sidebar
-[ 637s]   ext: clicked Templates
-[ 641s]   ext: locating "comfyui-sam3" section in Templates panel
-[ 643s]   ext: clicked comfyui-sam3 section
-[ 645s]   ext: clicking template scene_seg_interactive
-[ 647s]   ext: clicked template scene_seg_interactive
-[ 652s]   ext: installing WS execution listener
-[ 652s]   ext: clicking Run
-[ 652s]   ext: clicked Run
-[ 652s]   ext: waiting for execution_success / execution_error
-[ 661s]   ext: WS events=14 elapsed=8s
-[ 661s]     ws: {'type': 'status', 'ts': 1779129598483}
-[ 661s]     ws: {'type': 'status', 'ts': 1779129598488}
-[ 661s]     ws: {'type': 'execution_start', 'ts': 1779129598497}
-[ 661s]     ws: {'type': 'execution_cached', 'ts': 1779129598579}
-[ 661s]     ws: {'type': 'progress_state', 'ts': 1779129598584}
-[ 661s]     ws: {'type': 'executing', 'ts': 1779129598584}
-[ 661s]     ws: {'type': 'progress_state', 'ts': 1779129599627}
-[ 661s]     ws: {'type': 'progress_state', 'ts': 1779129599630}
-[ 661s]     ws: {'type': 'executing', 'ts': 1779129599630}
-[ 661s]     ws: {'type': 'progress_state', 'ts': 1779129605433}
-[ 661s]     ws: {'type': 'progress_state', 'ts': 1779129605436}
-[ 661s]     ws: {'type': 'executing', 'ts': 1779129605437}
-[ 661s]     ws: {'type': 'execution_error', 'ts': 1779129606819}
-[ 661s]     ws: {'type': 'status', 'ts': 1779129606822}
-[ 661s]   ext: execution_error data:
-[ 661s] {
-  "prompt_id": "c2102a5e-8794-46b5-aacb-507ae3d47e26",
-  "node_id": "26",
-  "node_type": "SAM3InteractiveCollector",
-  "executed": [
-    "1",
-    "12"
-  ],
-  "exception_message": "No module named 'transformers'\n\nWorker traceback:\nTraceback (most recent call last):\n  File \"C:\\Users\\stduser\\AppData\\Local\\Temp\\comfyui_pvenv_h2xjltrj\\persistent_worker.py\", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy_api\\latest\\_io.py\", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\sam3_interactive.py\", line 667, in execute\n    sam3_model = get_or_build_model(sam3_model_config)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\_model_cache.py\", line 31, in get_or_build_model\n    from .sam3_model_patcher import SAM3UnifiedModel\n  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\custom_nodes\\comfyui-sam3\\nodes\\sam3_model_patcher.py\", line 14, in <module>\n    from comfy.model_patcher import ModelPatcher\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\model_patcher.py\", line 32, in <module>\n    import comfy.hooks\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\hooks.py\", line 14, in <module>\n    import comfy.lora\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\lora.py\", line 23, in <module>\n    import comfy.model_base\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\model_base.py\", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py\", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\text_encoders\\qwen35.py\", line 10, in <module>\n    from comfy import sd1_clip\n  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\comfy\\sd1_clip.py\", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named 'transformers'\n\n",
-  "exception_type": "comfy_env.isolation.workers.base.WorkerError",
-  "traceback": [
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n",
-    "  File \"C:\\Users\\stduser\\.comfy-test-cache\\desktop\\ComfyUI\\resources\\ComfyUI\\execution.py\", line 297, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py\", line 556, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n",
-    "  File \"C:\\Users\\stduser\\Documents\\ComfyUI\\.venv\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py\", line 674, in call_method\n    raise WorkerError(\n"
-  ],
-  "current_inputs": {
-    "multi_prompts_store": [
-      "[{\"positive_points\":[{\"x\":3348.288109906738,\"y\":2452.2208696844737}],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 1\"},{\"positive_points\":[],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 2\"}]"
-    ],
-    "sam3_model_config": [
-      "{'checkpoint_path': 'C:\\\\Users\\\\stduser\\\\Documents\\\\ComfyUI\\\\models\\\\sam3\\\\sam3.safetensors', 'bpe_path': 'C:\\\\Users\\\\stduser\\\\Documents\\\\ComfyUI\\\\custom_nodes\\\\comfyui-sam3\\\\nodes\\\\sam3\\\\bpe_simple_vocab_16e6.txt.gz', 'precision': 'auto', 'dtype': 'fp32', 'compile': False}"
-    ],
-    "image": [
-      "tensor([[[[0.9176, 0.8392, 0.7333],\n          [0.9294, 0.8471, 0.7412],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8039, 0.6588, 0.4863],\n          [0.8157, 0.6706, 0.4980]],\n\n         [[0.9137, 0.8353, 0.7294],\n          [0.9216, 0.8392, 0.7333],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8039, 0.6588, 0.4863],\n          [0.8039, 0.6588, 0.4863],\n          [0.8118, 0.6667, 0.4941]],\n\n         [[0.9137, 0.8314, 0.7255],\n          [0.9137, 0.8314, 0.7255],\n          [0.9176, 0.8353, 0.7294],\n          ...,\n          [0.8078, 0.6627, 0.4902],\n          [0.8118, 0.6667, 0.4941],\n          [0.8039, 0.6588, 0.4863]],\n\n         ...,\n\n         [[0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6471, 0.4431, 0.2549],\n          [0.6392, 0.4353, 0.2471],\n          [0.6471, 0.4431, 0.2549]],\n\n         [[0.8588, 0.6706, 0.4824],\n          [0.8667, 0.6784, 0.4902],\n          [0.8706, 0.6824, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6471, 0.4431, 0.2549],\n          [0.6549, 0.4510, 0.2627]],\n\n         [[0.8627, 0.6745, 0.4863],\n          [0.8667, 0.6784, 0.4902],\n          [0.8784, 0.6902, 0.5020],\n          ...,\n          [0.6353, 0.4314, 0.2431],\n          [0.6431, 0.4392, 0.2510],\n          [0.6392, 0.4353, 0.2471]]]])"
-    ],
-    "unique_id": [
-      "26"
-    ],
-    "prompt": [
-      "{'1': {'inputs': {'image': 'image.png'}, 'class_type': 'LoadImage', '_meta': {'title': 'Load Image'}, 'is_changed': ['72785412200dcb9f5c6bc4eaa3018172293f67836627708e6bce78150109af15']}, '4': {'inputs': {'mask': ['26', 0]}, 'class_type': 'MaskPreview', '_meta': {'title': 'Preview Mask'}}, '12': {'inputs': {'precision': 'auto', 'compile': False}, 'class_type': 'LoadSAM3Model', '_meta': {'title': '(Down)Load SAM3 Model'}}, '26': {'inputs': {'multi_prompts_store': '[{\"positive_points\":[{\"x\":3348.288109906738,\"y\":2452.2208696844737}],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 1\"},{\"positive_points\":[],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 2\"}]', 'canvas': '', 'sam3_model_config': ['12', 0], 'image': ['1', 0]}, 'class_type': 'SAM3InteractiveCollector', '_meta': {'title': 'SAM3 Interactive Collector'}}}"
-    ],
-    "extra_pnginfo": [
-      "{'workflow': {'id': '9e5b67d0-53dc-42aa-bdb7-541f1939e114', 'revision': 0, 'last_node_id': 26, 'last_link_id': 57, 'nodes': [{'id': 12, 'type': 'LoadSAM3Model', 'pos': [619.424717299163, 120.03196674570798], 'size': [270, 134.65625], 'flags': {}, 'order': 0, 'mode': 0, 'inputs': [], 'outputs': [{'name': 'sam3_model_config', 'type': 'SAM3_MODEL_CONFIG', 'links': [55]}], 'properties': {'Node name for S&R': 'LoadSAM3Model', 'cnr_id': 'comfyui-sam3', 'ver': '82c8e4f88a6c0a9242712b827e05f5e67c4a90a7', 'aux_id': 'PozzettiAndrea/ComfyUI-SAM3'}, 'widgets_values': ['auto', False]}, {'id': 1, 'type': 'LoadImage', 'pos': [488.1468326416015, 306.42935311583375], 'size': [274.078125, 340], 'flags': {}, 'order': 1, 'mode': 0, 'inputs': [], 'outputs': [{'name': 'IMAGE', 'type': 'IMAGE', 'links': [56]}, {'name': 'MASK', 'type': 'MASK', 'links': None}], 'properties': {'Node name for S&R': 'LoadImage', 'cnr_id': 'comfy-core', 'ver': '0.3.72'}, 'widgets_values': ['image.png', 'image']}, {'id': 26, 'type': 'SAM3InteractiveCollector', 'pos': [1010.2283851719152, 178.893439578179], 'size': [400, 569], 'flags': {}, 'order': 2, 'mode': 0, 'inputs': [{'name': 'sam3_model_config', 'type': 'SAM3_MODEL_CONFIG', 'link': 55}, {'name': 'image', 'type': 'IMAGE', 'link': 56}], 'outputs': [{'name': 'masks', 'type': 'MASK', 'links': [57]}, {'name': 'visualization', 'type': 'IMAGE', 'links': None}, {'name': 'multi_prompts', 'type': 'SAM3_MULTI_PROMPTS', 'links': None}], 'properties': {'Node name for S&R': 'SAM3InteractiveCollector', 'cnr_id': 'comfyui-sam3', 'ver': 'c7636fa4a0b8c0fb07aa01f0c7749ebd5f9c92f3'}, 'widgets_values': ['[{\"positive_points\":[{\"x\":3348.288109906738,\"y\":2452.2208696844737}],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 1\"},{\"positive_points\":[],\"negative_points\":[],\"positive_boxes\":[],\"negative_boxes\":[],\"name\":\"Prompt 2\"}]', '']}, {'id': 4, 'type': 'MaskPreview', 'pos': [1509.2821361303925, 266.63965000030805], 'size': [225, 258], 'flags': {}, 'order': 3, 'mode': 0, 'inputs': [{'name': 'mask', 'type': 'MASK', 'link': 57}], 'outputs': [], 'properties': {'Node name for S&R': 'MaskPreview', 'cnr_id': 'comfy-core', 'ver': '0.3.72'}, 'widgets_values': []}], 'links': [[55, 12, 0, 26, 0, 'SAM3_MODEL_CONFIG'], [56, 1, 0, 26, 1, 'IMAGE'], [57, 26, 0, 4, 0, 'MASK']], 'groups': [], 'config': {}, 'extra': {'ds': {'scale': 0.6042511932097943, 'offset': [-269.62428206013624, 169.04466567130163]}, 'frontendVersion': '1.43.18', 'workflowRendererVersion': 'LG', 'VHS_latentpreview': False, 'VHS_latentpreviewrate': 0, 'VHS_MetadataImage': True, 'VHS_KeepIntermediate': True}, 'version': 0.4}}"
-    ]
-  },
-  "current_outputs": [
-    "1",
-    "4",
-    "26",
-    "12"
-  ],
-  "timestamp": 1779129606805
-}
-[ 666s] Captured 707 frames
-[ 672s] Wrote D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\results.json (4 workflow(s), sha=f054ce14b7cc)
+[  26s]   clicked [BTN|Install]
+[  29s]   url: file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/install -> file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/server-start
+[ 144s]   /system_stats up after 141s
+[ 144s]   app: waiting for backend stability (continuous /system_stats up for 30s)
+[ 144s]   app: /system_stats up; awaiting 30s of stability
+[ 175s]   app: backend stable for 30s; proceeding
+[ 175s]   capturing canvas load...
+[ 183s]   post: waiting for Cloud upsell
+[ 216s]   post: Cloud upsell not found, skipping
+[ 216s]   post: pressed Escape (Cloud upsell fallback)
+[ 218s]   post: waiting for Close Templates
+[ 230s]   post: Close Templates not found, skipping
+[ 230s]   post: pressed Escape (Close Templates fallback)
+[ 232s]   post: waiting for Extensions
+[ 233s]   post: clicked Extensions via [button[aria-label="Extensions"]:visible]
+[ 235s]   ext: node meta = display='SAM3' publisher='pznodes' version='0.1.21'
+[ 239s]   ext: searching "SAM3"
+[ 242s]   ext: clicking SAM3 by pznodes tile
+[ 245s]   ext: scrolling to + opening version selector
+[ 249s]   ext: selected Latest
+[ 250s]   ext: clicking right-panel Install
+[ 252s]   ext: clicked Install (last of 8 visible)
+[ 260s]   ext: waiting for "Apply Changes" toast
+[ 275s]   ext: clicked Apply Changes
+[ 280s]   app: Apply Changes already triggered in-app restart, skipping pkill
+[ 285s]   app: relaunching with CDP
+[ 285s]   app: waiting for CDP
+[ 286s]   app: CDP up after 1s
+[ 286s]   app: reconnecting Playwright
+[ 287s]   app: attached to http://127.0.0.1:8000/
+[ 404s]   app: server ready after 29s
+[ 404s]   app: waiting for main canvas (window.app.graph)
+[ 404s]   app: canvas ready after 1s (http://127.0.0.1:8000/)
+[ 409s]   app: forcing renderer reload to refresh node-pack manifest
+[ 412s]   app: canvas re-ready after reload in 3s
+[ 416s]   ext: closing Nodes Manager dialog
+[ 416s]   ext: dismissing What's New popup
+[ 416s]   ext: closed What's New popup
+[ 418s]   ext: dismissing Node Pack Issues modal (if present)
+[ 418s]   ext: Node Pack Issues modal not present
+[ 418s]   ext: opening Templates sidebar
+[ 419s]   ext: clicked Templates
+[ 423s]   ext: locating "comfyui-sam3" section in Templates panel
+[ 425s]   ext: clicked comfyui-sam3 section
+[ 427s]   ext: fetching comfy-test.toml from https://raw.githubusercontent.com/PozzettiAndrea/ComfyUI-SAM3/main/comfy-test.toml
+[ 427s]   ext: cpu spec = exclude ['video_point_prompt']
+[ 427s]   ext: picking first matching comfyui-sam3 template
+[ 427s]   ext: 5 visible cards
+[ 429s]   ext: clicked template image_seg_point
+[ 434s]   ext: installing WS execution listener
+[ 434s]   ext: clicking Run
+[ 435s]   ext: clicked Run
+[ 435s]   ext: waiting for execution_success / execution_error
+[ 545s]   ext: WS events=230 elapsed=110s
+[ 545s]     ws: {'type': 'progress_state', 'ts': 1779188100599}
+[ 545s]     ws: {'type': 'progress_state', 'ts': 1779188100601}
+[ 545s]     ws: {'type': 'executing', 'ts': 1779188100612}
+[ 545s]     ws: {'type': 'progress_state', 'ts': 1779188174265}
+[ 545s]     ws: {'type': 'progress_state', 'ts': 1779188174267}
+[ 545s]     ws: {'type': 'executing', 'ts': 1779188174267}
+[ 545s]     ws: {'type': 'executed', 'ts': 1779188174585}
+[ 545s]     ws: {'type': 'progress_state', 'ts': 1779188174599}
+[ 545s]     ws: {'type': 'progress_state', 'ts': 1779188174601}
+[ 545s]     ws: {'type': 'executing', 'ts': 1779188174601}
+[ 545s]     ws: {'type': 'executed', 'ts': 1779188174671}
+[ 545s]     ws: {'type': 'progress_state', 'ts': 1779188174673}
+[ 545s]     ws: {'type': 'execution_success', 'ts': 1779188174677}
+[ 545s]     ws: {'type': 'status', 'ts': 1779188174678}
+[ 545s]     ws: {'type': 'executing', 'ts': 1779188174678}
+[ 545s]   ext: execution_success after 110s
+[ 550s]   ext: fetching comfy-test.toml from https://raw.githubusercontent.com/PozzettiAndrea/ComfyUI-SAM3/main/comfy-test.toml
+[ 550s]   ext: cpu spec = exclude ['video_point_prompt']
+[ 550s]   loop: workflows/ from $COMFY_TEST_WORKFLOWS -> ['image_seg_point', 'image_seg_text', 'scene_seg', 'scene_seg_interactive', 'video_point_prompt']
+[ 550s]   loop: spec=exclude items=['video_point_prompt'] -> 4 workflow(s) ['image_seg_point', 'image_seg_text', 'scene_seg', 'scene_seg_interactive']
+[ 550s]   loop: matching=4 first_ran='image_seg_point' remaining=3 -> ['image_seg_text', 'scene_seg', 'scene_seg_interactive']
+[ 550s]   loop: full restart for workflow 2/4 (image_seg_text)
+[ 550s]   loop: closing current browser
+[ 550s]   loop: killing ComfyUI process
+[ 555s]   loop: launching ComfyUI with --remote-debugging-port=0
+[ 555s]   loop: waiting for DevToolsActivePort at C:\Users\stduser\AppData\Roaming\ComfyUI\DevToolsActivePort
+[ 560s]   loop: DevToolsActivePort -> 64066 after 5s
+[ 560s]   loop: reconnecting Playwright on port 64066
+[ 561s]   loop: attached to file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#desktop-start
+[ 561s]   loop: server ready after 1s
+[ 688s]   loop: canvas not ready in 120s (still at file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/server-start)
+[ 688s]   loop: forcing renderer reload
+[ 751s]   loop: canvas not ready in 60s (still at file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/server-start)
+[ 754s]   ext: closing Nodes Manager dialog
+[ 754s]   ext: dismissing What's New popup
+[ 754s]   ext: What's New popup not present
+[ 754s]   ext: dismissing Node Pack Issues modal (if present)
+[ 754s]   ext: Node Pack Issues modal not present
+[ 754s]   ext: opening Templates sidebar
+[ 754s]   ext: Templates sidebar button not found
+[ 754s]   loop: Templates+section open failed for image_seg_text; recording fail
+[ 754s]   loop: full restart for workflow 3/4 (scene_seg)
+[ 754s]   loop: closing current browser
+[ 754s]   loop: killing ComfyUI process
+[ 759s]   loop: launching ComfyUI with --remote-debugging-port=0
+[ 759s]   loop: waiting for DevToolsActivePort at C:\Users\stduser\AppData\Roaming\ComfyUI\DevToolsActivePort
+[ 761s]   loop: DevToolsActivePort -> 64158 after 3s
+[ 761s]   loop: reconnecting Playwright on port 64158
+[ 762s]   loop: attached to file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/desktop-start
+[ 762s]   loop: server ready after 1s
+[ 889s]   loop: canvas not ready in 120s (still at file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/server-start)
+[ 889s]   loop: forcing renderer reload
+[ 952s]   loop: canvas not ready in 60s (still at file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/server-start)
+[ 955s]   ext: closing Nodes Manager dialog
+[ 955s]   ext: dismissing What's New popup
+[ 955s]   ext: What's New popup not present
+[ 955s]   ext: dismissing Node Pack Issues modal (if present)
+[ 955s]   ext: Node Pack Issues modal not present
+[ 955s]   ext: opening Templates sidebar
+[ 955s]   ext: Templates sidebar button not found
+[ 955s]   loop: Templates+section open failed for scene_seg; recording fail
+[ 955s]   loop: full restart for workflow 4/4 (scene_seg_interactive)
+[ 955s]   loop: closing current browser
+[ 955s]   loop: killing ComfyUI process
+[ 960s]   loop: launching ComfyUI with --remote-debugging-port=0
+[ 960s]   loop: waiting for DevToolsActivePort at C:\Users\stduser\AppData\Roaming\ComfyUI\DevToolsActivePort
+[ 962s]   loop: DevToolsActivePort -> 64255 after 3s
+[ 962s]   loop: reconnecting Playwright on port 64255
+[ 963s]   loop: attached to file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/desktop-start
+[ 963s]   loop: server ready after 1s
+[1091s]   loop: canvas not ready in 120s (still at file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/server-start)
+[1091s]   loop: forcing renderer reload
+[1159s]   loop: canvas not ready in 60s (still at file:///C:/Users/stduser/.comfy-test-cache/desktop/ComfyUI/resources/desktop-ui/index.html#/server-start)
+[1163s]   ext: closing Nodes Manager dialog
+[1163s]   ext: dismissing What's New popup
+[1163s]   ext: What's New popup not present
+[1163s]   ext: dismissing Node Pack Issues modal (if present)
+[1163s]   ext: Node Pack Issues modal not present
+[1163s]   ext: opening Templates sidebar
+[1163s]   ext: Templates sidebar button not found
+[1163s]   loop: Templates+section open failed for scene_seg_interactive; recording fail
+[1163s] Captured 1145 frames
+[1163s] Wrote D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1046\dev\windows-desktop\results.json (4 workflow(s), sha=de0ff5d2c2ea)
 ffmpeg version 7.1-essentials_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers
   built with gcc 14.2.0 (Rev1, Built by MSYS2 project)
   configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-librubberband
@@ -419,16 +156,16 @@ ffmpeg version 7.1-essentials_build-www.gyan.dev Copyright (c) 2000-2024 the FFm
   libswscale      8.  3.100 /  8.  3.100
   libswresample   5.  3.100 /  5.  3.100
   libpostproc    58.  3.100 / 58.  3.100
-Input #0, image2, from 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\debug\electron_inspect\frames\frame_%06d.png':
-  Duration: 00:02:21.40, start: 0.000000, bitrate: N/A
+Input #0, image2, from 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1046\dev\windows-desktop\debug\electron_inspect\frames\frame_%06d.png':
+  Duration: 00:03:49.00, start: 0.000000, bitrate: N/A
   Stream #0:0: Video: png, rgb24(pc, gbr/bt709/iec61966-2-1), 1008x681, 5 fps, 5 tbr, 5 tbn
 Stream mapping:
   Stream #0:0 -> #0:0 (png (native) -> h264 (libx264))
 Press [q] to stop, [?] for help
-[libx264 @ 000002471d063500] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
-[libx264 @ 000002471d063500] profile High, level 3.1, 4:2:0, 8-bit
-[libx264 @ 000002471d063500] 264 - core 164 r3192 c24e06c - H.264/MPEG-4 AVC codec - Copyleft 2003-2024 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=5 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
-Output #0, mp4, to 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\debug\electron_inspect\driver.mp4':
+[libx264 @ 0000020665953280] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
+[libx264 @ 0000020665953280] profile High, level 3.1, 4:2:0, 8-bit
+[libx264 @ 0000020665953280] 264 - core 164 r3192 c24e06c - H.264/MPEG-4 AVC codec - Copyleft 2003-2024 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=5 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+Output #0, mp4, to 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1046\dev\windows-desktop\debug\electron_inspect\driver.mp4':
   Metadata:
     encoder         : Lavf61.7.100
   Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(tv, unknown/bt709/iec61966-2-1, progressive), 1008x682, q=2-31, 5 fps, 10240 tbn
@@ -436,49 +173,49 @@ Output #0, mp4, to 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev
         encoder         : Lavc61.19.100 libx264
       Side data:
         cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgba(pc, gbr), 1008x681
-frame=   10 fps=0.0 q=23.0 size=       0KiB time=00:00:01.60 bitrate=   0.2kbits/s speed=3.15x    
-frame=   53 fps= 52 q=23.0 size=       0KiB time=00:00:10.20 bitrate=   0.0kbits/s speed=9.97x    
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgb24(pc, gbr), 1008x681
-frame=  118 fps= 76 q=23.0 size=     256KiB time=00:00:23.20 bitrate=  90.4kbits/s speed=  15x    
-frame=  177 fps= 85 q=23.0 size=     512KiB time=00:00:35.00 bitrate= 119.8kbits/s speed=16.8x    
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgba(pc, gbr), 1008x681
-frame=  251 fps= 96 q=23.0 size=     512KiB time=00:00:49.80 bitrate=  84.2kbits/s speed=19.1x    
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgb24(pc, gbr), 1008x681
-frame=  308 fps= 98 q=23.0 size=     768KiB time=00:01:01.20 bitrate= 102.8kbits/s speed=19.5x    
-frame=  371 fps=101 q=23.0 size=    1024KiB time=00:01:13.80 bitrate= 113.7kbits/s speed=20.1x    
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgba(pc, gbr), 1008x681
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgb24(pc, gbr), 1008x681
-frame=  423 fps=101 q=23.0 size=    1024KiB time=00:01:24.20 bitrate=  99.6kbits/s speed=20.1x    
-frame=  471 fps=100 q=23.0 size=    1536KiB time=00:01:33.80 bitrate= 134.2kbits/s speed=19.9x    
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgba(pc, gbr), 1008x681
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgb24(pc, gbr), 1008x681
-frame=  521 fps=100 q=23.0 size=    1536KiB time=00:01:43.80 bitrate= 121.2kbits/s speed=19.9x    
-frame=  575 fps=100 q=23.0 size=    2048KiB time=00:01:54.60 bitrate= 146.4kbits/s speed=19.9x    
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgba(pc, gbr), 1008x681
-[vf#0:0 @ 000002471d113840] Reconfiguring filter graph because video parameters changed to rgb24(pc, gbr), 1008x681
-frame=  626 fps=100 q=23.0 size=    2304KiB time=00:02:04.80 bitrate= 151.2kbits/s speed=19.9x    
-[out#0/mp4 @ 000002471d495680] video:2850KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.311753%
-frame=  707 fps=105 q=-1.0 Lsize=    2859KiB time=00:02:21.00 bitrate= 166.1kbits/s speed=20.9x    
-[libx264 @ 000002471d063500] frame I:21    Avg QP: 7.06  size: 40122
-[libx264 @ 000002471d063500] frame P:218   Avg QP:16.13  size:  6137
-[libx264 @ 000002471d063500] frame B:468   Avg QP:21.94  size:  1576
-[libx264 @ 000002471d063500] consecutive B-frames:  8.8%  6.8%  6.4% 78.1%
-[libx264 @ 000002471d063500] mb I  I16..4: 62.2% 11.3% 26.5%
-[libx264 @ 000002471d063500] mb P  I16..4:  3.4%  3.5%  3.6%  P16..4:  2.4%  0.8%  0.5%  0.0%  0.0%    skip:85.8%
-[libx264 @ 000002471d063500] mb B  I16..4:  0.5%  0.7%  0.5%  B16..8:  4.0%  0.5%  0.2%  direct: 0.3%  skip:93.2%  L0:53.0% L1:44.4% BI: 2.6%
-[libx264 @ 000002471d063500] 8x8 transform intra:25.1% inter:43.9%
-[libx264 @ 000002471d063500] coded y,uvDC,uvAC intra: 37.0% 21.8% 16.1% inter: 1.2% 0.7% 0.2%
-[libx264 @ 000002471d063500] i16 v,h,dc,p: 69% 27%  2%  2%
-[libx264 @ 000002471d063500] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 29% 19% 34%  2%  3%  3%  4%  3%  4%
-[libx264 @ 000002471d063500] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 34% 30% 13%  3%  4%  4%  5%  3%  4%
-[libx264 @ 000002471d063500] i8c dc,h,v,p: 76% 13%  8%  3%
-[libx264 @ 000002471d063500] Weighted P-Frames: Y:2.8% UV:2.3%
-[libx264 @ 000002471d063500] ref P L0: 63.1%  7.0% 20.0%  9.9%  0.0%
-[libx264 @ 000002471d063500] ref B L0: 72.0% 24.1%  3.8%
-[libx264 @ 000002471d063500] ref B L1: 96.4%  3.6%
-[libx264 @ 000002471d063500] kb/s:165.09
-[ 679s] Wrote D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\debug\electron_inspect\driver.mp4
+[vf#0:0 @ 0000020665953a80] Reconfiguring filter graph because video parameters changed to rgba(pc, gbr), 1008x681
+frame=   11 fps=0.0 q=23.0 size=       0KiB time=00:00:01.80 bitrate=   0.2kbits/s speed=2.96x    
+frame=   48 fps= 43 q=23.0 size=       0KiB time=00:00:09.20 bitrate=   0.0kbits/s speed=8.21x    
+[vf#0:0 @ 0000020665953a80] Reconfiguring filter graph because video parameters changed to rgb24(pc, gbr), 1008x681
+frame=   98 fps= 60 q=23.0 size=     256KiB time=00:00:19.20 bitrate= 109.2kbits/s speed=11.8x    
+frame=  143 fps= 65 q=23.0 size=     256KiB time=00:00:28.20 bitrate=  74.4kbits/s speed=12.8x    
+frame=  198 fps= 72 q=23.0 size=     512KiB time=00:00:39.20 bitrate= 107.0kbits/s speed=14.2x    
+frame=  266 fps= 81 q=23.0 size=     512KiB time=00:00:52.80 bitrate=  79.4kbits/s speed=16.1x    
+[vf#0:0 @ 0000020665953a80] Reconfiguring filter graph because video parameters changed to rgba(pc, gbr), 1008x681
+[vf#0:0 @ 0000020665953a80] Reconfiguring filter graph because video parameters changed to rgb24(pc, gbr), 1008x681
+frame=  315 fps= 83 q=23.0 size=     512KiB time=00:01:02.60 bitrate=  67.0kbits/s speed=16.5x    
+frame=  355 fps= 82 q=23.0 size=    1024KiB time=00:01:10.60 bitrate= 118.8kbits/s speed=16.3x    
+frame=  417 fps= 86 q=23.0 size=    1024KiB time=00:01:23.00 bitrate= 101.1kbits/s speed=  17x    
+frame=  467 fps= 87 q=23.0 size=    1024KiB time=00:01:33.00 bitrate=  90.2kbits/s speed=17.3x    
+frame=  515 fps= 87 q=23.0 size=    1024KiB time=00:01:42.60 bitrate=  81.8kbits/s speed=17.4x    
+frame=  586 fps= 91 q=23.0 size=    1024KiB time=00:01:56.80 bitrate=  71.8kbits/s speed=18.1x    
+frame=  666 fps= 96 q=23.0 size=    1024KiB time=00:02:12.80 bitrate=  63.2kbits/s speed=19.1x    
+frame=  758 fps=101 q=23.0 size=    1024KiB time=00:02:31.20 bitrate=  55.5kbits/s speed=20.2x    
+frame=  842 fps=105 q=23.0 size=    1024KiB time=00:02:48.00 bitrate=  49.9kbits/s speed=  21x    
+frame=  926 fps=108 q=23.0 size=    1024KiB time=00:03:04.80 bitrate=  45.4kbits/s speed=21.6x    
+frame= 1013 fps=112 q=23.0 size=    1024KiB time=00:03:22.20 bitrate=  41.5kbits/s speed=22.3x    
+frame= 1139 fps=119 q=23.0 size=    1280KiB time=00:03:47.40 bitrate=  46.1kbits/s speed=23.7x    
+[out#0/mp4 @ 0000020665cc5600] video:1281KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 1.107298%
+frame= 1145 fps=119 q=-1.0 Lsize=    1295KiB time=00:03:48.60 bitrate=  46.4kbits/s speed=23.8x    
+[libx264 @ 0000020665953280] frame I:12    Avg QP: 7.48  size: 40052
+[libx264 @ 0000020665953280] frame P:297   Avg QP: 9.48  size:  1876
+[libx264 @ 0000020665953280] frame B:836   Avg QP:14.92  size:   327
+[libx264 @ 0000020665953280] consecutive B-frames:  2.0%  1.2%  2.1% 94.7%
+[libx264 @ 0000020665953280] mb I  I16..4: 58.3% 12.1% 29.6%
+[libx264 @ 0000020665953280] mb P  I16..4:  1.4%  1.0%  1.1%  P16..4:  0.9%  0.2%  0.2%  0.0%  0.0%    skip:95.2%
+[libx264 @ 0000020665953280] mb B  I16..4:  0.0%  0.1%  0.1%  B16..8:  2.3%  0.1%  0.0%  direct: 0.0%  skip:97.2%  L0:61.8% L1:37.4% BI: 0.8%
+[libx264 @ 0000020665953280] 8x8 transform intra:22.3% inter:43.4%
+[libx264 @ 0000020665953280] coded y,uvDC,uvAC intra: 34.0% 16.7% 12.9% inter: 0.3% 0.2% 0.0%
+[libx264 @ 0000020665953280] i16 v,h,dc,p: 72% 24%  2%  1%
+[libx264 @ 0000020665953280] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 34% 16% 38%  2%  2%  2%  3%  2%  3%
+[libx264 @ 0000020665953280] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 39% 30% 12%  2%  3%  3%  4%  3%  4%
+[libx264 @ 0000020665953280] i8c dc,h,v,p: 81% 11%  6%  2%
+[libx264 @ 0000020665953280] Weighted P-Frames: Y:1.0% UV:0.7%
+[libx264 @ 0000020665953280] ref P L0: 68.3% 12.6% 13.2%  5.9%  0.0%
+[libx264 @ 0000020665953280] ref B L0: 61.8% 37.1%  1.1%
+[libx264 @ 0000020665953280] ref B L1: 97.6%  2.4%
+[libx264 @ 0000020665953280] kb/s:45.80
+[1173s] Wrote D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1046\dev\windows-desktop\debug\electron_inspect\driver.mp4
 ffmpeg version 7.1-essentials_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers
   built with gcc 14.2.0 (Rev1, Built by MSYS2 project)
   configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-librubberband
@@ -490,16 +227,16 @@ ffmpeg version 7.1-essentials_build-www.gyan.dev Copyright (c) 2000-2024 the FFm
   libswscale      8.  3.100 /  8.  3.100
   libswresample   5.  3.100 /  5.  3.100
   libpostproc    58.  3.100 / 58.  3.100
-Input #0, image2, from 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\debug\electron_inspect\frames\frame_%06d.png':
-  Duration: 00:01:12.80, start: 0.000000, bitrate: N/A
+Input #0, image2, from 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1046\dev\windows-desktop\debug\electron_inspect\frames\frame_%06d.png':
+  Duration: 00:02:33.40, start: 0.000000, bitrate: N/A
   Stream #0:0: Video: png, rgb24(pc, gbr/bt709/iec61966-2-1), 1008x681, 5 fps, 5 tbr, 5 tbn
 Stream mapping:
   Stream #0:0 -> #0:0 (png (native) -> h264 (libx264))
 Press [q] to stop, [?] for help
-[libx264 @ 0000022566e631c0] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
-[libx264 @ 0000022566e631c0] profile High, level 3.1, 4:2:0, 8-bit
-[libx264 @ 0000022566e631c0] 264 - core 164 r3192 c24e06c - H.264/MPEG-4 AVC codec - Copyleft 2003-2024 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=5 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
-Output #0, mp4, to 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\videos\image_seg_point\driver.mp4':
+[libx264 @ 000001f733ea2f40] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
+[libx264 @ 000001f733ea2f40] profile High, level 3.1, 4:2:0, 8-bit
+[libx264 @ 000001f733ea2f40] 264 - core 164 r3192 c24e06c - H.264/MPEG-4 AVC codec - Copyleft 2003-2024 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=5 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+Output #0, mp4, to 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1046\dev\windows-desktop\videos\image_seg_point\driver.mp4':
   Metadata:
     encoder         : Lavf61.7.100
   Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(tv, unknown/bt709/iec61966-2-1, progressive), 1008x682, q=2-31, 5 fps, 10240 tbn
@@ -507,179 +244,30 @@ Output #0, mp4, to 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev
         encoder         : Lavc61.19.100 libx264
       Side data:
         cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
-frame=   35 fps=0.0 q=23.0 size=       0KiB time=N/A bitrate=N/A speed=N/A    
-[out#0/mp4 @ 00000225671eb040] video:103KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 1.577359%
-frame=   67 fps=0.0 q=-1.0 Lsize=     105KiB time=00:00:13.00 bitrate=  66.1kbits/s speed=19.4x    
-[libx264 @ 0000022566e631c0] frame I:1     Avg QP:10.90  size: 48668
-[libx264 @ 0000022566e631c0] frame P:18    Avg QP:15.53  size:  2365
-[libx264 @ 0000022566e631c0] frame B:48    Avg QP:22.93  size:   287
-[libx264 @ 0000022566e631c0] consecutive B-frames:  4.5%  0.0%  0.0% 95.5%
-[libx264 @ 0000022566e631c0] mb I  I16..4: 43.7% 30.1% 26.2%
-[libx264 @ 0000022566e631c0] mb P  I16..4:  1.3%  0.2%  0.7%  P16..4:  1.7%  0.3%  0.1%  0.0%  0.0%    skip:95.6%
-[libx264 @ 0000022566e631c0] mb B  I16..4:  0.0%  0.0%  0.0%  B16..8:  6.9%  0.2%  0.0%  direct: 0.0%  skip:92.8%  L0:51.6% L1:47.9% BI: 0.5%
-[libx264 @ 0000022566e631c0] 8x8 transform intra:24.7% inter:34.0%
-[libx264 @ 0000022566e631c0] coded y,uvDC,uvAC intra: 40.0% 17.2% 14.0% inter: 0.3% 0.2% 0.1%
-[libx264 @ 0000022566e631c0] i16 v,h,dc,p: 54% 46%  0%  0%
-[libx264 @ 0000022566e631c0] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 39% 19% 41%  0%  0%  0%  0%  0%  0%
-[libx264 @ 0000022566e631c0] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 36% 36% 11%  2%  3%  3%  4%  2%  4%
-[libx264 @ 0000022566e631c0] i8c dc,h,v,p: 69% 21%  9%  1%
-[libx264 @ 0000022566e631c0] Weighted P-Frames: Y:0.0% UV:0.0%
-[libx264 @ 0000022566e631c0] ref P L0: 67.8%  2.1% 22.4%  7.8%
-[libx264 @ 0000022566e631c0] ref B L0: 57.5% 38.8%  3.7%
-[libx264 @ 0000022566e631c0] ref B L1: 96.3%  3.7%
-[libx264 @ 0000022566e631c0] kb/s:62.68
-[ 680s]   videos/image_seg_point/driver.mp4 placed (frames 344..410)
-[ 680s]   screenshots/image_seg_point_executed.png placed
-ffmpeg version 7.1-essentials_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers
-  built with gcc 14.2.0 (Rev1, Built by MSYS2 project)
-  configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-librubberband
-  libavutil      59. 39.100 / 59. 39.100
-  libavcodec     61. 19.100 / 61. 19.100
-  libavformat    61.  7.100 / 61.  7.100
-  libavdevice    61.  3.100 / 61.  3.100
-  libavfilter    10.  4.100 / 10.  4.100
-  libswscale      8.  3.100 /  8.  3.100
-  libswresample   5.  3.100 /  5.  3.100
-  libpostproc    58.  3.100 / 58.  3.100
-Input #0, image2, from 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\debug\electron_inspect\frames\frame_%06d.png':
-  Duration: 00:00:49.00, start: 0.000000, bitrate: N/A
-  Stream #0:0: Video: png, rgba(pc, gbr/bt709/iec61966-2-1), 1008x681, 5 fps, 5 tbr, 5 tbn
-Stream mapping:
-  Stream #0:0 -> #0:0 (png (native) -> h264 (libx264))
-Press [q] to stop, [?] for help
-[libx264 @ 000001a59dfa2f40] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
-[libx264 @ 000001a59dfa2f40] profile High, level 3.1, 4:2:0, 8-bit
-[libx264 @ 000001a59dfa2f40] 264 - core 164 r3192 c24e06c - H.264/MPEG-4 AVC codec - Copyleft 2003-2024 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=5 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
-Output #0, mp4, to 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\videos\image_seg_text\driver.mp4':
-  Metadata:
-    encoder         : Lavf61.7.100
-  Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(tv, unknown/bt709/iec61966-2-1, progressive), 1008x682, q=2-31, 5 fps, 10240 tbn
-      Metadata:
-        encoder         : Lavc61.19.100 libx264
-      Side data:
-        cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
-[vf#0:0 @ 000001a59dfa3a40] Reconfiguring filter graph because video parameters changed to rgb24(pc, gbr), 1008x681
-[out#0/mp4 @ 000001a59e33c2c0] video:120KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 1.169444%
-frame=   49 fps=0.0 q=-1.0 Lsize=     122KiB time=00:00:09.40 bitrate= 106.2kbits/s speed=18.9x    
-[libx264 @ 000001a59dfa2f40] frame I:2     Avg QP:12.33  size: 43329
-[libx264 @ 000001a59dfa2f40] frame P:14    Avg QP:16.33  size:  2372
-[libx264 @ 000001a59dfa2f40] frame B:33    Avg QP:22.90  size:    86
-[libx264 @ 000001a59dfa2f40] consecutive B-frames:  8.2%  4.1%  6.1% 81.6%
-[libx264 @ 000001a59dfa2f40] mb I  I16..4: 47.5% 24.7% 27.8%
-[libx264 @ 000001a59dfa2f40] mb P  I16..4:  2.0%  0.3%  1.1%  P16..4:  1.7%  0.4%  0.2%  0.0%  0.0%    skip:94.3%
-[libx264 @ 000001a59dfa2f40] mb B  I16..4:  0.1%  0.0%  0.0%  B16..8:  1.6%  0.1%  0.0%  direct: 0.0%  skip:98.2%  L0:51.7% L1:48.0% BI: 0.3%
-[libx264 @ 000001a59dfa2f40] 8x8 transform intra:21.7% inter:51.6%
-[libx264 @ 000001a59dfa2f40] coded y,uvDC,uvAC intra: 39.4% 20.9% 16.8% inter: 0.2% 0.3% 0.1%
-[libx264 @ 000001a59dfa2f40] i16 v,h,dc,p: 49% 43%  0%  8%
-[libx264 @ 000001a59dfa2f40] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 53% 17% 24%  0%  2%  1%  1%  0%  1%
-[libx264 @ 000001a59dfa2f40] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 41% 35% 10%  2%  2%  2%  3%  2%  3%
-[libx264 @ 000001a59dfa2f40] i8c dc,h,v,p: 69% 16% 10%  6%
-[libx264 @ 000001a59dfa2f40] Weighted P-Frames: Y:0.0% UV:0.0%
-[libx264 @ 000001a59dfa2f40] ref P L0: 70.2%  6.0% 21.6%  2.1%
-[libx264 @ 000001a59dfa2f40] ref B L0: 78.9% 18.2%  2.9%
-[libx264 @ 000001a59dfa2f40] ref B L1: 96.4%  3.6%
-[libx264 @ 000001a59dfa2f40] kb/s:100.17
-[ 681s]   videos/image_seg_text/driver.mp4 placed (frames 463..511)
-[ 681s]   screenshots/image_seg_text_executed.png placed
-ffmpeg version 7.1-essentials_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers
-  built with gcc 14.2.0 (Rev1, Built by MSYS2 project)
-  configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-librubberband
-  libavutil      59. 39.100 / 59. 39.100
-  libavcodec     61. 19.100 / 61. 19.100
-  libavformat    61.  7.100 / 61.  7.100
-  libavdevice    61.  3.100 / 61.  3.100
-  libavfilter    10.  4.100 / 10.  4.100
-  libswscale      8.  3.100 /  8.  3.100
-  libswresample   5.  3.100 /  5.  3.100
-  libpostproc    58.  3.100 / 58.  3.100
-Input #0, image2, from 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\debug\electron_inspect\frames\frame_%06d.png':
-  Duration: 00:00:29.60, start: 0.000000, bitrate: N/A
-  Stream #0:0: Video: png, rgb24(pc, gbr/bt709/iec61966-2-1), 1008x681, 5 fps, 5 tbr, 5 tbn
-Stream mapping:
-  Stream #0:0 -> #0:0 (png (native) -> h264 (libx264))
-Press [q] to stop, [?] for help
-[libx264 @ 000001e0dcfc56c0] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
-[libx264 @ 000001e0dcfc56c0] profile High, level 3.1, 4:2:0, 8-bit
-[libx264 @ 000001e0dcfc56c0] 264 - core 164 r3192 c24e06c - H.264/MPEG-4 AVC codec - Copyleft 2003-2024 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=5 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
-Output #0, mp4, to 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\videos\scene_seg\driver.mp4':
-  Metadata:
-    encoder         : Lavf61.7.100
-  Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(tv, unknown/bt709/iec61966-2-1, progressive), 1008x682, q=2-31, 5 fps, 10240 tbn
-      Metadata:
-        encoder         : Lavc61.19.100 libx264
-      Side data:
-        cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
-[out#0/mp4 @ 000001e0dd269680] video:119KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 1.187039%
-frame=   50 fps=0.0 q=-1.0 Lsize=     120KiB time=00:00:09.60 bitrate= 102.8kbits/s speed=20.5x    
-[libx264 @ 000001e0dcfc56c0] frame I:2     Avg QP:12.31  size: 33354
-[libx264 @ 000001e0dcfc56c0] frame P:14    Avg QP:17.02  size:  3469
-[libx264 @ 000001e0dcfc56c0] frame B:34    Avg QP:22.44  size:   174
-[libx264 @ 000001e0dcfc56c0] consecutive B-frames:  6.0%  8.0%  6.0% 80.0%
-[libx264 @ 000001e0dcfc56c0] mb I  I16..4: 40.4% 37.0% 22.6%
-[libx264 @ 000001e0dcfc56c0] mb P  I16..4:  2.3%  1.0%  1.6%  P16..4:  1.4%  0.2%  0.1%  0.0%  0.0%    skip:93.3%
-[libx264 @ 000001e0dcfc56c0] mb B  I16..4:  0.1%  0.1%  0.0%  B16..8:  1.4%  0.1%  0.0%  direct: 0.1%  skip:98.2%  L0:42.4% L1:57.0% BI: 0.6%
-[libx264 @ 000001e0dcfc56c0] 8x8 transform intra:32.9% inter:51.7%
-[libx264 @ 000001e0dcfc56c0] coded y,uvDC,uvAC intra: 18.6% 21.1% 16.8% inter: 0.3% 0.4% 0.1%
-[libx264 @ 000001e0dcfc56c0] i16 v,h,dc,p: 53% 40%  1%  6%
-[libx264 @ 000001e0dcfc56c0] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 53% 17% 27%  0%  2%  1%  1%  0%  0%
-[libx264 @ 000001e0dcfc56c0] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 34% 37% 13%  2%  3%  2%  4%  2%  4%
-[libx264 @ 000001e0dcfc56c0] i8c dc,h,v,p: 69% 16% 10%  5%
-[libx264 @ 000001e0dcfc56c0] Weighted P-Frames: Y:0.0% UV:0.0%
-[libx264 @ 000001e0dcfc56c0] ref P L0: 76.2%  6.0% 16.5%  1.2%
-[libx264 @ 000001e0dcfc56c0] ref B L0: 74.9% 22.9%  2.2%
-[libx264 @ 000001e0dcfc56c0] ref B L1: 96.6%  3.4%
-[libx264 @ 000001e0dcfc56c0] kb/s:96.97
-[ 681s]   videos/scene_seg/driver.mp4 placed (frames 560..609)
-[ 681s]   screenshots/scene_seg_executed.png placed
-ffmpeg version 7.1-essentials_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers
-  built with gcc 14.2.0 (Rev1, Built by MSYS2 project)
-  configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-librubberband
-  libavutil      59. 39.100 / 59. 39.100
-  libavcodec     61. 19.100 / 61. 19.100
-  libavformat    61.  7.100 / 61.  7.100
-  libavdevice    61.  3.100 / 61.  3.100
-  libavfilter    10.  4.100 / 10.  4.100
-  libswscale      8.  3.100 /  8.  3.100
-  libswresample   5.  3.100 /  5.  3.100
-  libpostproc    58.  3.100 / 58.  3.100
-Input #0, image2, from 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\debug\electron_inspect\frames\frame_%06d.png':
-  Duration: 00:00:10.00, start: 0.000000, bitrate: N/A
-  Stream #0:0: Video: png, rgb24(pc, gbr/bt709/iec61966-2-1), 1008x681, 5 fps, 5 tbr, 5 tbn
-Stream mapping:
-  Stream #0:0 -> #0:0 (png (native) -> h264 (libx264))
-Press [q] to stop, [?] for help
-[libx264 @ 000002b972e82dc0] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
-[libx264 @ 000002b972e82dc0] profile High, level 3.1, 4:2:0, 8-bit
-[libx264 @ 000002b972e82dc0] 264 - core 164 r3192 c24e06c - H.264/MPEG-4 AVC codec - Copyleft 2003-2024 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=5 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
-Output #0, mp4, to 'D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\videos\scene_seg_interactive\driver.mp4':
-  Metadata:
-    encoder         : Lavf61.7.100
-  Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(tv, unknown/bt709/iec61966-2-1, progressive), 1008x682, q=2-31, 5 fps, 10240 tbn
-      Metadata:
-        encoder         : Lavc61.19.100 libx264
-      Side data:
-        cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
-frame=   40 fps=0.0 q=23.0 size=       0KiB time=N/A bitrate=N/A speed=N/A    
-[out#0/mp4 @ 000002b9731ba380] video:115KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 1.241640%
-frame=   50 fps=0.0 q=-1.0 Lsize=     116KiB time=00:00:09.60 bitrate=  99.4kbits/s speed=17.7x    
-[libx264 @ 000002b972e82dc0] frame I:2     Avg QP:12.64  size: 34264
-[libx264 @ 000002b972e82dc0] frame P:14    Avg QP:16.11  size:  2911
-[libx264 @ 000002b972e82dc0] frame B:34    Avg QP:20.50  size:   231
-[libx264 @ 000002b972e82dc0] consecutive B-frames:  8.0%  4.0%  0.0% 88.0%
-[libx264 @ 000002b972e82dc0] mb I  I16..4: 47.6% 28.1% 24.3%
-[libx264 @ 000002b972e82dc0] mb P  I16..4:  2.2%  0.5%  1.3%  P16..4:  1.7%  0.3%  0.2%  0.0%  0.0%    skip:93.6%
-[libx264 @ 000002b972e82dc0] mb B  I16..4:  0.1%  0.0%  0.0%  B16..8:  7.3%  0.2%  0.0%  direct: 0.0%  skip:92.4%  L0:66.2% L1:33.7% BI: 0.1%
-[libx264 @ 000002b972e82dc0] 8x8 transform intra:24.8% inter:57.5%
-[libx264 @ 000002b972e82dc0] coded y,uvDC,uvAC intra: 28.8% 20.4% 16.2% inter: 0.3% 0.3% 0.1%
-[libx264 @ 000002b972e82dc0] i16 v,h,dc,p: 52% 42%  0%  6%
-[libx264 @ 000002b972e82dc0] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 49% 19% 27%  0%  2%  1%  1%  0%  1%
-[libx264 @ 000002b972e82dc0] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 37% 36% 12%  2%  3%  2%  3%  2%  3%
-[libx264 @ 000002b972e82dc0] i8c dc,h,v,p: 66% 18% 11%  5%
-[libx264 @ 000002b972e82dc0] Weighted P-Frames: Y:0.0% UV:0.0%
-[libx264 @ 000002b972e82dc0] ref P L0: 74.4%  3.2% 18.6%  3.7%
-[libx264 @ 000002b972e82dc0] ref B L0: 52.1% 45.4%  2.5%
-[libx264 @ 000002b972e82dc0] ref B L1: 99.1%  0.9%
-[libx264 @ 000002b972e82dc0] kb/s:93.71
-[ 682s]   videos/scene_seg_interactive/driver.mp4 placed (frames 658..707)
-[ 682s]   screenshots/scene_seg_interactive_executed.png placed
-[ 682s]   removed D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1828\dev\windows-desktop\debug\electron_inspect\frames after successful encode
+frame=    9 fps=0.0 q=23.0 size=       0KiB time=00:00:01.40 bitrate=   0.3kbits/s speed=2.75x    
+frame=   46 fps= 45 q=23.0 size=       0KiB time=00:00:08.80 bitrate=   0.0kbits/s speed=8.55x    
+frame=   99 fps= 63 q=23.0 size=       0KiB time=00:00:19.40 bitrate=   0.0kbits/s speed=12.3x    
+frame=  166 fps= 80 q=23.0 size=       0KiB time=N/A bitrate=N/A speed=N/A    
+[out#0/mp4 @ 000001f7341ac5c0] video:120KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 2.567622%
+frame=  190 fps= 86 q=-1.0 Lsize=     123KiB time=00:00:37.60 bitrate=  26.7kbits/s speed=  17x    
+[libx264 @ 000001f733ea2f40] frame I:1     Avg QP:11.00  size: 48372
+[libx264 @ 000001f733ea2f40] frame P:48    Avg QP:14.34  size:   830
+[libx264 @ 000001f733ea2f40] frame B:141   Avg QP:23.21  size:   238
+[libx264 @ 000001f733ea2f40] consecutive B-frames:  1.1%  0.0%  0.0% 98.9%
+[libx264 @ 000001f733ea2f40] mb I  I16..4: 44.2% 29.6% 26.2%
+[libx264 @ 000001f733ea2f40] mb P  I16..4:  0.3%  0.0%  0.2%  P16..4:  0.9%  0.1%  0.1%  0.0%  0.0%    skip:98.4%
+[libx264 @ 000001f733ea2f40] mb B  I16..4:  0.0%  0.1%  0.0%  B16..8:  5.6%  0.2%  0.0%  direct: 0.0%  skip:94.1%  L0:57.8% L1:41.6% BI: 0.5%
+[libx264 @ 000001f733ea2f40] 8x8 transform intra:29.4% inter:46.4%
+[libx264 @ 000001f733ea2f40] coded y,uvDC,uvAC intra: 40.3% 17.7% 14.2% inter: 0.1% 0.1% 0.0%
+[libx264 @ 000001f733ea2f40] i16 v,h,dc,p: 54% 46%  0%  0%
+[libx264 @ 000001f733ea2f40] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 33% 16% 51%  0%  0%  0%  0%  0%  0%
+[libx264 @ 000001f733ea2f40] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 36% 35% 10%  2%  3%  3%  4%  3%  4%
+[libx264 @ 000001f733ea2f40] i8c dc,h,v,p: 70% 22%  7%  1%
+[libx264 @ 000001f733ea2f40] Weighted P-Frames: Y:0.0% UV:0.0%
+[libx264 @ 000001f733ea2f40] ref P L0: 74.5%  0.7% 18.2%  6.7%
+[libx264 @ 000001f733ea2f40] ref B L0: 48.6% 50.7%  0.6%
+[libx264 @ 000001f733ea2f40] ref B L1: 98.0%  2.0%
+[libx264 @ 000001f733ea2f40] kb/s:25.63
+[1175s]   videos/image_seg_point/driver.mp4 placed (frames 379..568)
+[1175s]   screenshots/image_seg_point_executed.png placed
+[1175s]   removed D:\a\comfy-gpu-ci\comfy-gpu-ci\comfy-test-logs\SAM3-1046\dev\windows-desktop\debug\electron_inspect\frames after successful encode
