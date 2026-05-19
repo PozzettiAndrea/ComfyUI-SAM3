@@ -281,6 +281,7 @@ app.registerExtension({
 
             canvas.addEventListener("contextmenu", (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 canvas.dispatchEvent(new MouseEvent('mousedown', {
                     button: 2,
                     clientX: e.clientX,
