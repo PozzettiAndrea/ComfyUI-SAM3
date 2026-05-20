@@ -21,7 +21,10 @@ function hideWidgetForGood(node, widget, suffix = '') {
     // Multiple hiding approaches to ensure widget is fully hidden
     widget.computeSize = () => [0, -4];  // -4 compensates for litegraph's automatic widget gap
     widget.type = "converted-widget" + suffix;
-    widget.hidden = true;  // Mark as hidden
+    widget.hidden = true;  // Mark as hidden (legacy LiteGraph canvas renderer)
+    // Nodes 2.0 (vueNodes) reads hidden from widget.options.hidden, not the top-level flag
+    widget.options = widget.options || {};
+    widget.options.hidden = true;
 
     // IMPORTANT: Keep serialization enabled so values are sent to backend
     // (We just hide it visually, but it still needs to send data)

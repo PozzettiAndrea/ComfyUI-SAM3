@@ -26,6 +26,9 @@ function hideWidgetForGood(node, widget, suffix = '') {
     widget.computeSize = () => [0, -4];
     widget.type = "converted-widget" + suffix;
     widget.hidden = true;
+    // Nodes 2.0 (vueNodes) reads hidden from widget.options.hidden, not the top-level flag
+    widget.options = widget.options || {};
+    widget.options.hidden = true;
     if (widget.element) {
         widget.element.style.display = "none";
         widget.element.style.visibility = "hidden";
