@@ -59,9 +59,9 @@ class SAM3Grounding(io.ComfyNode):
                 io.String.Input("text_prompt", default="", multiline=False, optional=True,
                                 tooltip="Describe what to segment using natural language (e.g., 'person', 'cat', 'red car', 'shoes')"),
                 io.Custom("SAM3_BOXES_PROMPT").Input("positive_boxes", optional=True,
-                                                     tooltip="Optional box prompts to focus detection on specific regions. Connect from SAM3CombineBoxes node."),
+                                                     tooltip="Optional box prompts to focus detection on specific regions. Connect from SAM3CreateBox."),
                 io.Custom("SAM3_BOXES_PROMPT").Input("negative_boxes", optional=True,
-                                                     tooltip="Optional box prompts to exclude specific regions from detection. Connect from SAM3CombineBoxes node."),
+                                                     tooltip="Optional box prompts to exclude specific regions from detection. Connect from SAM3CreateBox."),
                 io.Int.Input("max_detections", default=-1, min=-1, max=100, step=1, optional=True,
                              tooltip="Maximum number of detections to return (-1 for all)"),
             ],
@@ -229,7 +229,9 @@ class SAM3CreateBox(io.ComfyNode):
     """
     Helper node to create a box prompt visually
 
-    Use sliders to define a bounding box for refinement.
+    Use sliders to define a bounding box for refinement. Outputs a ready-to-use
+    SAM3_BOXES_PROMPT (a single-box list) so it can be wired directly into
+    SAM3Grounding/SAM3Segmentation without a separate combine step.
     """
 
     @classmethod
@@ -251,7 +253,7 @@ class SAM3CreateBox(io.ComfyNode):
                                  tooltip="True for positive (include), False for negative (exclude)"),
             ],
             outputs=[
-                io.Custom("SAM3_BOX_PROMPT").Output(display_name="box_prompt"),
+                io.Custom("SAM3_BOXES_PROMPT").Output(display_name="box_prompt"),
             ],
         )
 
@@ -259,8 +261,8 @@ class SAM3CreateBox(io.ComfyNode):
     def execute(cls, center_x, center_y, width, height, is_positive):
         """Create a box prompt"""
         box_prompt = {
-            "box": [center_x, center_y, width, height],
-            "label": is_positive
+            "boxes": [[center_x, center_y, width, height]],
+            "labels": [is_positive],
         }
         return io.NodeOutput(box_prompt)
 
@@ -299,56 +301,6 @@ class SAM3CreatePoint(io.ComfyNode):
             "label": 1 if is_foreground else 0
         }
         return io.NodeOutput(point_prompt)
-
-
-class SAM3CombineBoxes(io.ComfyNode):
-    """
-    Combine multiple box prompts into a single input
-
-    Connect multiple SAM3CreateBox nodes to combine them.
-    """
-
-    @classmethod
-    def define_schema(cls):
-        return io.Schema(
-            node_id="SAM3CombineBoxes",
-            display_name="SAM3 Combine Boxes",
-            category="SAM3/prompts",
-            inputs=[
-                io.Custom("SAM3_BOX_PROMPT").Input("box_1", optional=True,
-                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
-                io.Custom("SAM3_BOX_PROMPT").Input("box_2", optional=True,
-                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
-                io.Custom("SAM3_BOX_PROMPT").Input("box_3", optional=True,
-                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
-                io.Custom("SAM3_BOX_PROMPT").Input("box_4", optional=True,
-                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
-                io.Custom("SAM3_BOX_PROMPT").Input("box_5", optional=True,
-                                                   tooltip="Connect box prompts from SAM3CreateBox nodes. Combines multiple boxes into a single prompt for SAM3Segmentation."),
-            ],
-            outputs=[
-                io.Custom("SAM3_BOXES_PROMPT").Output(display_name="boxes_prompt"),
-            ],
-        )
-
-    @classmethod
-    def execute(cls, **kwargs):
-        """Combine multiple box prompts"""
-        boxes = []
-        labels = []
-
-        for i in range(1, 6):
-            box_key = f"box_{i}"
-            if box_key in kwargs and kwargs[box_key] is not None:
-                box_data = kwargs[box_key]
-                boxes.append(box_data["box"])
-                labels.append(box_data["label"])
-
-        combined = {
-            "boxes": boxes,
-            "labels": labels
-        }
-        return io.NodeOutput(combined)
 
 
 class SAM3CombinePoints(io.ComfyNode):
@@ -439,7 +391,7 @@ class SAM3Segmentation(io.ComfyNode):
                 io.Custom("SAM3_POINTS_PROMPT").Input("negative_points", optional=True,
                                                       tooltip="Background points - exclude these areas from segmentation. Connect from SAM3CombinePoints or SAM3PointCollector."),
                 io.Custom("SAM3_BOXES_PROMPT").Input("box", optional=True,
-                                                     tooltip="Box prompt to constrain segmentation region. Only first box is used. Connect from SAM3CombineBoxes."),
+                                                     tooltip="Box prompt to constrain segmentation region. Only first box is used. Connect from SAM3CreateBox."),
                 io.Int.Input("refinement_iterations", default=0, min=0, max=10, optional=True,
                              tooltip="Number of refinement passes. Each pass feeds the mask back for cleaner edges."),
                 io.Boolean.Input("use_multimask", default=True, optional=True,
@@ -866,7 +818,6 @@ NODE_CLASS_MAPPINGS = {
     "SAM3MultipromptSegmentation": SAM3MultipromptSegmentation,
     "SAM3CreateBox": SAM3CreateBox,
     "SAM3CreatePoint": SAM3CreatePoint,
-    "SAM3CombineBoxes": SAM3CombineBoxes,
     "SAM3CombinePoints": SAM3CombinePoints,
 }
 
@@ -876,6 +827,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3MultipromptSegmentation": "SAM3 Multiprompt Segmentation",
     "SAM3CreateBox": "SAM3 Create Box",
     "SAM3CreatePoint": "SAM3 Create Point",
-    "SAM3CombineBoxes": "SAM3 Combine Boxes",
     "SAM3CombinePoints": "SAM3 Combine Points",
 }

@@ -276,49 +276,28 @@ class SAM3BBoxCollector(io.ComfyNode):
         img_height, img_width = image.shape[1], image.shape[2]
         log.info(f"Image dimensions: {img_width}x{img_height}")
 
+        def _to_center_box(bbox: dict) -> list:
+            """Normalize a raw {x1,y1,x2,y2} canvas rect (pixel space) to
+            [center_x, center_y, width, height] in 0-1 range."""
+            x1, y1, x2, y2 = bbox['x1'], bbox['y1'], bbox['x2'], bbox['y2']
+            if x2 < x1:
+                x1, x2 = x2, x1
+            if y2 < y1:
+                y1, y2 = y2, y1
+            x1_norm, y1_norm = x1 / img_width, y1 / img_height
+            x2_norm, y2_norm = x2 / img_width, y2 / img_height
+            return [(x1_norm + x2_norm) / 2, (y1_norm + y2_norm) / 2, x2_norm - x1_norm, y2_norm - y1_norm]
+
         # Convert to SAM3_BOXES_PROMPT format with boxes and labels
-        positive_boxes = []
-        positive_labels = []
-        negative_boxes = []
-        negative_labels = []
+        positive_boxes = [_to_center_box(b) for b in pos_bbox_list]
+        positive_labels = [True] * len(positive_boxes)
+        negative_boxes = [_to_center_box(b) for b in neg_bbox_list]
+        negative_labels = [False] * len(negative_boxes)
 
-        # Add positive bboxes (label = True)
-        for bbox in pos_bbox_list:
-            # Normalize bbox coordinates to 0-1 range
-            x1_norm = bbox['x1'] / img_width
-            y1_norm = bbox['y1'] / img_height
-            x2_norm = bbox['x2'] / img_width
-            y2_norm = bbox['y2'] / img_height
-
-            # Convert from [x1, y1, x2, y2] to [center_x, center_y, width, height]
-            # SAM3 expects boxes in center format
-            center_x = (x1_norm + x2_norm) / 2
-            center_y = (y1_norm + y2_norm) / 2
-            width = x2_norm - x1_norm
-            height = y2_norm - y1_norm
-
-            positive_boxes.append([center_x, center_y, width, height])
-            positive_labels.append(True)  # Positive boxes
-            log.info(f"  Positive BBox: ({bbox['x1']:.1f}, {bbox['y1']:.1f}, {bbox['x2']:.1f}, {bbox['y2']:.1f}) -> center=({center_x:.3f}, {center_y:.3f}) size=({width:.3f}, {height:.3f})")
-
-        # Add negative bboxes (label = False)
-        for bbox in neg_bbox_list:
-            # Normalize bbox coordinates to 0-1 range
-            x1_norm = bbox['x1'] / img_width
-            y1_norm = bbox['y1'] / img_height
-            x2_norm = bbox['x2'] / img_width
-            y2_norm = bbox['y2'] / img_height
-
-            # Convert from [x1, y1, x2, y2] to [center_x, center_y, width, height]
-            # SAM3 expects boxes in center format
-            center_x = (x1_norm + x2_norm) / 2
-            center_y = (y1_norm + y2_norm) / 2
-            width = x2_norm - x1_norm
-            height = y2_norm - y1_norm
-
-            negative_boxes.append([center_x, center_y, width, height])
-            negative_labels.append(False)  # Negative boxes
-            log.info(f"  Negative BBox: ({bbox['x1']:.1f}, {bbox['y1']:.1f}, {bbox['x2']:.1f}, {bbox['y2']:.1f}) -> center=({center_x:.3f}, {center_y:.3f}) size=({width:.3f}, {height:.3f})")
+        for b in positive_boxes:
+            log.info(f"  Positive BBox: center=({b[0]:.3f}, {b[1]:.3f}) size=({b[2]:.3f}, {b[3]:.3f})")
+        for b in negative_boxes:
+            log.info(f"  Negative BBox: center=({b[0]:.3f}, {b[1]:.3f}) size=({b[2]:.3f}, {b[3]:.3f})")
 
         log.info(f"Output: {len(positive_boxes)} positive, {len(negative_boxes)} negative bboxes")
 
