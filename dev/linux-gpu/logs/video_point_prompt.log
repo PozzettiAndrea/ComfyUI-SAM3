@@ -1,39 +1,40 @@
 Capturing execution frames: video_point_prompt.json
+  [ComfyUI] [32m[INFO][0m Using RAM pressure cache.
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
-  [ComfyUI] === /validate endpoint called ===
-  [ComfyUI] Received JSON with keys: ['prompt']
   Queuing workflow for execution...
-  [ComfyUI] Prompt has 11 nodes
-  [ComfyUI]   Node 9: VHS_LoadVideo
-  [ComfyUI]     Inputs: {"video": "bedroom.mp4", "force_rate": 0, "custom_width": 0, "custom_height": 0, "frame_load_cap": 30, "skip_first_frames": 0, "select_every_nth": 1, "format": "AnimateDiff"}
-  [ComfyUI]   Node 13: CreateVideo
-  [ComfyUI]     Inputs: {"fps": 30, "images": ["14", 0]}
-  [ComfyUI]   Node 14: MaskToImage
-  [ComfyUI]     Inputs: {"mask": ["21", 0]}
-  [ComfyUI]   Node 15: SaveVideo
-  [ComfyUI]     Inputs: {"filename_prefix": "video/ComfyUI", "format": "auto", "codec": "auto", "video": ["13", 0]}
-  [ComfyUI]   Node 21: SAM3VideoOutput
-  [ComfyUI]     Inputs: {"obj_id": 0, "plot_all_masks": true, "masks": ["35", 0], "video_state": ["35", 2], "scores": ["35", 1]}
-  [ComfyUI]   Node 24: CreateVideo
-  [ComfyUI]     Inputs: {"fps": 30, "images": ["21", 2]}
-  [ComfyUI]   Node 25: SaveVideo
-  [ComfyUI]     Inputs: {"filename_prefix": "video/ComfyUI", "format": "auto", "codec": "auto", "video": ["24", 0]}
-  [ComfyUI]   Node 27: SAM3VideoSegmentation
-  [ComfyUI]     Inputs: {"prompt_mode": "point", "frame_idx": 0.3, "score_threshold": 0.3, "video_frames": ["9", 0], "positive_points": ["28", 0]}
-  [ComfyUI]   Node 28: SAM3PointCollector
-  [ComfyUI]     Inputs: {"points_store": "{\"positive\":[{\"x\":365.8296849641195,\"y\":82.1138596932428},{\"x\":389.5481601701001,\"y\":179.95494578458334},{\"x\":413.26663537608084,\"y\":52.465045726169905}],\"negative\":[
-  [ComfyUI]   Node 30: LoadSAM3Model
-  [ComfyUI]     Inputs: {"precision": "auto", "compile": false}
-  [ComfyUI]   Node 35: SAM3Propagate
-  [ComfyUI]     Inputs: {"start_frame": 0, "end_frame": -1, "direction": "forward", "sam3_model_config": ["30", 0], "video_state": ["27", 0]}
-  [ComfyUI] Generated prompt_id: 9390f749-d6c7-4518-af95-58f5df973e13
-  [ComfyUI] Calling execution.validate_prompt()...
-  [ComfyUI] Validation result: valid=True
-  [ComfyUI] === Validation PASSED ===
-  [ComfyUI] got prompt
+  [ComfyUI] [32m[INFO][0m === /validate endpoint called ===
+  [ComfyUI] [32m[INFO][0m Received JSON with keys: ['prompt']
+  [ComfyUI] [32m[INFO][0m Prompt has 11 nodes
+  [ComfyUI] [32m[INFO][0m   Node 9: VHS_LoadVideo
+  [ComfyUI] [32m[INFO][0m     Inputs: {"video": "bedroom.mp4", "force_rate": 0, "custom_width": 0, "custom_height": 0, "frame_load_cap": 30, "skip_first_frames": 0, "select_every_nth": 1, "format": "AnimateDiff"}
+  [ComfyUI] [32m[INFO][0m   Node 13: CreateVideo
+  [ComfyUI] [32m[INFO][0m     Inputs: {"fps": 30, "bit_depth": 8, "images": ["14", 0]}
+  [ComfyUI] [32m[INFO][0m   Node 14: MaskToImage
+  [ComfyUI] [32m[INFO][0m     Inputs: {"mask": ["21", 0]}
+  [ComfyUI] [32m[INFO][0m   Node 15: SaveVideo
+  [ComfyUI] [32m[INFO][0m     Inputs: {"filename_prefix": "video/ComfyUI", "format": "auto", "codec": "auto", "video": ["13", 0]}
+  [ComfyUI] [32m[INFO][0m   Node 21: SAM3VideoOutput
+  [ComfyUI] [32m[INFO][0m     Inputs: {"obj_id": 0, "plot_all_masks": true, "masks": ["35", 0], "video_state": ["35", 2], "scores": ["35", 1]}
+  [ComfyUI] [32m[INFO][0m   Node 24: CreateVideo
+  [ComfyUI] [32m[INFO][0m     Inputs: {"fps": 30, "bit_depth": 8, "images": ["21", 2]}
+  [ComfyUI] [32m[INFO][0m   Node 25: SaveVideo
+  [ComfyUI] [32m[INFO][0m     Inputs: {"filename_prefix": "video/ComfyUI", "format": "auto", "codec": "auto", "video": ["24", 0]}
+  [ComfyUI] [32m[INFO][0m   Node 27: SAM3VideoSegmentation
+  [ComfyUI] [32m[INFO][0m     Inputs: {"prompt_mode": "point", "frame_idx": 0.3, "score_threshold": 0.3, "video_frames": ["9", 0], "positive_points": ["28", 0]}
+  [ComfyUI] [32m[INFO][0m   Node 28: SAM3PointCollector
+  [ComfyUI] [32m[INFO][0m     Inputs: {"points_store": "{\"positive\":[{\"x\":365.8296849641195,\"y\":82.1138596932428},{\"x\":389.5481601701001,\"y\":179.95494578458334},{\"x\":413.26663537608084,\"y\":52.465045726169905}],\"negative\":[
+  [ComfyUI] [32m[INFO][0m   Node 30: LoadSAM3Model
+  [ComfyUI] [32m[INFO][0m     Inputs: {"precision": "auto", "compile": false}
+  [ComfyUI] [32m[INFO][0m   Node 35: SAM3Propagate
+  [ComfyUI] [32m[INFO][0m     Inputs: {"start_frame": 0, "end_frame": -1, "direction": "forward", "sam3_model_config": ["30", 0], "video_state": ["27", 0]}
+  [ComfyUI] [32m[INFO][0m Generated prompt_id: d8a1e929-c696-4425-9aa7-aba03af5971a
+  [ComfyUI] [32m[INFO][0m Calling execution.validate_prompt()...
+  [ComfyUI] [32m[INFO][0m Validation result: valid=True
+  [ComfyUI] [32m[INFO][0m === Validation PASSED ===
+  [ComfyUI] [32m[INFO][0m got prompt
   [ComfyUI] [comfy-env] Running SAM3PointCollector: points_store: '{"positive":[{"x":365.8296849641195,"y":82.1138596932428..., coordinates: '[{"x":365.8296849641195,"y":82.1138596932428},{"x":389.5..., neg_coordinates: '[]', image: torch.float32 [30,544,960,3] cpu
-  [ComfyUI] [VRAM] Before SAM3PointCollector: 1553 / 24124 MB
+  [ComfyUI] [VRAM] Before SAM3PointCollector: 958 / 24122 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_interactive.SAM3PointCollector.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
@@ -43,15 +44,22 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=18 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=31 sending call_method
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[30, 544, 960, 3]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([30, 544, 960, 3])
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] SAM3PointCollector done (0.24s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3PointCollector: 1553 / 24124 MB
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB) -> cpu: 958 / 24122 MB
+  [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
+  Node executed (1 total), capturing...
+  [ComfyUI] [ComfyUI-SAM3] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=32 sending model_to_device
+  [ComfyUI] [1m[33m[WARNING][0m Model 'Sam3VideoInferenceWithInstanceInteractivity_1' gone from worker (restarted?), treating as offloaded
+  [ComfyUI] [comfy-env] [VRAM] After offload 'Sam3VideoInferenceWithInstanceInteractivity_1' (1756 MB): 958 / 24122 MB
+  [ComfyUI] [comfy-env] SAM3PointCollector done (0.35s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3PointCollector: 958 / 24122 MB
   [ComfyUI] [comfy-env] Running SAM3VideoSegmentation: prompt_mode: 'point', frame_idx: 0, score_threshold: 0.3, video_frames: torch.float32 [30,544,960,3] cpu, positive_points: dict
-  [ComfyUI] [VRAM] Before SAM3VideoSegmentation: 1553 / 24124 MB
+  [ComfyUI] [VRAM] Before SAM3VideoSegmentation: 958 / 24122 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_video_nodes.SAM3VideoSegmentation.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
@@ -61,19 +69,17 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  Node executed (1 total), capturing...
-  [ComfyUI] [SubprocessWorker] call_id=19 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=33 sending call_method
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[30, 544, 960, 3]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([30, 544, 960, 3])
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=19
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=19
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=19
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=33
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=33
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] SAM3VideoSegmentation done (0.29s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3VideoSegmentation: 1553 / 24124 MB
+  [ComfyUI] [comfy-env] SAM3VideoSegmentation done (0.16s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3VideoSegmentation: 958 / 24122 MB
   [ComfyUI] [comfy-env] Running LoadSAM3Model: precision: 'auto', compile: False
-  [ComfyUI] [VRAM] Before LoadSAM3Model: 1553 / 24124 MB
+  [ComfyUI] [VRAM] Before LoadSAM3Model: 958 / 24122 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3Model.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
@@ -82,12 +88,12 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=20 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=34 sending call_method
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] LoadSAM3Model done (0.07s): result: NodeOutput
-  [ComfyUI] [VRAM] After LoadSAM3Model: 1553 / 24124 MB
+  [ComfyUI] [comfy-env] LoadSAM3Model done (0.06s): result: NodeOutput
+  [ComfyUI] [VRAM] After LoadSAM3Model: 958 / 24122 MB
   [ComfyUI] [comfy-env] Running SAM3Propagate: start_frame: 0, end_frame: -1, direction: 'forward', sam3_model_config: dict, video_state: dict
-  [ComfyUI] [VRAM] Before SAM3Propagate: 1553 / 24124 MB
+  [ComfyUI] [VRAM] Before SAM3Propagate: 958 / 24122 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_video_nodes.SAM3Propagate.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
@@ -96,13 +102,15 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=21 sending call_method
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=21
-  [ComfyUI] [comfy-env] VRAM request: 1.84GB, free before eviction: 23.67GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 23.67GB
-  Frame 2 saved (frame_001.jpg, t=2.0s)
-  [capture-node] freeze=4ms shot=266ms unfreeze=6ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +562MB (now 950MB) reserved=1024MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] call_id=35 sending call_method
+  Frame 2 saved (frame_001.jpg, t=1.5s)
+  [capture-node] freeze=5ms shot=124ms unfreeze=5ms saved=True
+  Frame 3 saved (frame_002.jpg, t=3.8s)
+  [capture-periodic] freeze=1ms shot=113ms unfreeze=2ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=35
+  [ComfyUI] [comfy-env] VRAM request: 1.84GB, free before eviction: 24.23GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 24.23GB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +469MB (now 469MB) reserved=480MB peak=469MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -127,8 +135,8 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1384MB (now 1854MB) reserved=2080MB peak=1854MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +1533MB (now 2483MB) reserved=2624MB peak=3220MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -137,6 +145,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  [capture-loop] iter=50 t=5.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=7.4/31.3GB (24%) swap=0.4/32.0GB (1%) cpu=14% browser_rss=1.42GB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -150,6 +159,8 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  Frame 4 saved (frame_003.jpg, t=6.0s)
+  [capture-periodic] freeze=1ms shot=110ms unfreeze=1ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -172,10 +183,8 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +339MB (now 2823MB) reserved=3200MB peak=3220MB
-  Frame 3 saved (frame_002.jpg, t=4.4s)
-  [capture-periodic] freeze=3ms shot=247ms unfreeze=3ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +861MB (now 2715MB) reserved=3040MB peak=2715MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -198,7 +207,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -221,10 +230,12 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -394MB (now 2430MB) reserved=3424MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -455MB (now 2260MB) reserved=3360MB peak=2817MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  Frame 5 saved (frame_004.jpg, t=8.2s)
+  [capture-periodic] freeze=1ms shot=108ms unfreeze=5ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -245,10 +256,9 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [capture-loop] iter=50 t=6.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=9.4/31.2GB (30%) swap=4.0/32.0GB (12%) cpu=6% browser_rss=1.55GB
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +438MB (now 2868MB) reserved=3488MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +438MB (now 2698MB) reserved=3360MB peak=2817MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -270,9 +280,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  Frame 4 saved (frame_003.jpg, t=6.8s)
-  [capture-periodic] freeze=3ms shot=240ms unfreeze=6ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -295,7 +303,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -318,8 +326,10 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -433MB (now 2435MB) reserved=3520MB peak=3220MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -300MB (now 2399MB) reserved=3392MB peak=2945MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  Frame 6 saved (frame_005.jpg, t=10.4s)
+  [capture-periodic] freeze=3ms shot=117ms unfreeze=1ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -342,13 +352,11 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +438MB (now 2874MB) reserved=3520MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +305MB (now 2704MB) reserved=3392MB peak=2945MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  Frame 5 saved (frame_004.jpg, t=9.2s)
-  [capture-periodic] freeze=3ms shot=251ms unfreeze=15ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -368,7 +376,8 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [capture-loop] iter=100 t=11.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=7.5/31.3GB (24%) swap=0.4/32.0GB (1%) cpu=15% browser_rss=1.30GB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -391,7 +400,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -414,8 +423,10 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -319MB (now 2555MB) reserved=3520MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -319MB (now 2386MB) reserved=3392MB peak=2945MB
+  Frame 7 saved (frame_006.jpg, t=12.6s)
+  [capture-periodic] freeze=1ms shot=106ms unfreeze=1ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -438,12 +449,10 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  Frame 6 saved (frame_005.jpg, t=11.6s)
-  [capture-periodic] freeze=3ms shot=240ms unfreeze=5ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +324MB (now 2880MB) reserved=3520MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +333MB (now 2719MB) reserved=3392MB peak=2945MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -464,7 +473,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -487,8 +496,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [capture-loop] iter=100 t=13.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=9.4/31.2GB (30%) swap=4.0/32.0GB (12%) cpu=8% browser_rss=1.57GB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -511,8 +519,10 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -265MB (now 2615MB) reserved=3520MB peak=3220MB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  Frame 8 saved (frame_007.jpg, t=14.8s)
+  [capture-periodic] freeze=1ms shot=113ms unfreeze=2ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -442MB (now 2277MB) reserved=3392MB peak=2955MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -535,11 +545,9 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  Frame 7 saved (frame_006.jpg, t=14.0s)
-  [capture-periodic] freeze=10ms shot=256ms unfreeze=14ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +270MB (now 2885MB) reserved=3520MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +438MB (now 2716MB) reserved=3392MB peak=2955MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -561,7 +569,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -584,11 +592,13 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -230MB (now 2656MB) reserved=3520MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  [capture-loop] iter=150 t=16.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=7.5/31.3GB (24%) swap=0.4/32.0GB (1%) cpu=14% browser_rss=1.24GB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  Frame 9 saved (frame_008.jpg, t=17.0s)
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  [capture-periodic] freeze=1ms shot=121ms unfreeze=2ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -608,17 +618,15 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -319MB (now 2397MB) reserved=3392MB peak=2955MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +237MB (now 2893MB) reserved=3520MB peak=3220MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  Frame 8 saved (frame_007.jpg, t=16.4s)
-  [capture-periodic] freeze=3ms shot=251ms unfreeze=15ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -634,8 +642,9 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +324MB (now 2722MB) reserved=3392MB peak=2955MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -657,8 +666,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -324MB (now 2570MB) reserved=3520MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -681,8 +689,9 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +324MB (now 2894MB) reserved=3520MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  Frame 10 saved (frame_009.jpg, t=19.3s)
+  [capture-periodic] freeze=1ms shot=118ms unfreeze=3ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -705,9 +714,7 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  Frame 9 saved (frame_008.jpg, t=18.8s)
-  [capture-periodic] freeze=5ms shot=278ms unfreeze=3ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -721,7 +728,6 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [capture-loop] iter=150 t=19.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=9.3/31.2GB (30%) swap=4.0/32.0GB (12%) cpu=7% browser_rss=1.58GB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -731,8 +737,8 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -321MB (now 2574MB) reserved=3584MB peak=3220MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -272MB (now 2450MB) reserved=3424MB peak=2955MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -755,8 +761,8 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +324MB (now 2898MB) reserved=3584MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +278MB (now 2729MB) reserved=3424MB peak=2955MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -779,7 +785,9 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  Frame 11 saved (frame_010.jpg, t=21.5s)
+  [capture-periodic] freeze=1ms shot=114ms unfreeze=2ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -797,15 +805,13 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  Frame 10 saved (frame_009.jpg, t=21.2s)
-  [capture-periodic] freeze=9ms shot=258ms unfreeze=13ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -261MB (now 2638MB) reserved=3616MB peak=3220MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  [capture-loop] iter=200 t=22.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=7.6/31.3GB (24%) swap=0.4/32.0GB (1%) cpu=13% browser_rss=1.24GB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -828,9 +834,9 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -261MB (now 2468MB) reserved=3424MB peak=2955MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] +268MB (now 2906MB) reserved=3616MB peak=3220MB
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
@@ -852,13 +858,16 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
   [ComfyUI] [worker:ComfyUI-SAM3] WARNING: Flash Attention failed, using default SDPA: Mask must not be set for Flash attention
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=21
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=35
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] SAM3Propagate done (21.14s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3Propagate: 3959 / 24124 MB
+  [ComfyUI] [comfy-env] Created 1 model patchers: ['Sam3VideoInferenceWithInstanceInteractivity_1']
+  [ComfyUI] [comfy-env] SAM3Propagate done (21.91s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3Propagate: 3670 / 24122 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (1756 MB)
   [ComfyUI] [comfy-env] Running SAM3VideoOutput: obj_id: 0, plot_all_masks: True, masks: dict, video_state: dict, scores: dict
-  [ComfyUI] [VRAM] Before SAM3VideoOutput: 3959 / 24124 MB
+  [ComfyUI] [VRAM] Before SAM3VideoOutput: 3670 / 24122 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (1756 MB)
   [ComfyUI] [SubprocessWorker] call_method: nodes.sam3_video_nodes.SAM3VideoOutput.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3] Health check: ping (timeout=5.0s)...
@@ -867,7 +876,40 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=22 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=36 sending call_method
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -279MB (now 2190MB) reserved=2624MB peak=2955MB
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
+  Frame 12 saved (frame_011.jpg, t=23.7s)
+  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
+  [capture-periodic] freeze=1ms shot=111ms unfreeze=3ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
@@ -918,44 +960,11 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [VRAM] -547MB (now 2360MB) reserved=2784MB peak=3220MB
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
-  Frame 11 saved (frame_010.jpg, t=23.6s)
-  [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
-  [capture-periodic] freeze=3ms shot=265ms unfreeze=7ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 544, 960]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 544, 960])
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
@@ -1051,92 +1060,56 @@ Capturing execution frames: video_point_prompt.json
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1]
   [ComfyUI] [worker:ComfyUI-SAM3] [comfy-env] DESERIALIZED tensor shape: torch.Size([1])
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [capture-loop] iter=200 t=25.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=12 ram=8.9/31.2GB (29%) swap=4.0/32.0GB (12%) cpu=7% browser_rss=1.60GB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  Frame 12 saved (frame_011.jpg, t=26.1s)
-  [capture-periodic] freeze=3ms shot=257ms unfreeze=6ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  Frame 13 saved (frame_012.jpg, t=28.5s)
-  [capture-periodic] freeze=3ms shot=239ms unfreeze=11ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  Frame 14 saved (frame_013.jpg, t=30.9s)
-  [capture-periodic] freeze=3ms shot=249ms unfreeze=3ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [capture-loop] iter=250 t=32.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=9 ram=9.0/31.2GB (29%) swap=4.0/32.0GB (12%) cpu=7% browser_rss=1.63GB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [worker:ComfyUI-SAM3]
-  [ComfyUI] === WATCHDOG TICK 1 ===
-  [ComfyUI] [worker:ComfyUI-SAM3] Thread 0x000078328c203640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/socket.py", line 294 in accept
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/multiprocessing/connection.py", line 626 in accept
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/multiprocessing/connection.py", line 480 in accept
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/multiprocessing/resource_sharer.py", line 138 in _serve
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/threading.py", line 982 in run
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/threading.py", line 1045 in _bootstrap_inner
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/threading.py", line 1002 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x000078362ee48640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_xa_b2y82/persistent_worker.py", line 106 in _vram_poller
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/threading.py", line 982 in run
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/threading.py", line 1045 in _bootstrap_inner
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/threading.py", line 1002 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Current thread 0x000078362f64d640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_xa_b2y82/persistent_worker.py", line 52 in _watchdog
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/threading.py", line 982 in run
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/threading.py", line 1045 in _bootstrap_inner
-  [ComfyUI]   File "/tmp/comfytest-home/.ce/envs/sam3-nodes/.pixi/envs/default/lib/python3.11/threading.py", line 1002 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x000078362fc6d740 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3-2347/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3_video_nodes.py", line 875 in _draw_legend
-  [ComfyUI]   File "/workspaces/SAM3-2347/ComfyUI/custom_nodes/ComfyUI-SAM3/nodes/sam3_video_nodes.py", line 800 in execute
-  [ComfyUI]   File "/workspaces/SAM3-2347/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "/tmp/comfyui_pvenv_xa_b2y82/persistent_worker.py", line 1762 in main
-  [ComfyUI]   File "/tmp/comfyui_pvenv_xa_b2y82/persistent_worker.py", line 1807 in <module>
-  [ComfyUI] 
-  [ComfyUI] [worker:ComfyUI-SAM3] === END ===
-  [ComfyUI] 
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  Frame 15 saved (frame_014.jpg, t=33.3s)
-  [capture-periodic] freeze=3ms shot=248ms unfreeze=3ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=22
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  Frame 13 saved (frame_012.jpg, t=25.9s)
+  [capture-periodic] freeze=1ms shot=120ms unfreeze=1ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [capture-loop] iter=250 t=27.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=7.4/31.3GB (24%) swap=0.4/32.0GB (1%) cpu=15% browser_rss=1.25GB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  Frame 14 saved (frame_013.jpg, t=28.1s)
+  [capture-periodic] freeze=1ms shot=123ms unfreeze=3ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=36
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] SAM3VideoOutput done (11.58s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3VideoOutput: 3959 / 24124 MB
+  [ComfyUI] [comfy-env] SAM3VideoOutput done (5.59s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3VideoOutput: 3670 / 24122 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (1756 MB)
   Node executed (2 total), capturing...
-  [ComfyUI] Prompt executed in 35.79 seconds
-  Frame 16 saved (frame_015.jpg, t=35.9s)
-  [capture-node] freeze=20ms shot=308ms unfreeze=6ms saved=True
+  [ComfyUI] [32m[INFO][0m [32mPrompt executed in 29.35 seconds[0m
+  Frame 15 saved (frame_014.jpg, t=29.6s)
+  [capture-node] freeze=1ms shot=140ms unfreeze=5ms saved=True
   Node executed (3 total), capturing...
-  Frame 17 saved (frame_016.jpg, t=36.7s)
-  [capture-node] freeze=4ms shot=317ms unfreeze=0ms saved=True
-  Execution complete (t=36.7s)
-  Captured 17 unique frames over 37.08s
+  Frame 16 saved (frame_015.jpg, t=30.0s)
+  [capture-node] freeze=2ms shot=189ms unfreeze=0ms saved=True
+  Execution complete (t=30.0s)
+  Captured 16 unique frames over 30.29s
   [debug] iframes: 0
   [timing] trigger_3d_previews: 0.0s
   Saved high-quality screenshot: video_point_prompt_executed.png
-  [timing] final_screenshot: 0.7s
-    Captured 18 video frames
+  [timing] final_screenshot: 0.4s
+    Captured 17 video frames
