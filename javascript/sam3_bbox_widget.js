@@ -41,7 +41,7 @@ function hideWidgetForGood(node, widget, suffix = '') {
 }
 
 app.registerExtension({
-    name: "Comfy.SAM3.SimpleBBoxCollector",
+    name: "sam3.simplebboxcollector",
 
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
         if (nodeData.name === "SAM3BBoxCollector") {

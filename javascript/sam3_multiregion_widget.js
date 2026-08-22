@@ -37,7 +37,7 @@ function hideWidgetForGood(node, widget, suffix = '') {
 }
 
 app.registerExtension({
-    name: "Comfy.SAM3.MultiRegionCollector",
+    name: "sam3.multiregioncollector",
 
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
         if (nodeData.name !== "SAM3MultiRegionCollector") return;

@@ -32,38 +32,31 @@ function hideWidgetForGood(node, widget, suffix = '') {
     }
 }
 
-function ensureSpinnerCSS() {
-    if (document.getElementById("sam3-spinner-css")) return;
-    const style = document.createElement("style");
-    style.id = "sam3-spinner-css";
-    style.textContent = `
-        @keyframes sam3spin {
-            from { transform: rotate(0deg); }
-            to   { transform: rotate(360deg); }
-        }
-        .sam3-spinner {
-            display: inline-block;
-            width: 10px; height: 10px;
-            border: 2px solid rgba(136, 204, 255, 0.2);
-            border-top-color: #8cf;
-            border-radius: 50%;
-            animation: sam3spin 0.65s linear infinite;
-            vertical-align: middle;
-            margin-left: 4px;
-            flex-shrink: 0;
-        }
-    `;
-    document.head.appendChild(style);
+// Spinner styling is inlined on the element and animated via the Web
+// Animations API rather than an injected <style>. A stylesheet in
+// document.head is shared-realm state every other extension inherits and
+// nobody can clean up; this keeps the whole spinner inside our own DOM.
+function makeSpinner() {
+    const spinner = document.createElement("span");
+    spinner.style.cssText =
+        "display: inline-block; width: 10px; height: 10px;" +
+        "border: 2px solid rgba(136, 204, 255, 0.2); border-top-color: #8cf;" +
+        "border-radius: 50%; vertical-align: middle; margin-left: 4px;" +
+        "flex-shrink: 0;";
+    spinner.animate(
+        [{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }],
+        { duration: 650, iterations: Infinity, easing: "linear" },
+    );
+    return spinner;
 }
 
 app.registerExtension({
-    name: "Comfy.SAM3.InteractiveCollector",
+    name: "sam3.interactivecollector",
 
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
         if (nodeData.name !== "SAM3InteractiveCollector") return;
 
         console.log("[SAM3] Registering SAM3InteractiveCollector node");
-        ensureSpinnerCSS();
         const onNodeCreated = nodeType.prototype.onNodeCreated;
 
         nodeType.prototype.onNodeCreated = function () {
@@ -518,9 +511,7 @@ app.registerExtension({
 
                 // Running: full CSS circle spinner
                 if (this.canvasWidget.isProcessing && prompt.isRunning) {
-                    const spinner = document.createElement("span");
-                    spinner.className = "sam3-spinner";
-                    tab.appendChild(spinner);
+                    tab.appendChild(makeSpinner());
                 // Pending: waiting its turn in the queue
                 } else if (this.canvasWidget.isProcessing && prompt.isPending) {
                     const dots = document.createElement("span");

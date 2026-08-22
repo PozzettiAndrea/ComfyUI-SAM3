@@ -193,7 +193,7 @@ function refreshNode(node) {
 
 // Main extension registration
 app.registerExtension({
-    name: "comfyui.sam3.video_dynamic",
+    name: "sam3.video_dynamic",
 
     async nodeCreated(node) {
         if (node.comfyClass === "SAM3VideoSegmentation") {

@@ -41,7 +41,7 @@ function hideWidgetForGood(node, widget, suffix = '') {
 }
 
 app.registerExtension({
-    name: "Comfy.SAM3.SimplePointCollector",
+    name: "sam3.simplepointcollector",
 
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
         if (nodeData.name === "SAM3PointCollector") {
