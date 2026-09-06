@@ -1,11 +1,8 @@
 """
-ComfyUI-SAM3 Nodes - Stateless Architecture
-
-Version 3.0.0 refactoring:
-- ComfyUI model management integration (ModelPatcher, load_models_gpu)
-- Immutable video state (no global mutable state)
-- Automatic cleanup (no manual SAM3CloseVideoSession needed)
+ComfyUI-SAM3 Nodes
 """
+
+import os
 
 from .load_model import NODE_CLASS_MAPPINGS as LOAD_MODEL_MAPPINGS
 from .load_model import NODE_DISPLAY_NAME_MAPPINGS as LOAD_MODEL_DISPLAY_MAPPINGS
@@ -29,4 +26,11 @@ NODE_DISPLAY_NAME_MAPPINGS.update(SEGMENTATION_DISPLAY_MAPPINGS)
 NODE_DISPLAY_NAME_MAPPINGS.update(VIDEO_DISPLAY_MAPPINGS)
 NODE_DISPLAY_NAME_MAPPINGS.update(INTERACTIVE_DISPLAY_MAPPINGS)
 
-__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
+# Автоопределение пути к веб-директории с фронтенд-скриптами
+_cur_dir = os.path.dirname(__file__)
+if os.path.exists(os.path.join(_cur_dir, "../web")):
+    WEB_DIRECTORY = "../web"
+else:
+    WEB_DIRECTORY = "./web"
+
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', 'WEB_DIRECTORY']

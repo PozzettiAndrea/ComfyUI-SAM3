@@ -44,6 +44,8 @@ app.registerExtension({
     name: "Comfy.SAM3.SimpleBBoxCollector",
 
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
+        console.log("[SAM3] beforeRegisterNodeDef called for:", nodeData.name);
+
         if (nodeData.name === "SAM3BBoxCollector") {
             console.log("[SAM3] Registering SAM3BBoxCollector node");
             const onNodeCreated = nodeType.prototype.onNodeCreated;

@@ -1,1 +1,631 @@
-{"id":"video-point-prompt-example","revision":0,"last_node_id":35,"last_link_id":63,"nodes":[{"id":24,"type":"CreateVideo","pos":[1298.4781871834894,322.11881861527905],"size":[270,78],"flags":{},"order":7,"mode":0,"inputs":[{"localized_name":"images","name":"images","type":"IMAGE","link":32},{"localized_name":"audio","name":"audio","shape":7,"type":"AUDIO","link":null},{"localized_name":"fps","name":"fps","type":"FLOAT","widget":{"name":"fps"},"link":null}],"outputs":[{"localized_name":"VIDEO","name":"VIDEO","type":"VIDEO","links":[33]}],"properties":{"cnr_id":"comfy-core","ver":"0.3.70","Node name for S&R":"CreateVideo"},"widgets_values":[30]},{"id":25,"type":"SaveVideo","pos":[1232.455654883483,447.7575591921106],"size":[704.7792007279932,522.5301587844257],"flags":{},"order":9,"mode":0,"inputs":[{"localized_name":"video","name":"video","type":"VIDEO","link":33},{"localized_name":"filename_prefix","name":"filename_prefix","type":"STRING","widget":{"name":"filename_prefix"},"link":null},{"localized_name":"format","name":"format","type":"COMBO","widget":{"name":"format"},"link":null},{"localized_name":"codec","name":"codec","type":"COMBO","widget":{"name":"codec"},"link":null}],"outputs":[],"properties":{"cnr_id":"comfy-core","ver":"0.3.70","Node name for S&R":"SaveVideo"},"widgets_values":["video/ComfyUI","auto","auto"]},{"id":15,"type":"SaveVideo","pos":[1959.5396857369417,322.3151367108071],"size":[704.7792007279932,637.4793646490638],"flags":{},"order":10,"mode":0,"inputs":[{"localized_name":"video","name":"video","type":"VIDEO","link":13},{"localized_name":"filename_prefix","name":"filename_prefix","type":"STRING","widget":{"name":"filename_prefix"},"link":null},{"localized_name":"format","name":"format","type":"COMBO","widget":{"name":"format"},"link":null},{"localized_name":"codec","name":"codec","type":"COMBO","widget":{"name":"codec"},"link":null}],"outputs":[],"properties":{"cnr_id":"comfy-core","ver":"0.3.70","Node name for S&R":"SaveVideo"},"widgets_values":["video/ComfyUI","auto","auto"]},{"id":13,"type":"CreateVideo","pos":[1642.331378416771,240.8694707665232],"size":[270,78],"flags":{},"order":8,"mode":0,"inputs":[{"localized_name":"images","name":"images","type":"IMAGE","link":12},{"localized_name":"audio","name":"audio","shape":7,"type":"AUDIO","link":null},{"localized_name":"fps","name":"fps","type":"FLOAT","widget":{"name":"fps"},"link":null}],"outputs":[{"localized_name":"VIDEO","name":"VIDEO","type":"VIDEO","links":[13]}],"properties":{"cnr_id":"comfy-core","ver":"0.3.70","Node name for S&R":"CreateVideo"},"widgets_values":[30]},{"id":9,"type":"VHS_LoadVideo","pos":[303.7995427033554,391.4597116465567],"size":[260.4306640625,459.24224853515625],"flags":{},"order":0,"mode":0,"inputs":[{"localized_name":"meta_batch","name":"meta_batch","shape":7,"type":"VHS_BatchManager","link":null},{"localized_name":"vae","name":"vae","shape":7,"type":"VAE","link":null},{"localized_name":"video","name":"video","type":"COMBO","widget":{"name":"video"},"link":null},{"localized_name":"force_rate","name":"force_rate","type":"FLOAT","widget":{"name":"force_rate"},"link":null},{"localized_name":"custom_width","name":"custom_width","type":"INT","widget":{"name":"custom_width"},"link":null},{"localized_name":"custom_height","name":"custom_height","type":"INT","widget":{"name":"custom_height"},"link":null},{"localized_name":"frame_load_cap","name":"frame_load_cap","type":"INT","widget":{"name":"frame_load_cap"},"link":null},{"localized_name":"skip_first_frames","name":"skip_first_frames","type":"INT","widget":{"name":"skip_first_frames"},"link":null},{"localized_name":"select_every_nth","name":"select_every_nth","type":"INT","widget":{"name":"select_every_nth"},"link":null},{"localized_name":"format","name":"format","shape":7,"type":"COMBO","widget":{"name":"format"},"link":null}],"outputs":[{"localized_name":"IMAGE","name":"IMAGE","type":"IMAGE","links":[40,46]},{"localized_name":"frame_count","name":"frame_count","type":"INT","links":null},{"localized_name":"audio","name":"audio","type":"AUDIO","links":null},{"localized_name":"video_info","name":"video_info","type":"VHS_VIDEOINFO","links":null}],"properties":{"cnr_id":"comfyui-videohelpersuite","ver":"1.7.7","Node name for S&R":"VHS_LoadVideo","aux_id":"Kosinkadink/ComfyUI-VideoHelperSuite"},"widgets_values":{"video":"bedroom.mp4","force_rate":0,"custom_width":0,"custom_height":0,"frame_load_cap":30,"skip_first_frames":0,"select_every_nth":1,"format":"AnimateDiff","videopreview":{"hidden":false,"paused":false,"params":{"filename":"bedroom.mp4","type":"input","format":"video/mp4","force_rate":0,"custom_width":0,"custom_height":0,"frame_load_cap":30,"skip_first_frames":0,"select_every_nth":1}}}},{"id":14,"type":"MaskToImage","pos":[1662.517675506336,129.87813119341868],"size":[193.2779296875,26],"flags":{},"order":6,"mode":0,"inputs":[{"localized_name":"mask","name":"mask","type":"MASK","link":25}],"outputs":[{"localized_name":"IMAGE","name":"IMAGE","type":"IMAGE","links":[12]}],"properties":{"cnr_id":"comfy-core","ver":"0.3.70","Node name for S&R":"MaskToImage"},"widgets_values":[]},{"id":30,"type":"LoadSAM3Model","pos":[309.39497369270185,159.07693103490962],"size":[270,82],"flags":{},"order":1,"mode":0,"inputs":[{"localized_name":"precision","name":"precision","shape":7,"type":"COMBO","widget":{"name":"precision"},"link":null},{"localized_name":"compile","name":"compile","shape":7,"type":"BOOLEAN","widget":{"name":"compile"},"link":null}],"outputs":[{"localized_name":"sam3_model_config","name":"sam3_model_config","type":"SAM3_MODEL_CONFIG","links":[58]}],"properties":{"cnr_id":"comfyui-sam3","ver":"29ceca1e0692ea84700ccce1aeadadf2eb644322","Node name for S&R":"LoadSAM3Model","aux_id":"PozzettiAndrea/ComfyUI-SAM3"},"widgets_values":["auto",false]},{"id":27,"type":"SAM3VideoSegmentation","pos":[734.1943322643442,140.6265247523126],"size":[270,166],"flags":{},"order":3,"mode":0,"inputs":[{"localized_name":"video_frames","name":"video_frames","shape":7,"type":"IMAGE","link":40},{"localized_name":"video","name":"video","shape":7,"type":"VIDEO","link":null},{"localized_name":"positive_points","name":"positive_points","shape":7,"type":"SAM3_POINTS_PROMPT","link":45},{"localized_name":"negative_points","name":"negative_points","shape":7,"type":"SAM3_POINTS_PROMPT","link":null},{"localized_name":"prompt_mode","name":"prompt_mode","type":"COMBO","widget":{"name":"prompt_mode"},"link":null},{"localized_name":"text_prompt","name":"text_prompt","shape":7,"type":"STRING","widget":{"name":"text_prompt"},"link":null},{"localized_name":"frame_idx","name":"frame_idx","shape":7,"type":"INT","widget":{"name":"frame_idx"},"link":null},{"localized_name":"score_threshold","name":"score_threshold","shape":7,"type":"FLOAT","widget":{"name":"score_threshold"},"link":null}],"outputs":[{"localized_name":"video_state","name":"video_state","type":"SAM3_VIDEO_STATE","links":[59]}],"properties":{"cnr_id":"comfyui-sam3","ver":"25e9d9a2d635a95915e88dbda5bb9bd06531eb40","Node name for S&R":"SAM3VideoSegmentation","aux_id":"PozzettiAndrea/ComfyUI-SAM3"},"widgets_values":["point",0.3,0.3]},{"id":21,"type":"SAM3VideoOutput","pos":[1369.9303849158182,132.2001605046781],"size":[270,122],"flags":{},"order":5,"mode":0,"inputs":[{"localized_name":"masks","name":"masks","type":"SAM3_VIDEO_MASKS","link":61},{"localized_name":"video_state","name":"video_state","type":"SAM3_VIDEO_STATE","link":63},{"localized_name":"scores","name":"scores","shape":7,"type":"SAM3_VIDEO_SCORES","link":62},{"localized_name":"obj_id","name":"obj_id","shape":7,"type":"INT","widget":{"name":"obj_id"},"link":null},{"localized_name":"plot_all_masks","name":"plot_all_masks","shape":7,"type":"BOOLEAN","widget":{"name":"plot_all_masks"},"link":null}],"outputs":[{"localized_name":"masks","name":"masks","type":"MASK","links":[25]},{"localized_name":"frames","name":"frames","type":"IMAGE","links":null},{"localized_name":"visualization","name":"visualization","type":"IMAGE","links":[32]}],"properties":{"cnr_id":"comfyui-sam3","ver":"25e9d9a2d635a95915e88dbda5bb9bd06531eb40","Node name for S&R":"SAM3VideoOutput","aux_id":"PozzettiAndrea/ComfyUI-SAM3"},"widgets_values":[0,true]},{"id":35,"type":"SAM3Propagate","pos":[1041.0555782683693,94.77463133175095],"size":[282.673828125,146],"flags":{},"order":4,"mode":0,"inputs":[{"localized_name":"sam3_model_config","name":"sam3_model_config","type":"SAM3_MODEL_CONFIG","link":58},{"localized_name":"video_state","name":"video_state","type":"SAM3_VIDEO_STATE","link":59},{"localized_name":"start_frame","name":"start_frame","shape":7,"type":"INT","widget":{"name":"start_frame"},"link":null},{"localized_name":"end_frame","name":"end_frame","shape":7,"type":"INT","widget":{"name":"end_frame"},"link":null},{"localized_name":"direction","name":"direction","shape":7,"type":"COMBO","widget":{"name":"direction"},"link":null}],"outputs":[{"localized_name":"masks","name":"masks","type":"SAM3_VIDEO_MASKS","links":[61]},{"localized_name":"scores","name":"scores","type":"SAM3_VIDEO_SCORES","links":[62]},{"localized_name":"video_state","name":"video_state","type":"SAM3_VIDEO_STATE","links":[63]}],"properties":{"cnr_id":"comfyui-sam3","ver":"c7636fa4a0b8c0fb07aa01f0c7749ebd5f9c92f3","Node name for S&R":"SAM3Propagate"},"widgets_values":[0,-1,"forward"]},{"id":28,"type":"SAM3PointCollector","pos":[699.1795603248546,382.6908706652589],"size":[400,485],"flags":{},"order":2,"mode":0,"inputs":[{"localized_name":"image","name":"image","type":"IMAGE","link":46},{"localized_name":"points_store","name":"points_store","type":"STRING","widget":{"name":"points_store"},"link":null},{"localized_name":"coordinates","name":"coordinates","type":"STRING","widget":{"name":"coordinates"},"link":null},{"localized_name":"neg_coordinates","name":"neg_coordinates","type":"STRING","widget":{"name":"neg_coordinates"},"link":null}],"outputs":[{"localized_name":"positive_points","name":"positive_points","type":"SAM3_POINTS_PROMPT","links":[45]},{"localized_name":"negative_points","name":"negative_points","type":"SAM3_POINTS_PROMPT","links":null}],"properties":{"cnr_id":"comfyui-sam3","ver":"25e9d9a2d635a95915e88dbda5bb9bd06531eb40","Node name for S&R":"SAM3PointCollector","aux_id":"PozzettiAndrea/ComfyUI-SAM3"},"widgets_values":["{\"positive\":[{\"x\":365.8296849641195,\"y\":82.1138596932428},{\"x\":389.5481601701001,\"y\":179.95494578458334},{\"x\":413.26663537608084,\"y\":52.465045726169905}],\"negative\":[]}","[{\"x\":365.8296849641195,\"y\":82.1138596932428},{\"x\":389.5481601701001,\"y\":179.95494578458334},{\"x\":413.26663537608084,\"y\":52.465045726169905}]","[]",""]}],"links":[[12,14,0,13,0,"IMAGE"],[13,13,0,15,0,"VIDEO"],[25,21,0,14,0,"MASK"],[32,21,2,24,0,"IMAGE"],[33,24,0,25,0,"VIDEO"],[40,9,0,27,0,"IMAGE"],[45,28,0,27,2,"SAM3_POINTS_PROMPT"],[46,9,0,28,0,"IMAGE"],[58,30,0,35,0,"SAM3_MODEL_CONFIG"],[59,27,0,35,1,"SAM3_VIDEO_STATE"],[61,35,0,21,0,"SAM3_VIDEO_MASKS"],[62,35,1,21,2,"SAM3_VIDEO_SCORES"],[63,35,2,21,1,"SAM3_VIDEO_STATE"]],"groups":[],"config":{},"extra":{"ds":{"scale":0.8578959990501509,"offset":[-120.0438431224958,49.69164228547762]},"frontendVersion":"1.32.9","VHS_latentpreview":false,"VHS_latentpreviewrate":0,"VHS_MetadataImage":true,"VHS_KeepIntermediate":true,"workflow_description":"Example workflow for SAM3 video segmentation using point prompts. This demonstrates using the SAM3CreatePoint node to specify a point location (x=0.5, y=0.5 normalized coordinates) on frame 0. The point prompt is used instead of text prompts to track objects through the video. Adjust the x, y coordinates in the SAM3CreatePoint node to point to your desired object.","workflowRendererVersion":"LG"},"version":0.4}
+{
+  "id": "video-point-prompt-example",
+  "revision": 0,
+  "last_node_id": 17,
+  "last_link_id": 16,
+  "nodes": [
+    {
+      "id": 5,
+      "type": "SAM3PropagateVideo",
+      "pos": [
+        1400,
+        100
+      ],
+      "size": [
+        350,
+        200
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "session",
+          "type": "SAM3_VIDEO_SESSION",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video_masks",
+          "type": "SAM3_VIDEO_MASKS",
+          "links": [
+            6
+          ]
+        },
+        {
+          "name": "session",
+          "type": "SAM3_VIDEO_SESSION",
+          "links": [
+            8
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "017c8fc2d12045abdf8c490cc5941bb81e188b1a",
+        "Node name for S&R": "SAM3PropagateVideo",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3"
+      },
+      "widgets_values": [
+        "both",
+        0,
+        -1
+      ]
+    },
+    {
+      "id": 4,
+      "type": "SAM3AddVideoPrompt",
+      "pos": [
+        950,
+        100
+      ],
+      "size": [
+        400,
+        250
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "session",
+          "type": "SAM3_VIDEO_SESSION",
+          "link": 3
+        },
+        {
+          "name": "boxes",
+          "shape": 7,
+          "type": "SAM3_BOXES_PROMPT",
+          "link": null
+        },
+        {
+          "name": "points",
+          "shape": 7,
+          "type": "SAM3_POINTS_PROMPT",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "session",
+          "type": "SAM3_VIDEO_SESSION",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "017c8fc2d12045abdf8c490cc5941bb81e188b1a",
+        "Node name for S&R": "SAM3AddVideoPrompt",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3"
+      },
+      "widgets_values": [
+        0,
+        "",
+        1
+      ]
+    },
+    {
+      "id": 3,
+      "type": "SAM3InitVideoSession",
+      "pos": [
+        550,
+        100
+      ],
+      "size": [
+        350,
+        342
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video_model",
+          "type": "SAM3_VIDEO_MODEL",
+          "link": 1
+        },
+        {
+          "name": "video_frames",
+          "type": "IMAGE",
+          "link": 9
+        }
+      ],
+      "outputs": [
+        {
+          "name": "session",
+          "type": "SAM3_VIDEO_SESSION",
+          "links": [
+            3
+          ]
+        },
+        {
+          "name": "session_id",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "017c8fc2d12045abdf8c490cc5941bb81e188b1a",
+        "Node name for S&R": "SAM3InitVideoSession",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3"
+      },
+      "widgets_values": [
+        "",
+        0.2,
+        0.2
+      ]
+    },
+    {
+      "id": 6,
+      "type": "SAM3VideoOutput",
+      "pos": [
+        1800,
+        100
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video_masks",
+          "type": "SAM3_VIDEO_MASKS",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "masks",
+          "type": "MASK",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "017c8fc2d12045abdf8c490cc5941bb81e188b1a",
+        "Node name for S&R": "SAM3VideoOutput",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3"
+      },
+      "widgets_values": [
+        1
+      ]
+    },
+    {
+      "id": 14,
+      "type": "MaskToImage",
+      "pos": [
+        2122.2624629450343,
+        84.97367570210822
+      ],
+      "size": [
+        184.6236328125,
+        26
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.70",
+        "Node name for S&R": "MaskToImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 13,
+      "type": "CreateVideo",
+      "pos": [
+        2135.75911418527,
+        171.6995615270764
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 12
+        },
+        {
+          "name": "audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.70",
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        30
+      ]
+    },
+    {
+      "id": 9,
+      "type": "VHS_LoadVideo",
+      "pos": [
+        216.2265625,
+        383.62109375
+      ],
+      "size": [
+        252.056640625,
+        455.031982421875
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "meta_batch",
+          "shape": 7,
+          "type": "VHS_BatchManager",
+          "link": null
+        },
+        {
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            9,
+            15
+          ]
+        },
+        {
+          "name": "frame_count",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": null
+        },
+        {
+          "name": "video_info",
+          "type": "VHS_VIDEOINFO",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-videohelpersuite",
+        "ver": "1.7.7",
+        "Node name for S&R": "VHS_LoadVideo",
+        "aux_id": "Kosinkadink/ComfyUI-VideoHelperSuite"
+      },
+      "widgets_values": {
+        "video": "bedroom.mp4",
+        "force_rate": 0,
+        "custom_width": 0,
+        "custom_height": 0,
+        "frame_load_cap": 30,
+        "skip_first_frames": 0,
+        "select_every_nth": 1,
+        "format": "AnimateDiff",
+        "choose video to upload": "image",
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {
+            "filename": "bedroom.mp4",
+            "type": "input",
+            "format": "video/mp4",
+            "force_rate": 0,
+            "custom_width": 0,
+            "custom_height": 0,
+            "frame_load_cap": 30,
+            "skip_first_frames": 0,
+            "select_every_nth": 1
+          }
+        }
+      }
+    },
+    {
+      "id": 1,
+      "type": "SAM3VideoModelLoader",
+      "pos": [
+        100,
+        100
+      ],
+      "size": [
+        400,
+        226
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "video_model",
+          "type": "SAM3_VIDEO_MODEL",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "017c8fc2d12045abdf8c490cc5941bb81e188b1a",
+        "Node name for S&R": "SAM3VideoModelLoader",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3"
+      },
+      "widgets_values": [
+        "",
+        "your_hf_token_here",
+        true
+      ]
+    },
+    {
+      "id": 8,
+      "type": "SAM3CloseVideoSession",
+      "pos": [
+        1292.5247132757124,
+        422.87892298371503
+      ],
+      "size": [
+        300,
+        100
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "session",
+          "type": "SAM3_VIDEO_SESSION",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "017c8fc2d12045abdf8c490cc5941bb81e188b1a",
+        "Node name for S&R": "SAM3CloseVideoSession",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 15,
+      "type": "SaveVideo",
+      "pos": [
+        1591.2728306603137,
+        407.1975749627277
+      ],
+      "size": [
+        600.7792007279932,
+        695.8859085249115
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 13
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.70",
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "video/ComfyUI",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "SAM3PointCollector",
+      "pos": [
+        641.704970211539,
+        513.8152576025203
+      ],
+      "size": [
+        634.9743970592663,
+        616.1647127392379
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 15
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive_points",
+          "type": "SAM3_POINTS_PROMPT",
+          "links": [
+            16
+          ]
+        },
+        {
+          "name": "negative_points",
+          "type": "SAM3_POINTS_PROMPT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3",
+        "ver": "9e3aadc12daaf52b69e8455f676b0fa8adb7b215",
+        "Node name for S&R": "SAM3PointCollector"
+      },
+      "widgets_values": [
+        "{\"positive\":[],\"negative\":[]}",
+        "[]",
+        "[]",
+        ""
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      3,
+      0,
+      "SAM3_VIDEO_MODEL"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      0,
+      "SAM3_VIDEO_SESSION"
+    ],
+    [
+      5,
+      4,
+      0,
+      5,
+      0,
+      "SAM3_VIDEO_SESSION"
+    ],
+    [
+      6,
+      5,
+      0,
+      6,
+      0,
+      "SAM3_VIDEO_MASKS"
+    ],
+    [
+      8,
+      5,
+      1,
+      8,
+      0,
+      "SAM3_VIDEO_SESSION"
+    ],
+    [
+      9,
+      9,
+      0,
+      3,
+      1,
+      "IMAGE"
+    ],
+    [
+      11,
+      6,
+      0,
+      14,
+      0,
+      "MASK"
+    ],
+    [
+      12,
+      14,
+      0,
+      13,
+      0,
+      "IMAGE"
+    ],
+    [
+      13,
+      13,
+      0,
+      15,
+      0,
+      "VIDEO"
+    ],
+    [
+      15,
+      9,
+      0,
+      17,
+      0,
+      "IMAGE"
+    ],
+    [
+      16,
+      17,
+      0,
+      4,
+      2,
+      "SAM3_POINTS_PROMPT"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.6447843441504226,
+      "offset": [
+        30.503698459338946,
+        76.81634928870933
+      ]
+    },
+    "frontendVersion": "1.28.9",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true,
+    "workflow_description": "Example workflow for SAM3 video segmentation using point prompts. This demonstrates using the SAM3CreatePoint node to specify a point location (x=0.5, y=0.5 normalized coordinates) on frame 0. The point prompt is used instead of text prompts to track objects through the video. Adjust the x, y coordinates in the SAM3CreatePoint node to point to your desired object."
+  },
+  "version": 0.4
+}
